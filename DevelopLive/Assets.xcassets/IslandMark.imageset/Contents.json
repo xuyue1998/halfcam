@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "IslandMark.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

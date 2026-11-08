@@ -1,0 +1,749 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B10100000000000000000001 /* HalfCamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10100000000000000000001 /* HalfCamApp.swift */; };
+		B10200000000000000000001 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10200000000000000000001 /* RootView.swift */; };
+		B10300000000000000000001 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10300000000000000000001 /* AppModel.swift */; };
+		B10400000000000000000001 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10400000000000000000001 /* Models.swift */; };
+		B10500000000000000000001 /* FilmCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10500000000000000000001 /* FilmCatalog.swift */; };
+		B10600000000000000000001 /* FilmRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10600000000000000000001 /* FilmRenderer.swift */; };
+		B10700000000000000000001 /* CameraSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10700000000000000000001 /* CameraSession.swift */; };
+		B10800000000000000000001 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10800000000000000000001 /* CameraView.swift */; };
+		B10900000000000000000001 /* WinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10900000000000000000001 /* WinderView.swift */; };
+		B11000000000000000000001 /* ViewfinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11000000000000000000001 /* ViewfinderView.swift */; };
+		B11100000000000000000001 /* LoadRollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11100000000000000000001 /* LoadRollView.swift */; };
+		B11200000000000000000001 /* DarkroomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11200000000000000000001 /* DarkroomView.swift */; };
+		B11300000000000000000001 /* AlbumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11300000000000000000001 /* AlbumView.swift */; };
+		B11400000000000000000001 /* DarkboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11400000000000000000001 /* DarkboxView.swift */; };
+		B14500000000000000000001 /* PhotoExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14500000000000000000001 /* PhotoExport.swift */; };
+		B11500000000000000000001 /* HapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11500000000000000000001 /* HapticEngine.swift */; };
+		B11600000000000000000001 /* Soundboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11600000000000000000001 /* Soundboard.swift */; };
+		B11700000000000000000001 /* FilmPackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11700000000000000000001 /* FilmPackView.swift */; };
+		B12100000000000000000001 /* FrameCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12100000000000000000001 /* FrameCrypto.swift */; };
+		B12300000000000000000001 /* Ingest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12300000000000000000001 /* Ingest.swift */; };
+		B12400000000000000000001 /* SpektraEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12400000000000000000001 /* SpektraEngine.swift */; };
+		B12500000000000000000001 /* Language.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12500000000000000000001 /* Language.swift */; };
+		B13100000000000000000001 /* engine in Resources */ = {isa = PBXBuildFile; fileRef = F13100000000000000000001 /* engine */; };
+		B13200000000000000000001 /* SpektraBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = F13200000000000000000001 /* SpektraBridge.m */; };
+		B13300000000000000000001 /* DevelopNotify.swift in Sources */ = {isa = PBXBuildFile; fileRef = F13300000000000000000001 /* DevelopNotify.swift */; };
+		B13400000000000000000001 /* DevelopActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F13400000000000000000001 /* DevelopActivityAttributes.swift */; };
+		B13500000000000000000001 /* DevelopLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = F13500000000000000000001 /* DevelopLive.swift */; };
+		B13600000000000000000001 /* DevelopLiveBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F13600000000000000000001 /* DevelopLiveBundle.swift */; };
+		B13700000000000000000001 /* DevelopLiveLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F13700000000000000000001 /* DevelopLiveLiveActivity.swift */; };
+		B13800000000000000000001 /* DevelopActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F13400000000000000000001 /* DevelopActivityAttributes.swift */; };
+		B13900000000000000000001 /* DevelopLive.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F50000000000000000000001 /* DevelopLive.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B14000000000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F14000000000000000000001 /* Assets.xcassets */; };
+		B14100000000000000000001 /* Legal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14100000000000000000001 /* Legal.swift */; };
+		B14200000000000000000001 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = F14200000000000000000001 /* LICENSE.txt */; };
+		B14300000000000000000001 /* LICENSE-SPEKTRAFILM.txt in Resources */ = {isa = PBXBuildFile; fileRef = F14300000000000000000001 /* LICENSE-SPEKTRAFILM.txt */; };
+		B14400000000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F14400000000000000000001 /* PrivacyInfo.xcprivacy */; };
+		B20100000000000000000001 /* shutter.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20100000000000000000001 /* shutter.wav */; };
+		B20200000000000000000001 /* empty.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20200000000000000000001 /* empty.wav */; };
+		B20300000000000000000001 /* wind.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20300000000000000000001 /* wind.wav */; };
+		B20400000000000000000001 /* tick.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20400000000000000000001 /* tick.wav */; };
+		B20500000000000000000001 /* back.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20500000000000000000001 /* back.wav */; };
+		B20600000000000000000001 /* rewind.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20600000000000000000001 /* rewind.wav */; };
+		B20700000000000000000001 /* water.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20700000000000000000001 /* water.wav */; };
+		B20800000000000000000001 /* reveal.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20800000000000000000001 /* reveal.wav */; };
+		B30000000000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F30000000000000000000001 /* Assets.xcassets */; };
+		B30100000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F30100000000000000000001 /* Localizable.xcstrings */; };
+		B30200000000000000000001 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F30200000000000000000001 /* InfoPlist.xcstrings */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		P00000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A00000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A00000000000000000000012;
+			remoteInfo = DevelopLive;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A00000000000000000000016 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B13900000000000000000001 /* DevelopLive.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		F10100000000000000000001 /* HalfCamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HalfCamApp.swift; sourceTree = "<group>"; };
+		F10200000000000000000001 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		F10300000000000000000001 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		F10400000000000000000001 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		F10500000000000000000001 /* FilmCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmCatalog.swift; sourceTree = "<group>"; };
+		F10600000000000000000001 /* FilmRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmRenderer.swift; sourceTree = "<group>"; };
+		F10700000000000000000001 /* CameraSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSession.swift; sourceTree = "<group>"; };
+		F10800000000000000000001 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
+		F10900000000000000000001 /* WinderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinderView.swift; sourceTree = "<group>"; };
+		F11000000000000000000001 /* ViewfinderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewfinderView.swift; sourceTree = "<group>"; };
+		F11100000000000000000001 /* LoadRollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadRollView.swift; sourceTree = "<group>"; };
+		F11200000000000000000001 /* DarkroomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DarkroomView.swift; sourceTree = "<group>"; };
+		F11300000000000000000001 /* AlbumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumView.swift; sourceTree = "<group>"; };
+		F11400000000000000000001 /* DarkboxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DarkboxView.swift; sourceTree = "<group>"; };
+		F14500000000000000000001 /* PhotoExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoExport.swift; sourceTree = "<group>"; };
+		F11500000000000000000001 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
+		F11600000000000000000001 /* Soundboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Soundboard.swift; sourceTree = "<group>"; };
+		F11700000000000000000001 /* FilmPackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmPackView.swift; sourceTree = "<group>"; };
+		F12100000000000000000001 /* FrameCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameCrypto.swift; sourceTree = "<group>"; };
+		F12300000000000000000001 /* Ingest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ingest.swift; sourceTree = "<group>"; };
+		F12400000000000000000001 /* SpektraEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpektraEngine.swift; sourceTree = "<group>"; };
+		F12500000000000000000001 /* Language.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Language.swift; sourceTree = "<group>"; };
+		F12600000000000000000001 /* HalfCam-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HalfCam-Bridging-Header.h"; sourceTree = "<group>"; };
+		F12900000000000000000001 /* hc_spk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hc_spk.h; sourceTree = "<group>"; };
+		F13100000000000000000001 /* engine */ = {isa = PBXFileReference; lastKnownFileType = folder; path = engine; sourceTree = "<group>"; };
+		F13200000000000000000001 /* SpektraBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SpektraBridge.m; sourceTree = "<group>"; };
+		F13300000000000000000001 /* DevelopNotify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevelopNotify.swift; sourceTree = "<group>"; };
+		F13400000000000000000001 /* DevelopActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevelopActivityAttributes.swift; sourceTree = "<group>"; };
+		F13500000000000000000001 /* DevelopLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevelopLive.swift; sourceTree = "<group>"; };
+		F13600000000000000000001 /* DevelopLiveBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevelopLiveBundle.swift; sourceTree = "<group>"; };
+		F13700000000000000000001 /* DevelopLiveLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevelopLiveLiveActivity.swift; sourceTree = "<group>"; };
+		F13800000000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F13900000000000000000001 /* AppInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = AppInfo.plist; sourceTree = "<group>"; };
+		F14000000000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F14100000000000000000001 /* Legal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Legal.swift; sourceTree = "<group>"; };
+		F14200000000000000000001 /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
+		F14300000000000000000001 /* LICENSE-SPEKTRAFILM.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-SPEKTRAFILM.txt"; sourceTree = "<group>"; };
+		F14400000000000000000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		F20100000000000000000001 /* shutter.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = shutter.wav; sourceTree = "<group>"; };
+		F20200000000000000000001 /* empty.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = empty.wav; sourceTree = "<group>"; };
+		F20300000000000000000001 /* wind.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = wind.wav; sourceTree = "<group>"; };
+		F20400000000000000000001 /* tick.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = tick.wav; sourceTree = "<group>"; };
+		F20500000000000000000001 /* back.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = back.wav; sourceTree = "<group>"; };
+		F20600000000000000000001 /* rewind.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = rewind.wav; sourceTree = "<group>"; };
+		F20700000000000000000001 /* water.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = water.wav; sourceTree = "<group>"; };
+		F20800000000000000000001 /* reveal.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = reveal.wav; sourceTree = "<group>"; };
+		F30000000000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F30100000000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		F30200000000000000000001 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		F40000000000000000000001 /* HalfCam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HalfCam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F50000000000000000000001 /* DevelopLive.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DevelopLive.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A00000000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000015 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		G00000000000000000000000 = {
+			isa = PBXGroup;
+			children = (
+				G01000000000000000000000 /* HalfCam */,
+				G10000000000000000000000 /* DevelopLive */,
+				G00100000000000000000000 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		G00100000000000000000000 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F40000000000000000000001 /* HalfCam.app */,
+				F50000000000000000000001 /* DevelopLive.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		G01000000000000000000000 /* HalfCam */ = {
+			isa = PBXGroup;
+			children = (
+				F10100000000000000000001 /* HalfCamApp.swift */,
+				F10200000000000000000001 /* RootView.swift */,
+				F10300000000000000000001 /* AppModel.swift */,
+				F12500000000000000000001 /* Language.swift */,
+				F14100000000000000000001 /* Legal.swift */,
+				F10400000000000000000001 /* Models.swift */,
+				F30100000000000000000001 /* Localizable.xcstrings */,
+				F30200000000000000000001 /* InfoPlist.xcstrings */,
+				F12600000000000000000001 /* HalfCam-Bridging-Header.h */,
+				F13900000000000000000001 /* AppInfo.plist */,
+				F14400000000000000000001 /* PrivacyInfo.xcprivacy */,
+				G02000000000000000000000 /* Camera */,
+				G03000000000000000000000 /* Film */,
+				G04000000000000000000000 /* Develop */,
+				G05000000000000000000000 /* Album */,
+				G06000000000000000000000 /* Feel */,
+				G07000000000000000000000 /* Resources */,
+				F30000000000000000000001 /* Assets.xcassets */,
+			);
+			path = HalfCam;
+			sourceTree = "<group>";
+		};
+		G02000000000000000000000 /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				F10700000000000000000001 /* CameraSession.swift */,
+				F10800000000000000000001 /* CameraView.swift */,
+				F10900000000000000000001 /* WinderView.swift */,
+				F11000000000000000000001 /* ViewfinderView.swift */,
+				F11100000000000000000001 /* LoadRollView.swift */,
+				F11700000000000000000001 /* FilmPackView.swift */,
+			);
+			path = Camera;
+			sourceTree = "<group>";
+		};
+		G03000000000000000000000 /* Film */ = {
+			isa = PBXGroup;
+			children = (
+				F10500000000000000000001 /* FilmCatalog.swift */,
+				F10600000000000000000001 /* FilmRenderer.swift */,
+				F12100000000000000000001 /* FrameCrypto.swift */,
+				F12300000000000000000001 /* Ingest.swift */,
+				F12400000000000000000001 /* SpektraEngine.swift */,
+				F13200000000000000000001 /* SpektraBridge.m */,
+				F12900000000000000000001 /* hc_spk.h */,
+			);
+			path = Film;
+			sourceTree = "<group>";
+		};
+		G04000000000000000000000 /* Develop */ = {
+			isa = PBXGroup;
+			children = (
+				F11200000000000000000001 /* DarkroomView.swift */,
+				F13300000000000000000001 /* DevelopNotify.swift */,
+				F13400000000000000000001 /* DevelopActivityAttributes.swift */,
+				F13500000000000000000001 /* DevelopLive.swift */,
+			);
+			path = Develop;
+			sourceTree = "<group>";
+		};
+		G05000000000000000000000 /* Album */ = {
+			isa = PBXGroup;
+			children = (
+				F11300000000000000000001 /* AlbumView.swift */,
+				F11400000000000000000001 /* DarkboxView.swift */,
+				F14500000000000000000001 /* PhotoExport.swift */,
+
+			);
+			path = Album;
+			sourceTree = "<group>";
+		};
+		G06000000000000000000000 /* Feel */ = {
+			isa = PBXGroup;
+			children = (
+				F11500000000000000000001 /* HapticEngine.swift */,
+				F11600000000000000000001 /* Soundboard.swift */,
+			);
+			path = Feel;
+			sourceTree = "<group>";
+		};
+		G07000000000000000000000 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				G08000000000000000000000 /* Sounds */,
+				F13100000000000000000001 /* engine */,
+				F14200000000000000000001 /* LICENSE.txt */,
+				F14300000000000000000001 /* LICENSE-SPEKTRAFILM.txt */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		G08000000000000000000000 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				F20100000000000000000001 /* shutter.wav */,
+				F20200000000000000000001 /* empty.wav */,
+				F20300000000000000000001 /* wind.wav */,
+				F20400000000000000000001 /* tick.wav */,
+				F20500000000000000000001 /* back.wav */,
+				F20600000000000000000001 /* rewind.wav */,
+				F20700000000000000000001 /* water.wav */,
+				F20800000000000000000001 /* reveal.wav */,
+			);
+			path = Sounds;
+			sourceTree = "<group>";
+		};
+		G10000000000000000000000 /* DevelopLive */ = {
+			isa = PBXGroup;
+			children = (
+				F13600000000000000000001 /* DevelopLiveBundle.swift */,
+				F13700000000000000000001 /* DevelopLiveLiveActivity.swift */,
+				F14000000000000000000001 /* Assets.xcassets */,
+				F13800000000000000000001 /* Info.plist */,
+			);
+			path = DevelopLive;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A00000000000000000000002 /* HalfCam */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000007 /* Build configuration list for PBXNativeTarget "HalfCam" */;
+			buildPhases = (
+				A00000000000000000000003 /* Sources */,
+				A00000000000000000000005 /* Frameworks */,
+				A00000000000000000000004 /* Resources */,
+				A00000000000000000000016 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D00000000000000000000001 /* PBXTargetDependency */,
+			);
+			name = HalfCam;
+			productName = HalfCam;
+			productReference = F40000000000000000000001 /* HalfCam.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A00000000000000000000012 /* DevelopLive */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000019 /* Build configuration list for PBXNativeTarget "DevelopLive" */;
+			buildPhases = (
+				A00000000000000000000013 /* Sources */,
+				A00000000000000000000015 /* Frameworks */,
+				A00000000000000000000014 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DevelopLive;
+			productName = DevelopLive;
+			productReference = F50000000000000000000001 /* DevelopLive.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					A00000000000000000000002 = {
+						CreatedOnToolsVersion = 26.0;
+						DevelopmentTeam = ZBDQ5C8CAV;
+						ProvisioningStyle = Automatic;
+					};
+					A00000000000000000000012 = {
+						CreatedOnToolsVersion = 26.0;
+						DevelopmentTeam = ZBDQ5C8CAV;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = A00000000000000000000006 /* Build configuration list for PBXProject "HalfCam" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hans",
+				"zh-Hant",
+				ja,
+			);
+			mainGroup = G00000000000000000000000;
+			productRefGroup = G00100000000000000000000 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A00000000000000000000002 /* HalfCam */,
+				A00000000000000000000012 /* DevelopLive */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A00000000000000000000004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B30000000000000000000001 /* Assets.xcassets in Resources */,
+				B30100000000000000000001 /* Localizable.xcstrings in Resources */,
+				B30200000000000000000001 /* InfoPlist.xcstrings in Resources */,
+				B20100000000000000000001 /* shutter.wav in Resources */,
+				B20200000000000000000001 /* empty.wav in Resources */,
+				B20300000000000000000001 /* wind.wav in Resources */,
+				B20400000000000000000001 /* tick.wav in Resources */,
+				B20500000000000000000001 /* back.wav in Resources */,
+				B20600000000000000000001 /* rewind.wav in Resources */,
+				B20700000000000000000001 /* water.wav in Resources */,
+				B20800000000000000000001 /* reveal.wav in Resources */,
+				B13100000000000000000001 /* engine in Resources */,
+				B14200000000000000000001 /* LICENSE.txt in Resources */,
+				B14300000000000000000001 /* LICENSE-SPEKTRAFILM.txt in Resources */,
+				B14400000000000000000001 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000014 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B14000000000000000000001 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A00000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10100000000000000000001 /* HalfCamApp.swift in Sources */,
+				B10200000000000000000001 /* RootView.swift in Sources */,
+				B10300000000000000000001 /* AppModel.swift in Sources */,
+				B12500000000000000000001 /* Language.swift in Sources */,
+				B10400000000000000000001 /* Models.swift in Sources */,
+				B10500000000000000000001 /* FilmCatalog.swift in Sources */,
+				B10600000000000000000001 /* FilmRenderer.swift in Sources */,
+				B12100000000000000000001 /* FrameCrypto.swift in Sources */,
+				B12300000000000000000001 /* Ingest.swift in Sources */,
+				B12400000000000000000001 /* SpektraEngine.swift in Sources */,
+				B13200000000000000000001 /* SpektraBridge.m in Sources */,
+				B10700000000000000000001 /* CameraSession.swift in Sources */,
+				B10800000000000000000001 /* CameraView.swift in Sources */,
+				B10900000000000000000001 /* WinderView.swift in Sources */,
+				B11000000000000000000001 /* ViewfinderView.swift in Sources */,
+				B11100000000000000000001 /* LoadRollView.swift in Sources */,
+				B11700000000000000000001 /* FilmPackView.swift in Sources */,
+				B11200000000000000000001 /* DarkroomView.swift in Sources */,
+				B13300000000000000000001 /* DevelopNotify.swift in Sources */,
+				B13400000000000000000001 /* DevelopActivityAttributes.swift in Sources */,
+				B13500000000000000000001 /* DevelopLive.swift in Sources */,
+				B11300000000000000000001 /* AlbumView.swift in Sources */,
+				B11400000000000000000001 /* DarkboxView.swift in Sources */,
+				B14500000000000000000001 /* PhotoExport.swift in Sources */,
+				B14100000000000000000001 /* Legal.swift in Sources */,
+				B11500000000000000000001 /* HapticEngine.swift in Sources */,
+				B11600000000000000000001 /* Soundboard.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000013 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B13600000000000000000001 /* DevelopLiveBundle.swift in Sources */,
+				B13700000000000000000001 /* DevelopLiveLiveActivity.swift in Sources */,
+				B13800000000000000000001 /* DevelopActivityAttributes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D00000000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A00000000000000000000012 /* DevelopLive */;
+			targetProxy = P00000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A00000000000000000000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A00000000000000000000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A0000000000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
+				ENABLE_PREVIEWS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"SPEKTRA_ENGINE=1",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/vendor/spektralab/include",
+					"$(SRCROOT)/HalfCam/Film",
+				);
+				INFOPLIST_FILE = HalfCam/AppInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "HALF CAM";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
+				INFOPLIST_KEY_NSCameraUsageDescription = "HALF CAM需要相机来拍摄胶片";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "HALF CAM需要把洗好的对页存进相册";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_UIColorName = LaunchBackground;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/vendor/spektralab/ios/$(PLATFORM_NAME)",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lspektrafilm_engine",
+					"-lc++",
+					"-framework",
+					Metal,
+					"-framework",
+					Foundation,
+					"-framework",
+					QuartzCore,
+					"-framework",
+					CoreText,
+					"-framework",
+					CoreGraphics,
+					"-framework",
+					Accelerate,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.xuyue.HalfCam;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "HalfCam/HalfCam-Bridging-Header.h";
+				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A0000000000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
+				ENABLE_PREVIEWS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"SPEKTRA_ENGINE=1",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/vendor/spektralab/include",
+					"$(SRCROOT)/HalfCam/Film",
+				);
+				INFOPLIST_FILE = HalfCam/AppInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "HALF CAM";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
+				INFOPLIST_KEY_NSCameraUsageDescription = "HALF CAM需要相机来拍摄胶片";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "HALF CAM需要把洗好的对页存进相册";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_UIColorName = LaunchBackground;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/vendor/spektralab/ios/$(PLATFORM_NAME)",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lspektrafilm_engine",
+					"-lc++",
+					"-framework",
+					Metal,
+					"-framework",
+					Foundation,
+					"-framework",
+					QuartzCore,
+					"-framework",
+					CoreText,
+					"-framework",
+					CoreGraphics,
+					"-framework",
+					Accelerate,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.xuyue.HalfCam;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "HalfCam/HalfCam-Bridging-Header.h";
+				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A0000000000000000000001A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DevelopLive/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xuyue.HalfCam.live;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A0000000000000000000001B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DevelopLive/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xuyue.HalfCam.live;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A00000000000000000000006 /* Build configuration list for PBXProject "HalfCam" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000008 /* Debug */,
+				A00000000000000000000009 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000007 /* Build configuration list for PBXNativeTarget "HalfCam" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0000000000000000000000A /* Debug */,
+				A0000000000000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000019 /* Build configuration list for PBXNativeTarget "DevelopLive" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0000000000000000000001A /* Debug */,
+				A0000000000000000000001B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A00000000000000000000001 /* Project object */;
+}

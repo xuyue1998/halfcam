@@ -1,0 +1,15 @@
+.DS_Store
+.venv/
+.opencode/
+photo/
+research/
+PLAN.md
+HalfCam/Resources/LUTs/
+scripts/hald_identity.json
+scripts/hald_identity.png
+vendor/spektralab/src/
+vendor/spektralab/src/**
+vendor/spektralab/resources/
+xcuserdata/
+DerivedData/
+*.xcuserstate

@@ -1,0 +1,20 @@
+Creative Commons Attribution-ShareAlike 4.0 International
+
+Film and paper profiles, print LUTs, and the measured spectral colour model
+used by this project originate from:
+
+  spektrafilm — Andrea Volpato
+  https://github.com/andreavolpato/spektrafilm
+
+  SpektraLab — a C++/Metal port by Hanze Qiu / JamesQiu2005
+  https://github.com/JamesQiu2005/SpektraLab
+
+Those assets are licensed under CC BY-SA 4.0. If this app ships or modifies
+them, the same licence applies to the profiles and LUTs.
+
+Full legal code:
+https://creativecommons.org/licenses/by-sa/4.0/legalcode
+
+You are free to share and adapt the licensed material, provided you give
+appropriate credit, indicate changes, and distribute adaptations under the
+same licence.
