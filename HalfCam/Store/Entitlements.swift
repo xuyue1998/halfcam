@@ -7,7 +7,8 @@ enum AppLab {
         #if DEBUG
         true
         #else
-        Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+        // TestFlight also uses sandbox receipts; only Debug builds expose lab tools.
+        false
         #endif
     }
 }

@@ -20,6 +20,8 @@ docs/store/src/
 docs/store/screenshots/
 docs/store/creative/
 商店页/
+宣传物料/
+scripts/xiaohongshu_beta.py
 HalfCam/Resources/samples/**/*.jpg
 HalfCam/Resources/samples/**/*.jpeg
 HalfCam/Resources/samples/**/*.png
