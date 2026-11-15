@@ -17,6 +17,8 @@ struct CameraView: View {
     @State private var emptyShutterFlash = false
     @State private var blackHintFlash = false
     @State private var shutterDown = false
+    @State private var sprocketWarm = false
+    @State private var holeFrames: [TutorialHole: [CGRect]] = [:]
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -24,7 +26,7 @@ struct CameraView: View {
         GeometryReader { geo in
             let barH: CGFloat = 98
             let extraDial: CGFloat = model.camera.apertureStops.isEmpty ? 0 : 36
-            let mDialH: CGFloat = model.manualMode ? (108 + extraDial) : 0
+            let mDialH: CGFloat = model.manualMode && !extraLocked ? (108 + extraDial) : 0
             let topReserve: CGFloat = 64
             let counterH: CGFloat = 70
             let maxFinderH = max(120, geo.size.height - topReserve - barH - mDialH - counterH)
@@ -40,7 +42,7 @@ struct CameraView: View {
                         .padding(.top, 6)
                     Spacer(minLength: 4)
                     finderStack(finderW: finderW, finderH: finderH)
-                    if model.manualMode, !model.tutorialLocked {
+                    if model.manualMode, !extraLocked {
                         exposureStrip
                             .frame(width: finderW + 18)
                             .padding(.top, 8)
@@ -52,8 +54,25 @@ struct CameraView: View {
                 bottomBar
                     .padding(.horizontal, 16)
                     .padding(.bottom, 10)
+                if showCoachMask, let hole = tutorialHole {
+                    let frames = holeFrames[hole] ?? []
+                    if !frames.isEmpty {
+                        TutorialSpotlight(
+                            frames: frames,
+                            hole: hole,
+                            caption: tutorialCaption
+                        )
+                    }
+                }
+                if showCoachMask, !finderHint.isEmpty, let finder = holeFrames[.finder]?.first, !finder.isNull {
+                    ChromeToast(text: finderHint)
+                        .position(x: finder.midX, y: finder.midY)
+                        .allowsHitTesting(false)
+                }
             }
         }
+        .coordinateSpace(name: "cameraBody")
+        .onPreferenceChange(HoleFrameKey.self) { holeFrames = $0 }
         .statusBarHidden()
         .overlay {
             ZStack {
@@ -83,6 +102,16 @@ struct CameraView: View {
                     }
                     .allowsHitTesting(false)
                 }
+                if sprocketWarm {
+                    FilmSprocketFrame(rebates: ["1", "1A"]) {
+                        Color.clear.frame(width: 320, height: 120)
+                    }
+                    .frame(width: 320, height: 180)
+                    .opacity(0.01)
+                    .offset(y: 2000)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                }
             }
         }
         .onChange(of: scenePhase) { _, phase in
@@ -104,6 +133,12 @@ struct CameraView: View {
             if model.pendingLoadRoll {
                 model.pendingLoadRoll = false
                 openLoaderIfAllowed()
+            }
+            Task {
+                try? await Task.sleep(for: .milliseconds(800))
+                sprocketWarm = true
+                try? await Task.sleep(for: .milliseconds(400))
+                sprocketWarm = false
             }
         }
         .onChange(of: model.camera.syncedFocusLens) { _, value in
@@ -127,6 +162,9 @@ struct CameraView: View {
                 .environment(model)
                 .interactiveDismissDisabled()
         }
+        .onChange(of: showLoader) { _, on in
+            model.presentingLoadRoll = on
+        }
         .onChange(of: model.pendingLoadRoll) { _, on in
             if on {
                 model.pendingLoadRoll = false
@@ -143,40 +181,110 @@ struct CameraView: View {
         return true
     }
 
-    private var shouldShowWinderCoach: Bool {
+    private var needsLoad: Bool { model.currentRoll == nil }
+
+    private var needsWind: Bool {
         guard let roll = model.currentRoll else { return false }
-        guard roll.canWind, !model.isCapturing else { return false }
-        return model.tutorialLocked || !model.hasSeenHint || emptyShutterFlash
+        return roll.canWind && !model.isCapturing
+    }
+
+    private var needsShoot: Bool {
+        model.currentRoll?.canShoot == true && !model.isCapturing
+    }
+
+    private var needsRewind: Bool {
+        model.currentRoll?.state == .needsRewind
+    }
+
+    private var extraLocked: Bool { model.tutorialLocked }
+
+    private var needsDarkbox: Bool {
+        model.tutorialLocked
+            && model.currentRoll == nil
+            && !model.darkboxRolls.isEmpty
+    }
+
+    private var showFirstRollMask: Bool {
+        model.tutorialLocked
+            && !showLoader
+            && !model.showDarkbox
+            && !model.showAlbum
+            && !model.showSettings
+            && !model.showDarkroom
+    }
+
+    private var showSecondRollMask: Bool {
+        model.hasCompletedOnboarding
+            && !model.tutorialLocked
+            && !showLoader
+            && !model.showDarkbox
+            && !model.showAlbum
+            && !model.showSettings
+            && !model.showDarkroom
+            && (model.currentRoll?.canShoot == true || model.isCapturing)
+            && (!model.hasSeenFlashHint || !model.hasSeenManualHint || !model.hasSeenEVHint)
+    }
+
+    private var showCoachMask: Bool { showFirstRollMask || showSecondRollMask }
+
+    private var tutorialHole: TutorialHole? {
+        if showFirstRollMask {
+            if model.isCapturing { return .shutter }
+            if needsRewind { return .rewind }
+            if needsDarkbox { return .darkbox }
+            if needsLoad { return .load }
+            if needsWind { return .wind }
+            if needsShoot { return .shutter }
+            return nil
+        }
+        if showSecondRollMask {
+            if !model.hasSeenFlashHint { return .flash }
+            if !model.hasSeenManualHint { return .manual }
+            if !model.hasSeenEVHint { return .ev }
+        }
+        return nil
+    }
+
+    private var tutorialCaption: String {
+        switch tutorialHole {
+        case .load: L("打开后盖，装入胶片")
+        case .wind: L("转过片轮")
+        case .shutter: L("按下快门")
+        case .rewind: L("转动倒片")
+        case .darkbox: L("送到暗房")
+        case .flash: L("补光")
+        case .manual: L("拨到 M")
+        case .ev: L("上拨曝光")
+        case .finder, .none: ""
+        }
+    }
+
+    private var shouldShowWinderCoach: Bool {
+        needsWind && (showFirstRollMask || emptyShutterFlash)
     }
 
     private var shouldShowShutterCoach: Bool {
-        guard model.tutorialLocked, !model.isCapturing else { return false }
-        return model.currentRoll?.canShoot == true
-    }
-
-    private var shouldShowSecondRollCoach: Bool {
-        guard model.hasCompletedOnboarding, !model.tutorialLocked, !model.isCapturing else { return false }
-        return model.currentRoll?.canShoot == true
+        needsShoot && showFirstRollMask
     }
 
     private var shouldShowFlashCoach: Bool {
-        shouldShowSecondRollCoach && !model.hasSeenFlashHint
+        tutorialHole == .flash
     }
 
     private var shouldShowManualCoach: Bool {
-        shouldShowSecondRollCoach && !model.hasSeenManualHint
+        tutorialHole == .manual
     }
 
     private var shouldShowEVCoach: Bool {
-        shouldShowSecondRollCoach && !model.hasSeenEVHint
+        tutorialHole == .ev
     }
 
     private var finderHint: String {
         if model.camera.cameraDenied { return "" }
         if rewindDoneFlash { return L("已倒片") }
-        if model.currentRoll?.state == .needsRewind { return L("请倒片") }
+        if needsRewind { return L("请倒片") }
         if emptyShutterFlash { return L("先过片") }
-        if blackHintFlash { return L("拍完看不见") }
+        if blackHintFlash { return L("拍满才能洗") }
         if draggingEV && !model.hasSeenEVHint { return L("上拨曝光") }
         return ""
     }
@@ -218,7 +326,7 @@ struct CameraView: View {
             message: force
                 ? L("已拍 \(shot) 格，剩下 \(remaining) 格将作废。")
                 : L("还剩 \(remaining) 格，拍满才能卸。"),
-            confirmTitle: force ? L("卸卷并送洗") : L("好"),
+            confirmTitle: force ? L("卸卷并送去显影") : L("好"),
             cancelTitle: force ? L("取消") : nil,
             confirm: {
                 showUnload = false
@@ -238,7 +346,7 @@ struct CameraView: View {
 
     private func finderStack(finderW: CGFloat, finderH: CGFloat) -> some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
+            RoundedRectangle(cornerRadius: HalfRadius.finder, style: .continuous)
                 .fill(
                     LinearGradient(
                         colors: [Color(white: 0.55), Color(white: 0.22), Color(white: 0.38)],
@@ -248,6 +356,17 @@ struct CameraView: View {
                 )
                 .frame(width: finderW + 18, height: finderH + 18)
                 .shadow(color: .black.opacity(0.55), radius: 10, y: 4)
+                .overlay {
+                    HStack {
+                        BrassInlay()
+                            .padding(.vertical, 10)
+                            .padding(.leading, 5)
+                        Spacer(minLength: 0)
+                        BrassInlay()
+                            .padding(.vertical, 10)
+                            .padding(.trailing, 5)
+                    }
+                }
             RoundedRectangle(cornerRadius: 2, style: .continuous)
                 .fill(Color.black)
                 .frame(width: finderW + 2, height: finderH + 2)
@@ -273,11 +392,27 @@ struct CameraView: View {
             .frame(width: finderW, height: finderH)
             .clipShape(RoundedRectangle(cornerRadius: 1, style: .continuous))
             .overlay(alignment: .bottom) {
-                if model.camera.lensStops.count > 1 {
-                    lensStops.padding(.bottom, 10)
+                if model.camera.lensStops.count > 1 || model.camera.macroControlVisible {
+                    lensStops
+                        .padding(.bottom, 10)
+                        .animation(nil, value: model.camera.macroControlVisible)
+                }
+            }
+            .overlay(alignment: .topTrailing) {
+                if model.manualMode {
+                    Text("M")
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.white.opacity(0.92))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(Color.black.opacity(0.45))
+                        .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
+                        .padding(8)
+                        .allowsHitTesting(false)
                 }
             }
         }
+        .background(holeAnchor(.finder))
     }
 
     private var lensStops: some View {
@@ -305,7 +440,37 @@ struct CameraView: View {
                   }
                   .buttonStyle(.plain)
             }
+            if model.camera.macroControlVisible {
+                Button {
+                    model.camera.toggleMacroControl()
+                    Haptics.shared.chrome()
+                } label: {
+                    Image(systemName: model.camera.macroLocked ? "camera.macro.slash" : "camera.macro")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(
+                            model.camera.macroLocked
+                                ? Color.white.opacity(0.9)
+                                : Color(red: 1, green: 0.84, blue: 0.18)
+                        )
+                        .frame(width: 32, height: 32)
+                        .background {
+                            Capsule()
+                                .fill(Color.black.opacity(0.55))
+                                .overlay(Capsule().stroke(
+                                    model.camera.macroLocked
+                                        ? Color.white.opacity(0.22)
+                                        : Color(red: 1, green: 0.84, blue: 0.18).opacity(0.7),
+                                    lineWidth: 0.6
+                                ))
+                        }
+                }
+                .buttonStyle(.plain)
+                .animation(nil, value: model.camera.macroLocked)
+                .accessibilityLabel(L("自动微距"))
+                .transition(.identity)
+            }
         }
+        .animation(nil, value: model.camera.macroControlVisible)
     }
 
     private var topBar: some View {
@@ -329,26 +494,36 @@ struct CameraView: View {
             }
             return "NO FILM"
         }()
+        let paid = model.tier != .free
+        let ink: Color = {
+            if empty {
+                return paid ? HalfColor.brassDeep : Color(white: 0.32)
+            }
+            return Color(white: 0.12)
+        }()
         return Text(title)
             .font(.system(size: 13, weight: .semibold, design: empty ? .monospaced : .serif))
-            .foregroundStyle(Color(white: empty ? 0.32 : 0.12))
-            .padding(.horizontal, 14)
+            .foregroundStyle(ink)
+            .padding(.horizontal, 16)
             .padding(.vertical, 7)
             .background(
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color(white: 0.78), Color(white: 0.52), Color(white: 0.64)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                RoundedRectangle(cornerRadius: HalfRadius.latch, style: .continuous)
+                    .fill(HalfChrome.memberFill(model.tier))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        RoundedRectangle(cornerRadius: HalfRadius.latch, style: .continuous)
                             .stroke(Color.white.opacity(0.28), lineWidth: 0.6)
                     )
                     .shadow(color: .black.opacity(0.35), radius: 2, y: 1)
             )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard !extraLocked else { return }
+                withAnimation(.easeOut(duration: 0.28)) {
+                    model.showSettings = true
+                }
+                Soundboard.shared.play("back")
+                Haptics.shared.latch()
+            }
     }
 
     private var rewindCrank: some View {
@@ -359,7 +534,7 @@ struct CameraView: View {
                 .frame(width: 54, height: 54)
             Circle()
                 .trim(from: 0, to: rewindProgress)
-                .stroke(Color.red.opacity(0.95), style: StrokeStyle(lineWidth: 3.2, lineCap: .round))
+                .stroke(HalfColor.enamel.opacity(0.95), style: StrokeStyle(lineWidth: 3.2, lineCap: .round))
                 .frame(width: 54, height: 54)
                 .rotationEffect(.degrees(-90))
             RewindKnobView(
@@ -374,14 +549,14 @@ struct CameraView: View {
                 onComplete: { finishRewind() }
             )
             .frame(width: 40, height: 40)
-            .opacity(active ? 1 : 0.7)
-            if active, rewindProgress < 0.02 {
-                WinderCoachMark(diameter: 68)
+            if active, rewindProgress < 0.02, showFirstRollMask || !model.hasSeenRewindHint {
+                WinderCoachMark(diameter: 54)
                     .allowsHitTesting(false)
             }
         }
-        .frame(width: 56, height: 56)
-        .offset(x: -4)
+        .frame(width: 54, height: 54)
+        .background(holeAnchor(.rewind))
+        .frame(width: 56, height: 56, alignment: .leading)
     }
 
     private func finishRewind() {
@@ -392,6 +567,7 @@ struct CameraView: View {
         counterKick = 1
         rewindDoneFlash = true
         withAnimation(.spring(response: 0.22, dampingFraction: 0.86)) { counterKick = 0 }
+        model.markRewindHint()
         model.rewind()
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(280))
@@ -443,18 +619,11 @@ struct CameraView: View {
                     .frame(width: 18, height: 18)
             }
             .frame(width: 48, height: 48)
-            .overlay(alignment: .bottom) {
-                Text(L("补光"))
-                    .font(.system(size: 7, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.78))
-                    .padding(.bottom, 1)
-                    .opacity(shouldShowFlashCoach ? 1 : 0)
-                    .allowsHitTesting(false)
-            }
         }
         .buttonStyle(.plain)
-        .opacity(model.tutorialLocked ? 0.35 : 1)
-        .allowsHitTesting(!model.tutorialLocked)
+        .opacity(extraLocked ? 0.45 : 1)
+        .allowsHitTesting(!extraLocked)
+        .background(holeAnchor(.flash))
         .modifier(PulseScaleModifier(amount: 1.08, active: shouldShowFlashCoach, repeats: true))
     }
 
@@ -473,7 +642,7 @@ struct CameraView: View {
 
     private var darkboxWindow: some View {
         let filled = !model.darkboxRolls.isEmpty
-        let locked = model.tutorialLocked && model.currentRoll != nil
+        let locked = extraLocked && model.currentRoll != nil
         return Button {
             guard !locked else { return }
             withAnimation(.easeOut(duration: 0.28)) {
@@ -512,25 +681,17 @@ struct CameraView: View {
                         .frame(width: 16, height: 20)
                 }
             }
-            .overlay(alignment: .bottom) {
-                Text(L("暗盒"))
-                    .font(.system(size: 7, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.7))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .padding(.bottom, 2)
-                    .opacity(model.hasSeenDarkboxHint ? 0 : 1)
-                    .allowsHitTesting(false)
-            }
         }
         .buttonStyle(.plain)
         .opacity(locked ? 0.45 : 1)
         .allowsHitTesting(!locked)
+        .background(holeAnchor(.darkbox))
+        .modifier(PulseScaleModifier(amount: 1.08, active: tutorialHole == .darkbox, repeats: true))
     }
 
     private var albumWindow: some View {
         let filled = !model.albumRolls.isEmpty
-        let locked = model.tutorialLocked
+        let locked = extraLocked
         return Button {
             guard !locked else { return }
             withAnimation(.easeOut(duration: 0.28)) {
@@ -554,16 +715,6 @@ struct CameraView: View {
                     }
                 }
             }
-            .overlay(alignment: .bottom) {
-                Text(L("相册"))
-                    .font(.system(size: 7, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.7))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .padding(.bottom, 2)
-                    .opacity(model.hasSeenAlbumHint ? 0 : 1)
-                    .allowsHitTesting(false)
-            }
         }
         .buttonStyle(.plain)
         .opacity(locked ? 0.45 : 1)
@@ -571,12 +722,18 @@ struct CameraView: View {
     }
 
     private var counter: some View {
-        ZStack {
+        let cap = model.currentRoll.map { String(format: "%02d", $0.capacity) }
+        return ZStack {
             RoundedRectangle(cornerRadius: 3)
                 .fill(Color(red: 0.12, green: 0.02, blue: 0.02))
                 .frame(width: 82, height: 38)
-            HStack(spacing: 6) {
+            VStack(spacing: 0) {
                 SevenSegment(text: model.counterText)
+                if let cap {
+                    Text("/\(cap)")
+                        .font(.system(size: 7, weight: .medium, design: .monospaced))
+                        .foregroundStyle(Color(red: 1, green: 0.22, blue: 0.16).opacity(0.55))
+                }
             }
             LinearGradient(
                 colors: [Color.white.opacity(0.18), Color.clear, Color.black.opacity(0.18)],
@@ -587,6 +744,8 @@ struct CameraView: View {
             .clipShape(RoundedRectangle(cornerRadius: 3))
             .allowsHitTesting(false)
         }
+        .frame(width: 82, height: 38)
+        .clipShape(RoundedRectangle(cornerRadius: 3))
         .overlay(
             RoundedRectangle(cornerRadius: 3)
                 .stroke(Color(white: 0.38), lineWidth: 1)
@@ -643,13 +802,15 @@ struct CameraView: View {
                     }
                 )
                 .frame(width: 88, height: 88)
-                .opacity(model.currentRoll == nil ? 0.35 : 1)
+                .opacity(needsWind ? 1 : (model.currentRoll == nil ? 0.28 : 0.42))
                 if shouldShowWinderCoach {
-                    WinderCoachMark()
+                    WinderCoachMark(diameter: 86)
                         .allowsHitTesting(false)
                 }
             }
             .frame(width: 88, height: 88)
+            .background(holeAnchor(.wind))
+            .modifier(PulseScaleModifier(amount: 1.06, active: shouldShowWinderCoach, repeats: true))
         }
     }
 
@@ -666,40 +827,30 @@ struct CameraView: View {
             }
         } label: {
             ZStack {
-                RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color(white: 0.22), Color(white: 0.12)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                RoundedRectangle(cornerRadius: HalfRadius.plate, style: .continuous)
+                    .fill(HalfChrome.steelFill)
                     .frame(width: 64, height: 28)
-                RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .stroke(Color(white: 0.42), lineWidth: 0.8)
+                RoundedRectangle(cornerRadius: HalfRadius.plate, style: .continuous)
+                    .stroke(HalfColor.strokeBright.opacity(0.7), lineWidth: HalfColor.hairline)
                     .frame(width: 64, height: 28)
                 HStack(spacing: 8) {
                     Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(white: 0.88), Color(white: 0.42)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
+                        .fill(HalfChrome.latchFill)
                         .frame(width: 20, height: 7)
                         .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 0.5))
                         .rotationEffect(.degrees(empty ? -32 : 0), anchor: .leading)
                     Text(empty ? L("装卷") : (hideUnload ? L("已装卷") : L("卸卷")))
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(Color(white: 0.82))
+                        .font(HalfType.mono(10, weight: .semibold))
+                        .foregroundStyle(HalfColor.ink.opacity(0.92))
                 }
             }
         }
         .buttonStyle(.plain)
-        .modifier(PulseScaleModifier(amount: 1.04, active: empty && !model.tutorialInProgress, repeats: model.tutorialLocked))
+        .frame(width: 72, height: 32)
+        .modifier(PulseScaleModifier(amount: 1.04, active: empty && !model.tutorialInProgress, repeats: extraLocked))
         .opacity(hideUnload ? 0.55 : 1)
         .allowsHitTesting(empty || !hideUnload)
+        .background(holeAnchor(.load))
     }
 
     private var evMeter: some View {
@@ -732,10 +883,15 @@ struct CameraView: View {
                     lineWidth: 3.5
                 )
                 .frame(width: 76, height: 76)
-            Circle()
-                .fill(Color(red: 0.72, green: 0.12, blue: 0.14).opacity(model.currentRoll?.canShoot == true ? 0.95 : 0.35))
-                .frame(width: 58, height: 58)
-                .scaleEffect(shutterDown || model.isCapturing ? 0.9 : 1)
+            Group {
+                if model.currentRoll?.canShoot == true {
+                    Circle().fill(HalfChrome.enamelFill)
+                } else {
+                    Circle().fill(HalfChrome.steelFill)
+                }
+            }
+            .frame(width: 58, height: 58)
+            .scaleEffect(shutterDown || model.isCapturing ? 0.9 : 1)
             ShutterHitView(
                 onDown: {
                     shutterDown = true
@@ -747,7 +903,7 @@ struct CameraView: View {
                     if !model.isCapturing { shutterDown = false }
                 },
                 onEVChanged: { translation in
-                    if model.tutorialLocked { return }
+                    if extraLocked { return }
                     shutterDown = false
                     if !draggingEV {
                         draggingEV = true
@@ -782,14 +938,7 @@ struct CameraView: View {
             .frame(width: 76, height: 76)
             .allowsHitTesting(!model.isCapturing)
         }
-        .overlay(alignment: .bottom) {
-            Text(L("按下"))
-                .font(.system(size: 7, weight: .medium, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.78))
-                .offset(y: 14)
-                .opacity(shouldShowShutterCoach ? 1 : 0)
-                .allowsHitTesting(false)
-        }
+        .background(holeAnchor(.shutter, .ev))
         .modifier(PulseScaleModifier(amount: 1.08, active: shouldShowShutterCoach, repeats: true))
     }
 
@@ -828,7 +977,7 @@ struct CameraView: View {
             kick.disablesAnimations = true
             withTransaction(kick) { counterKick = 1 }
             withAnimation(.spring(response: 0.22, dampingFraction: 0.86)) { counterKick = 0 }
-            if model.hasCompletedOnboarding {
+            if model.hasCompletedOnboarding, !showSecondRollMask {
                 model.markFlashHint()
                 model.markManualHint()
                 model.markEVHint()
@@ -863,19 +1012,19 @@ struct CameraView: View {
             ZStack {
                 Capsule()
                     .fill(Color.black.opacity(0.45))
-                    .frame(width: 64, height: 28)
+                    .frame(width: 72, height: 32)
                 Capsule()
                     .stroke(Color(white: 0.32), lineWidth: 0.8)
-                    .frame(width: 64, height: 28)
+                    .frame(width: 72, height: 32)
                 HStack(spacing: 0) {
                     Text("A")
-                        .frame(width: 26)
+                        .frame(width: 30)
                         .foregroundStyle(model.manualMode ? Color(white: 0.38) : Color.white)
                     Text("M")
-                        .frame(width: 26)
+                        .frame(width: 30)
                         .foregroundStyle(model.manualMode ? Color.white : Color(white: 0.38))
                 }
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
                 Capsule()
                     .fill(
                         LinearGradient(
@@ -885,22 +1034,15 @@ struct CameraView: View {
                         )
                     )
                     .overlay(Capsule().stroke(Color.white.opacity(0.28), lineWidth: 0.5))
-                    .frame(width: 22, height: 22)
-                    .offset(x: model.manualMode ? 14 : -14)
+                    .frame(width: 24, height: 24)
+                    .offset(x: model.manualMode ? 16 : -16)
             }
-            .frame(width: 64, height: 28)
-            .overlay(alignment: .top) {
-                Text(L("拨到 M"))
-                    .font(.system(size: 7, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.78))
-                    .offset(y: -12)
-                    .opacity(shouldShowManualCoach ? 1 : 0)
-                    .allowsHitTesting(false)
-            }
+            .frame(width: 72, height: 32)
         }
         .buttonStyle(.plain)
-        .opacity(model.tutorialLocked ? 0.35 : 1)
-        .allowsHitTesting(!model.tutorialLocked)
+        .opacity(extraLocked ? 0.45 : 1)
+        .allowsHitTesting(!extraLocked)
+        .background(holeAnchor(.manual))
         .modifier(PulseScaleModifier(amount: 1.06, active: shouldShowManualCoach, repeats: true))
     }
 
@@ -950,7 +1092,7 @@ struct CameraView: View {
                 Text(model.focusAuto ? "A" : model.focusDistanceLabel)
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
                     .foregroundStyle(Color(white: 0.7))
-                    .frame(width: 36, alignment: .trailing)
+                    .frame(width: 44, alignment: .trailing)
                     .onTapGesture {
                         model.toggleFocusAuto()
                         Haptics.shared.chrome()
@@ -988,39 +1130,55 @@ struct CameraView: View {
     }
 
     private var focusBar: some View {
-        GeometryReader { geo in
-            let minF = model.camera.currentMinFocusMeters
-            let ticks: [(CGFloat, String)] = [
-                (CGFloat(CameraSession.slider(distance: 0.5, minFocus: minF)), "0.5"),
-                (CGFloat(CameraSession.slider(distance: 1, minFocus: minF)), "1"),
-                (CGFloat(CameraSession.slider(distance: 3, minFocus: minF)), "3"),
-                (1.0, "∞")
-            ]
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color(white: 0.18))
-                    .frame(height: 8)
-                Capsule()
-                    .fill(Color.white.opacity(model.focusAuto ? 0.25 : 0.7))
-                    .frame(width: 10, height: 16)
-                    .offset(x: CGFloat(model.focusLens) * max(0, geo.size.width - 10))
-                ForEach(ticks, id: \.0) { tick in
-                    Rectangle()
-                        .fill(Color(white: 0.55))
-                        .frame(width: 1, height: 6)
-                        .offset(x: tick.0 * max(0, geo.size.width - 10) + 4)
-                }
-            }
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        let p = Float(min(max(value.location.x / geo.size.width, 0), 1))
-                        model.setFocusLens(p)
+        let minF = model.camera.currentMinFocusMeters
+        let ticks = CameraSession.focusTicks(minFocus: minF)
+        return VStack(spacing: 2) {
+            GeometryReader { geo in
+                let track = max(0, geo.size.width - 10)
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color(white: 0.18))
+                        .frame(height: 8)
+                    Capsule()
+                        .fill(Color.white.opacity(model.focusAuto ? 0.25 : 0.7))
+                        .frame(width: 10, height: 16)
+                        .offset(x: CGFloat(model.focusLens) * track)
+                    ForEach(Array(ticks.enumerated()), id: \.offset) { _, tick in
+                        Rectangle()
+                            .fill(Color(white: 0.55))
+                            .frame(width: 1, height: 6)
+                            .offset(x: tick.0 * track + 4)
                     }
+                }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            let p = Float(min(max(value.location.x / geo.size.width, 0), 1))
+                            model.setFocusLens(p)
+                        }
+                )
+            }
+            .frame(height: 16)
+            HStack {
+                Text(ticks.first?.1 ?? CameraSession.formatFocus(minF))
+                Spacer(minLength: 0)
+                Text(ticks.last?.1 ?? "∞")
+            }
+            .font(.system(size: 8, weight: .medium, design: .monospaced))
+            .foregroundStyle(Color(white: 0.5))
+        }
+        .frame(height: 28)
+    }
+
+    private func holeAnchor(_ holes: TutorialHole...) -> some View {
+        GeometryReader { geo in
+            let frame = geo.frame(in: .named("cameraBody"))
+            Color.clear.preference(
+                key: HoleFrameKey.self,
+                value: Dictionary(uniqueKeysWithValues: holes.map { ($0, [frame]) })
             )
         }
-        .frame(height: 22)
     }
 
 }
@@ -1078,20 +1236,30 @@ struct DialRing: View {
 }
 
 struct WinderCoachMark: View {
-    var diameter: CGFloat = 104
+    var diameter: CGFloat = 86
     @State private var spin = false
 
+    private let tip: CGFloat = 0.32
+
     var body: some View {
+        let radius = diameter * 0.5
+        let theta = tip * 2 * CGFloat.pi
         ZStack {
             Circle()
                 .stroke(Color.white.opacity(0.18), style: StrokeStyle(lineWidth: 1.4, dash: [3, 4]))
                 .frame(width: diameter, height: diameter)
             Circle()
-                .trim(from: 0.08, to: 0.42)
-                .stroke(Color.white.opacity(0.85), style: StrokeStyle(lineWidth: 2.4, lineCap: .round))
+                .trim(from: 0.04, to: tip)
+                .stroke(Color.white.opacity(0.9), style: StrokeStyle(lineWidth: 2.4, lineCap: .round))
                 .frame(width: diameter, height: diameter)
-                .rotationEffect(.degrees(spin ? 360 : 0))
+                .rotationEffect(.degrees(-90))
+            Image(systemName: "chevron.right")
+                .font(.system(size: max(10, diameter * 0.13), weight: .bold))
+                .foregroundStyle(Color.white.opacity(0.92))
+                .rotationEffect(.degrees(Double(tip * 360)))
+                .offset(x: sin(theta) * radius, y: -cos(theta) * radius)
         }
+        .rotationEffect(.degrees(spin ? 360 : 0))
         .onAppear {
             guard !Haptics.reduceMotion else { return }
             withAnimation(.linear(duration: 1.4).repeatForever(autoreverses: false)) {
@@ -1120,6 +1288,129 @@ struct EvCoachMark: View {
                 lift = true
             }
         }
+    }
+}
+
+enum TutorialHole: Hashable {
+    case load, wind, shutter, rewind, darkbox, flash, manual, ev, finder
+
+    var pad: CGFloat {
+        switch self {
+        case .load: 6
+        case .wind: 4
+        case .shutter, .ev: 4
+        case .rewind: 3
+        case .darkbox: 10
+        case .flash: 8
+        case .manual: 10
+        case .finder: 0
+        }
+    }
+
+    var corner: CGFloat {
+        switch self {
+        case .load: 8
+        case .wind, .shutter, .ev, .rewind, .flash: 32
+        case .darkbox: 8
+        case .manual: 16
+        case .finder: 8
+        }
+    }
+
+    var captionBelow: Bool {
+        switch self {
+        case .rewind, .flash: true
+        default: false
+        }
+    }
+}
+
+struct HoleFrameKey: PreferenceKey {
+    static var defaultValue: [TutorialHole: [CGRect]] = [:]
+
+    static func reduce(value: inout [TutorialHole: [CGRect]], nextValue: () -> [TutorialHole: [CGRect]]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, latest in latest })
+    }
+}
+
+struct HoleCutoutShape: Shape {
+    var frames: [CGRect]
+    var radius: CGFloat = 18
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path(rect)
+        for frame in frames {
+            path.addRoundedRect(in: frame, cornerSize: CGSize(width: radius, height: radius))
+        }
+        return path
+    }
+}
+
+struct TutorialSpotlight: View {
+    var frames: [CGRect]
+    var hole: TutorialHole
+    var caption: String
+
+    var body: some View {
+        GeometryReader { geo in
+            let origin = geo.frame(in: .named("cameraBody")).origin
+            let holes = frames.map { frame -> CGRect in
+                var hole = frame.offsetBy(dx: -origin.x, dy: -origin.y)
+                hole = hole.insetBy(dx: -self.hole.pad, dy: -self.hole.pad)
+                return hole
+            }
+            let target = holes.min(by: { $0.height < $1.height }) ?? holes.first ?? .null
+            ZStack {
+                Color.black.opacity(0.58)
+                    .clipShape(HoleCutoutShape(frames: holes, radius: hole.corner), style: FillStyle(eoFill: true))
+                    .contentShape(HoleCutoutShape(frames: holes, radius: hole.corner), eoFill: true)
+                    .highPriorityGesture(TapGesture())
+                if !target.isNull, !target.isInfinite {
+                    Text(caption)
+                        .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(Color.white.opacity(0.94))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(Color.black.opacity(0.55))
+                        .clipShape(Capsule())
+                        .position(captionPoint(target, in: geo.size))
+                        .allowsHitTesting(false)
+                }
+            }
+        }
+        .allowsHitTesting(true)
+    }
+
+    private func captionPoint(_ target: CGRect, in size: CGSize) -> CGPoint {
+        let captionH: CGFloat = 32
+        let gap: CGFloat = 14
+        let x: CGFloat = {
+            switch hole {
+            case .rewind:
+                return min(max(target.midX + 18, 72), size.width - 72)
+            case .load:
+                return min(max(target.maxX + 86, 110), size.width - 110)
+            case .shutter, .ev:
+                return min(max(target.midX, 88), size.width - 88)
+            default:
+                return min(max(target.midX, 72), size.width - 72)
+            }
+        }()
+        let below = hole.captionBelow || target.minY < 64
+        let y: CGFloat = {
+            if hole == .load {
+                return min(max(target.midY, 36), size.height - 36)
+            }
+            if hole == .shutter || hole == .ev {
+                let above = target.minY - gap - captionH / 2
+                return max(above, 96)
+            }
+            if below {
+                return min(target.maxY + gap + captionH / 2, size.height - 36)
+            }
+            return max(target.minY - gap - captionH / 2, 36)
+        }()
+        return CGPoint(x: x, y: y)
     }
 }
 
@@ -1173,7 +1464,7 @@ struct LeatherBody: View, Equatable {
             LinearGradient(
                 colors: [
                     Color(red: 0.16, green: 0.13, blue: 0.11),
-                    Color(red: 0.08, green: 0.07, blue: 0.06),
+                    HalfColor.body,
                     Color(red: 0.05, green: 0.05, blue: 0.05)
                 ],
                 startPoint: .top,
@@ -1181,42 +1472,29 @@ struct LeatherBody: View, Equatable {
             )
             Canvas { ctx, size in
                 var rng = SeededRandom(0xC0FFEE)
-                for _ in 0..<900 {
-                    let x = rng.unit() * size.width
+                let count = 1400
+                for i in 0..<count {
+                    let x: CGFloat
+                    if i % 3 == 0 {
+                        x = rng.unit() < 0.5
+                            ? rng.unit() * size.width * 0.18
+                            : size.width * (0.82 + rng.unit() * 0.18)
+                    } else {
+                        x = rng.unit() * size.width
+                    }
                     let y = rng.unit() * size.height
-                    let s = rng.unit() * 1.6 + 0.4
-                    let a = 0.018 + rng.unit() * 0.04
+                    let w = 0.4 + rng.unit() * 1.8
+                    let h = 0.25 + rng.unit() * 0.55
+                    let a = 0.016 + rng.unit() * 0.045
                     ctx.fill(
-                        Path(ellipseIn: CGRect(x: x, y: y, width: s, height: s)),
+                        Path(ellipseIn: CGRect(x: x, y: y, width: w, height: h)),
                         with: .color(.white.opacity(a))
                     )
                 }
             }
-            .opacity(0.55)
+            .opacity(0.62)
             VStack(spacing: 0) {
-                LinearGradient(
-                    colors: [
-                        Color(white: 0.34),
-                        Color(white: 0.18),
-                        Color(white: 0.12)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .frame(height: 64)
-                .overlay(alignment: .bottom) {
-                    Rectangle()
-                        .fill(Color.black.opacity(0.55))
-                        .frame(height: 3)
-                }
-                .overlay(alignment: .top) {
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.16), Color.clear],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 28)
-                }
+                SteelBezel()
                 Spacer()
             }
             LinearGradient(
@@ -1241,7 +1519,7 @@ struct SevenSegment: View {
 
 struct Digit: View {
     var char: Character
-    private let on = Color(red: 1, green: 0.22, blue: 0.16)
+    private let on = HalfColor.segment
     private let off = Color(red: 0.32, green: 0.05, blue: 0.05)
     var body: some View {
         let segs = segments(char)
@@ -1273,7 +1551,7 @@ struct Digit: View {
                 ctx.fill(path, with: .color(segs.contains(i) ? on : off))
             }
         }
-        .frame(width: 18, height: 28)
+        .frame(width: 16, height: 24)
     }
 
     private func segments(_ c: Character) -> Set<Int> {

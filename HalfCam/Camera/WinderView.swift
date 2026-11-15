@@ -31,7 +31,7 @@ final class WinderKnob: UIView {
                 accumulated = 0
                 springing = false
             }
-            pin.backgroundColor = (isKnobEnabled ? UIColor(red: 0.86, green: 0.14, blue: 0.12, alpha: 1) : UIColor(white: 0.28, alpha: 1)).cgColor
+            pin.backgroundColor = (isKnobEnabled ? UIColor(red: 0.72, green: 0.12, blue: 0.14, alpha: 1) : UIColor(white: 0.22, alpha: 1)).cgColor
         }
     }
 
@@ -66,7 +66,7 @@ final class WinderKnob: UIView {
         layer.addSublayer(disc)
         pin.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         pin.cornerRadius = 6
-        pin.backgroundColor = UIColor(red: 0.86, green: 0.14, blue: 0.12, alpha: 1).cgColor
+        pin.backgroundColor = UIColor(red: 0.72, green: 0.12, blue: 0.14, alpha: 1).cgColor
         disc.addSublayer(pin)
         flash.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         flash.backgroundColor = UIColor.white.cgColor
@@ -324,8 +324,8 @@ final class RewindKnob: UIView {
                 Soundboard.shared.stop("rewind")
                 Haptics.shared.grainStop(fade: true)
             }
-            pin.backgroundColor = (isKnobEnabled ? UIColor(red: 0.86, green: 0.14, blue: 0.12, alpha: 1) : UIColor(white: 0.72, alpha: 1)).cgColor
-            alpha = isKnobEnabled ? 1 : 0.7
+            pin.backgroundColor = (isKnobEnabled ? UIColor(red: 0.72, green: 0.12, blue: 0.14, alpha: 1) : UIColor(white: 0.22, alpha: 1)).cgColor
+            alpha = 1
         }
     }
 
@@ -355,7 +355,7 @@ final class RewindKnob: UIView {
         layer.addSublayer(disc)
         pin.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         pin.cornerRadius = 4
-        pin.backgroundColor = UIColor(white: 0.72, alpha: 1).cgColor
+        pin.backgroundColor = UIColor(white: 0.22, alpha: 1).cgColor
         disc.addSublayer(pin)
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         pan.maximumNumberOfTouches = 1
@@ -417,19 +417,24 @@ final class RewindKnob: UIView {
                 Haptics.shared.grainStart(duration: 2.4)
             }
         case .changed:
-            if dist < dead { return }
-            let da = abs(WinderKnobDelta.from(lastPoint, to: p, center: c))
+            if dist < dead {
+                lastPoint = p
+                return
+            }
+            let signed = WinderKnobDelta.from(lastPoint, to: p, center: c)
             lastPoint = p
             let dt = CGFloat(max(1.0 / 240.0, now - lastPanTime))
             lastPanTime = now
-            if da > 0.0004 {
-                angle += da
-                accumulated += da
-                speed = da / dt
+            if signed > 0.0004 {
+                angle += signed
+                accumulated += signed
+                speed = signed / dt
                 onProgress?(min(1, accumulated / threshold))
                 checkTeeth()
                 applyAngle()
                 tryComplete()
+            } else if signed < -0.0004 {
+                speed *= 0.72
             }
         default:
             panning = false

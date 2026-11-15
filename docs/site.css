@@ -1,0 +1,164 @@
+:root {
+  color-scheme: dark;
+  --body: #0e0d0c;
+  --paper: #f3ede4;
+  --brass: #c4a574;
+  --mist: #8a8178;
+  --ink: #c8c4be;
+  --heading: #e8e4de;
+  --link: #d8d2c8;
+  --line: rgba(196, 165, 116, 0.22);
+  --safe: #b42318;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--body);
+  color: var(--ink);
+}
+
+body {
+  font: 16px/1.65 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Segoe UI", sans-serif;
+}
+
+a { color: var(--link); }
+a:hover { color: var(--paper); }
+
+.wrap {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+.site-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.mark {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "Noto Serif SC", serif;
+  font-size: 0.92rem;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+  color: var(--paper);
+}
+
+.lang {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  color: var(--mist);
+}
+
+.lang button {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mist);
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.lang button[aria-pressed="true"] {
+  color: var(--brass);
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  margin: 1rem 0 2.2rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  color: var(--mist);
+}
+
+.site-nav a {
+  color: var(--mist);
+  text-decoration: none;
+}
+
+.site-nav a:hover,
+.site-nav a[aria-current="page"] {
+  color: var(--brass);
+}
+
+h1, h2 {
+  font-family: "Songti SC", "Noto Serif SC", "Iowan Old Style", Palatino, serif;
+  font-weight: 600;
+  color: var(--heading);
+}
+
+h1 {
+  font-size: 1.7rem;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  margin: 0 0 0.6rem;
+}
+
+h2 {
+  font-size: 1.05rem;
+  color: var(--mist);
+  margin: 2rem 0 0.6rem;
+}
+
+p, li { color: var(--ink); }
+
+.meta, .foot {
+  font-size: 0.85rem;
+  color: var(--mist);
+}
+
+.hero p {
+  font-family: "Songti SC", "Noto Serif SC", "Iowan Old Style", Palatino, serif;
+  font-size: 1.2rem;
+  color: var(--paper);
+  margin: 0.35rem 0 1.4rem;
+}
+
+.shot {
+  display: block;
+  width: min(100%, 18rem);
+  margin: 0 auto 2rem;
+  border-radius: 18px;
+}
+
+.rules {
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+}
+
+.rules li {
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--line);
+  color: var(--paper);
+}
+
+.rules li:last-child { border-bottom: 1px solid var(--line); }
+
+.foot {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+html[data-site-lang="en"] [data-lang="zh"],
+html[data-site-lang="zh"] [data-lang="en"] {
+  display: none;
+}
+
+@media (min-width: 720px) {
+  .wrap { padding-top: 2.4rem; }
+}

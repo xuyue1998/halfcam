@@ -53,6 +53,9 @@ struct HalfCamApp: App {
                         Haptics.shared.resume()
                         UIApplication.shared.isIdleTimerDisabled = true
                         model.refreshLiveActivities()
+                        model.rolloverMonth()
+                        Task { await model.membership.refresh() }
+                        Task { await model.reconcileExportedPrints() }
                     } else if phase == .background {
                         UIApplication.shared.isIdleTimerDisabled = false
                     }

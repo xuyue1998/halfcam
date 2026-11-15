@@ -1,0 +1,115 @@
+{
+  "identifier" : "E05EB6D0-9D9A-4784-9655-9D71770AB574",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "68.00",
+      "familyShareable" : true,
+      "internalID" : "057A3447-2406-4F19-9319-208A17AF35DA",
+      "localizations" : [
+        {
+          "description" : "Unlimited rolls. Same wait. 6 rush tickets a month.",
+          "displayName" : "Lifetime",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "无限装卷。等待不变。每月赠 6 张加急券。",
+          "displayName" : "买断",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "halfcam.unlock",
+      "referenceName" : "Lifetime",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "3.00",
+      "familyShareable" : false,
+      "internalID" : "B3C1E8A4-7F52-4D9B-91C0-6A2E5D8F4B17",
+      "localizations" : [
+        {
+          "description" : "3 rush tickets. One ticket finishes one roll's wait.",
+          "displayName" : "Rush tickets ×3",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "3 张加急券。一张清掉一卷等待。",
+          "displayName" : "加急券 ×3",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "halfcam.skip.3",
+      "referenceName" : "SkipPack3",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "0",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "zh_CN",
+    "_storefront" : "CHN",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "933D622A-B647-4149-9030-CE31E1E12543",
+      "localizations" : [
+        {
+          "description" : "HalfCam membership",
+          "displayName" : "HalfCam",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "半格权益",
+          "displayName" : "半格",
+          "locale" : "zh_CN"
+        }
+      ],
+      "name" : "HalfCam",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "28.00",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "7240B3D2-B7A4-4973-99F4-61DF6EAF05C1",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "9 rolls a month. 12 / 24 / 36. 3 rush tickets a month.",
+              "displayName" : "Yearly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "每月 9 卷，可选 12 / 24 / 36。每月赠 3 张加急券。",
+              "displayName" : "年卡",
+              "locale" : "zh_CN"
+            }
+          ],
+          "productID" : "halfcam.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Yearly",
+          "subscriptionGroupID" : "933D622A-B647-4149-9030-CE31E1E12543",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

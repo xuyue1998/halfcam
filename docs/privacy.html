@@ -3,78 +3,103 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HALF CAM 隐私政策</title>
-  <style>
-    :root { color-scheme: dark; }
-    body {
-      margin: 0;
-      background: #12100f;
-      color: #c8c4be;
-      font: 16px/1.65 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
-    }
-    main {
-      max-width: 40rem;
-      margin: 0 auto;
-      padding: 2.5rem 1.25rem 4rem;
-    }
-    h1 {
-      font-family: "Songti SC", "Noto Serif SC", serif;
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: #e8e4de;
-      letter-spacing: 0.04em;
-    }
-    h2 {
-      font-family: "Songti SC", "Noto Serif SC", serif;
-      font-size: 1.05rem;
-      color: #9a958e;
-      margin-top: 2rem;
-    }
-    p, li { color: #b4aea6; }
-    a { color: #d8d2c8; }
-    .meta { font-size: 0.85rem; color: #7a756e; }
-  </style>
+  <meta name="theme-color" content="#0E0D0C">
+  <title>HALF CAM · Privacy</title>
+  <link rel="stylesheet" href="site.css">
+  <link rel="icon" href="store/icon/AppIcon-180.png">
+  <script>
+    (function () {
+      try {
+        var lang = localStorage.getItem("halfcam.lang");
+        if (lang !== "zh" && lang !== "en") {
+          lang = String(navigator.language || "en").toLowerCase().indexOf("zh") === 0 ? "zh" : "en";
+        }
+        document.documentElement.lang = lang === "zh" ? "zh-Hans" : "en";
+        document.documentElement.setAttribute("data-site-lang", lang);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
-<main>
-  <h1>HALF CAM 隐私政策</h1>
-  <p class="meta">生效日期：2026 年 11 月 8 日<br>适用应用：HALF CAM（包名 com.xuyue.HalfCam）</p>
+<main class="wrap">
+  <header class="site-header">
+    <a class="mark" href="index.html">HALF CAM</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-set-lang="zh">中文</button>
+      <span aria-hidden="true">/</span>
+      <button type="button" data-set-lang="en">EN</button>
+    </div>
+  </header>
 
-  <h2>1. 我们是谁</h2>
-  <p>HALF CAM 是一款安装在 iPhone 上的半格胶片风格相机应用，由个人开发者运营。运营主体与 Apple Developer 账号登记信息一致。本应用不提供账号注册，也没有自建服务器。</p>
+  <nav class="site-nav">
+    <a href="index.html"><span data-lang="zh">首页</span><span data-lang="en">Home</span></a>
+    <a href="legal.html"><span data-lang="zh">法律信息</span><span data-lang="en">Legal</span></a>
+    <a href="privacy.html" aria-current="page"><span data-lang="zh">隐私政策</span><span data-lang="en">Privacy</span></a>
+    <a href="https://github.com/xuyue1998/halfcam"><span data-lang="zh">源码</span><span data-lang="en">Source</span></a>
+  </nav>
 
-  <h2>2. 我们如何处理信息</h2>
-  <p>拍摄、显影、相册与偏好设置默认只保存在您的设备上。开发者不会通过本应用收集、上传或出售您的照片或个人信息。您未主动导出时，照片不会进入系统相册，也不会发往任何第三方。</p>
+  <h1 data-lang="zh">隐私政策</h1>
+  <h1 data-lang="en">Privacy Policy</h1>
+  <p class="meta" data-lang="zh">生效日期：2026 年 11 月 9 日<br>适用应用：HALF CAM（包名 com.xuyue.HalfCam）</p>
+  <p class="meta" data-lang="en">Effective 9 November 2026<br>Applies to HALF CAM (bundle identifier com.xuyue.HalfCam)</p>
 
-  <h2>3. 本应用使用的信息与权限</h2>
-  <p><strong>相机。</strong>用于拍摄胶片画幅。未显影原片加密后保存在应用沙盒；显影结果同样保存在设备本地。</p>
-  <p><strong>相册（仅添加）。</strong>仅在您主动把洗好的对页存进相册时申请，不会读取相册里的其他照片。</p>
-  <p><strong>通知与实时活动。</strong>用于提醒显影完成、在灵动岛或锁定屏幕显示冲洗倒计时。您可以在系统设置中关闭。</p>
-  <p><strong>本地设置。</strong>语言、声音、触感、严格模式、ProRAW 等偏好保存在本机。</p>
-  <p><strong>系统服务。</strong>支付若日后开通，将通过 Apple 内购完成，银行卡信息由 Apple 处理。当前版本不接入广告、统计分析或第三方追踪 SDK。</p>
+  <h2 data-lang="zh">1. 我们是谁</h2>
+  <h2 data-lang="en">1. Who we are</h2>
+  <p data-lang="zh">HALF CAM 是一款安装在 iPhone 上的半格胶片风格相机应用，由个人开发者运营。运营主体与 Apple Developer 账号登记信息一致。本应用不提供账号注册，也没有自建服务器。</p>
+  <p data-lang="en">HALF CAM is a half-frame film-style camera app for iPhone, operated by an individual developer. The operator matches the Apple Developer account on file. There is no account system and no developer-operated server.</p>
 
-  <h2>4. 存储地点、期限与出境</h2>
-  <p>上述信息存储在您的设备。卸载应用或在应用内删除胶卷后，对应本地文件会被清除。开发者不以自有服务器接收或出境传输这些信息。Apple 作为应用分发与系统服务提供方，按其自身政策处理必要数据。</p>
+  <h2 data-lang="zh">2. 我们如何处理信息</h2>
+  <h2 data-lang="en">2. How we handle information</h2>
+  <p data-lang="zh">拍摄、显影、相册与偏好设置默认只保存在您的设备上。开发者不会通过本应用收集、上传或出售您的照片或个人信息。您未主动导出时，照片不会进入系统相册，也不会发往任何第三方。</p>
+  <p data-lang="en">Capture, development, albums, and preferences stay on your device by default. The developer does not collect, upload, or sell your photos or personal information through this app. Photos do not enter the system Photos library, and are not sent to any third party, until you export them.</p>
 
-  <h2>5. 共享</h2>
-  <p>我们不向广告商、数据经纪商或其他开发者共享您的个人信息。仅在法律要求或为响应有权机关时，才可能依法提供。</p>
+  <h2 data-lang="zh">3. 本应用使用的信息与权限</h2>
+  <h2 data-lang="en">3. Information and permissions this app uses</h2>
+  <p data-lang="zh"><strong>相机。</strong>用于拍摄胶片画幅。未显影原片加密后保存在应用沙盒；显影结果同样保存在设备本地。</p>
+  <p data-lang="en"><strong>Camera.</strong> Used to expose half-frame shots. Undeveloped originals are stored encrypted in the app sandbox. Developed prints stay on the device.</p>
+  <p data-lang="zh"><strong>相册。</strong>您主动把洗好的对页存进相册时写入照片；之后用本应用写入的照片标识核对这些对页是否仍在相册中，以便正确显示导出状态。不会浏览或上传相册里的其他照片。</p>
+  <p data-lang="en"><strong>Photos.</strong> Writes the developed pairs you choose to export. Later, the app checks those same items so export status stays accurate. It does not browse or upload the rest of your library.</p>
+  <p data-lang="zh"><strong>通知与实时活动。</strong>用于提醒显影完成、在灵动岛或锁定屏幕显示冲洗倒计时。您可以在系统设置中关闭。</p>
+  <p data-lang="en"><strong>Notifications and Live Activities.</strong> Used to signal when a roll is ready, and to show the development countdown on Dynamic Island or the Lock Screen. You can turn these off in system Settings.</p>
+  <p data-lang="zh"><strong>本地设置。</strong>语言、声音、触感、严格模式、ProRAW 等偏好保存在本机。</p>
+  <p data-lang="en"><strong>Local settings.</strong> Language, sound, haptics, strict mode, ProRAW, and similar preferences stay on the device.</p>
+  <p data-lang="zh"><strong>内购。</strong>年卡、买断与加急券通过 Apple 内购完成，支付信息由 Apple 处理。买的加急券未用余数、当月赠额与对应交易编号通过 iCloud 钥匙值存储同步到同一 Apple ID，便于重装后找回；不含照片。未开启 iCloud 时，这些余数只记在本机。</p>
+  <p data-lang="en"><strong>In-app purchases.</strong> The yearly plan, lifetime unlock, and rush tickets are processed by Apple. Unused purchased rush-ticket balance, the current month’s grant, and related Apple transaction IDs may sync via iCloud Key-Value Store to the same Apple ID so they can be restored after reinstalling. No photos are included. If iCloud is off, these balances stay on the device only.</p>
+  <p data-lang="zh"><strong>系统服务。</strong>本应用不接入广告、统计分析或第三方追踪 SDK。</p>
+  <p data-lang="en"><strong>System services.</strong> This app does not include advertising, analytics, or third-party tracking SDKs.</p>
 
-  <h2>6. 未成年人</h2>
-  <p>本应用面向普通摄影用户，不专门面向未满 14 周岁的儿童。如果您是未成年人，请在监护人同意与指导下使用。监护人可卸载应用以停止使用并删除本地数据。</p>
+  <h2 data-lang="zh">4. 存储地点、期限与出境</h2>
+  <h2 data-lang="en">4. Storage, retention, and transfers</h2>
+  <p data-lang="zh">照片、未显影原片与偏好存储在您的设备。卸载应用或在应用内删除胶卷后，对应本地文件会被清除。买的加急券未用余数可通过 Apple iCloud 钥匙值存储同步；开发者不以自有服务器接收或出境传输这些信息。Apple 作为应用分发与系统服务提供方，按其自身政策处理必要数据。</p>
+  <p data-lang="en">Photos, undeveloped originals, and preferences are stored on your device. Deleting a roll in the app, or deleting the app, removes the matching local files. Unused purchased rush tickets may sync through Apple iCloud Key-Value Store. The developer does not receive this information on a server of their own, and does not transfer it abroad. Apple, as the app distributor and system-service provider, processes necessary data under its own policies.</p>
 
-  <h2>7. 您的权利</h2>
-  <p>您可以在应用内删除胶卷，或在系统设置中关闭相机、相册、通知权限。卸载应用将删除沙盒中的本地数据。如需查询、更正或投诉，请通过 App Store 产品页联系开发者。</p>
+  <h2 data-lang="zh">5. 共享</h2>
+  <h2 data-lang="en">5. Sharing</h2>
+  <p data-lang="zh">我们不向广告商、数据经纪商或其他开发者共享您的个人信息。仅在法律要求或为响应有权机关时，才可能依法提供。</p>
+  <p data-lang="en">We do not share your personal information with advertisers, data brokers, or other developers. We may disclose information only when required by law or in response to a competent authority.</p>
 
-  <h2>8. 政策更新</h2>
-  <p>若收集方式发生实质变化（例如增加账号、云同步或广告），我们会更新本政策，并在应用内或产品页提示。继续使用视为知悉更新后的内容。</p>
+  <h2 data-lang="zh">6. 未成年人</h2>
+  <h2 data-lang="en">6. Children</h2>
+  <p data-lang="zh">本应用面向普通摄影用户，不专门面向未满 14 周岁的儿童。如果您是未成年人，请在监护人同意与指导下使用。监护人可卸载应用以停止使用并删除本地数据。</p>
+  <p data-lang="en">This app is for general photography use and is not directed at children under 14. If you are a minor, use it only with a guardian’s consent and guidance. A guardian may delete the app to stop use and erase local data.</p>
 
-  <h2>9. 联系我们</h2>
-  <p>请通过 Apple App Store 上 HALF CAM 的产品页与开发者联系。</p>
-  <p class="meta"><a href="legal.html">法律信息</a></p>
+  <h2 data-lang="zh">7. 您的权利</h2>
+  <h2 data-lang="en">7. Your rights</h2>
+  <p data-lang="zh">您可以在应用内删除胶卷，或在系统设置中关闭相机、相册、通知权限。卸载应用将删除沙盒中的本地数据。如需查询、更正或投诉，请通过 App Store 产品页联系开发者。</p>
+  <p data-lang="en">You can delete rolls in the app, or turn off camera, Photos, and notification access in system Settings. Deleting the app erases local sandbox data. For access, correction, or complaints, contact the developer through the App Store product page.</p>
 
-  <hr>
-  <h2>Privacy Policy (English)</h2>
-  <p>HALF CAM is a half-frame film-style camera app for iPhone, operated by an individual developer. There is no account system and no developer-operated server. Photos, undeveloped frames (stored encrypted in the app sandbox), album exports you choose to save, notification and Live Activity state, and preferences stay on your device. We do not collect, sell, or upload your photos. Camera access is for capture; Photo Library access is add-only when you export. This version does not include ads, analytics, or tracking SDKs. In-app purchases, if added later, are processed by Apple. You can delete rolls in the app or remove the app to erase local data. Contact the developer via the App Store product page. Effective 8 November 2026.</p>
+  <h2 data-lang="zh">8. 政策更新</h2>
+  <h2 data-lang="en">8. Changes</h2>
+  <p data-lang="zh">若收集方式发生实质变化（例如增加账号），我们会更新本政策，并在应用内或产品页提示。继续使用视为知悉更新后的内容。</p>
+  <p data-lang="en">If collection practices change in a material way (for example, adding accounts), this policy will be updated and noted in the app or on the product page. Continued use means you have seen the updated terms.</p>
+
+  <h2 data-lang="zh">9. 联系我们</h2>
+  <h2 data-lang="en">9. Contact</h2>
+  <p data-lang="zh">请通过 Apple App Store 上 HALF CAM 的产品页与开发者联系。</p>
+  <p data-lang="en">Contact the developer through the HALF CAM product page on the Apple App Store.</p>
+
+  <p class="meta"><a href="legal.html"><span data-lang="zh">法律信息</span><span data-lang="en">Legal notices</span></a></p>
 </main>
+<script src="site.js"></script>
 </body>
 </html>

@@ -16,6 +16,12 @@
             "value" : "HALF CAM"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HALF CAM"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -48,25 +54,66 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAM needs the camera to shoot film."
+            "value" : "HALF CAM uses the camera to shoot film."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAMはフィルム撮影にカメラが必要です。"
+            "value" : "HALF CAMはフィルム撮影のためにカメラを使用します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HALF CAM은 필름 촬영을 위해 카메라를 사용합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAM需要相机来拍摄胶片"
+            "value" : "HALF CAM 需要使用相机拍摄胶片。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAM需要相機來拍攝膠片"
+            "value" : "HALF CAM 需要使用相機拍攝膠片。"
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryUsageDescription" : {
+      "comment" : "Privacy - Photo Library Usage Description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HALF CAM saves developed pairs to Photos and checks that those items are still there."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HALF CAMは現像した対頁を写真アプリに保存し、それらが残っているか確認します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HALF CAM은 현상한 스프레드를 사진 앱에 저장하고, 해당 항목이 남아 있는지 확인합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HALF CAM 需要把洗好的对页写入系统相册，并核对这些对页是否仍在。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HALF CAM 需要把洗好的對頁寫入系統相簿，並核對這些對頁是否仍在。"
           }
         }
       }
@@ -77,25 +124,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAM needs Photos access to save developed pairs."
+            "value" : "HALF CAM saves developed pairs to Photos."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAMは現像した対を写真に保存します。"
+            "value" : "HALF CAMは現像した対頁を写真アプリに保存します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HALF CAM은 현상한 스프레드를 사진 앱에 저장합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAM需要把洗好的对页存进相册"
+            "value" : "HALF CAM 需要把洗好的对页存入系统相册。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAM需要把洗好的對頁存進相簿"
+            "value" : "HALF CAM 需要把洗好的對頁存入系統相簿。"
           }
         }
       }

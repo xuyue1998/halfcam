@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0E0D0C">
+  <meta name="description" content="HALF CAM is a half-frame film camera for iPhone. Wind. Shoot. Develop when the roll is full.">
+  <title>HALF CAM</title>
+  <link rel="stylesheet" href="site.css">
+  <link rel="icon" href="store/icon/AppIcon-180.png">
+  <script>
+    (function () {
+      try {
+        var lang = localStorage.getItem("halfcam.lang");
+        if (lang !== "zh" && lang !== "en") {
+          lang = String(navigator.language || "en").toLowerCase().indexOf("zh") === 0 ? "zh" : "en";
+        }
+        document.documentElement.lang = lang === "zh" ? "zh-Hans" : "en";
+        document.documentElement.setAttribute("data-site-lang", lang);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+<main class="wrap">
+  <header class="site-header">
+    <a class="mark" href="index.html">HALF CAM</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-set-lang="zh">中文</button>
+      <span aria-hidden="true">/</span>
+      <button type="button" data-set-lang="en">EN</button>
+    </div>
+  </header>
+
+  <nav class="site-nav">
+    <a href="index.html" aria-current="page"><span data-lang="zh">首页</span><span data-lang="en">Home</span></a>
+    <a href="legal.html"><span data-lang="zh">法律信息</span><span data-lang="en">Legal</span></a>
+    <a href="privacy.html"><span data-lang="zh">隐私政策</span><span data-lang="en">Privacy</span></a>
+    <a href="https://github.com/xuyue1998/halfcam"><span data-lang="zh">源码</span><span data-lang="en">Source</span></a>
+  </nav>
+
+  <section class="hero">
+    <h1>HALF CAM</h1>
+    <p data-lang="zh">拍完才能看。一卷拍满，才配打开。</p>
+    <p data-lang="en">You don’t see it until it’s developed.</p>
+  </section>
+
+  <p data-lang="zh">HALF CAM 是装在 iPhone 里的半格胶片机。上卷、快门、倒片、暗房——每一步都是真的，不是皮肤。</p>
+  <p data-lang="en">HALF CAM is a half-frame film camera in your iPhone. Wind. Shoot. Rewind. Develop. Nothing is a skin. Everything is a step.</p>
+
+  <ul class="rules">
+    <li data-lang="zh">没上卷，快门是死的</li>
+    <li data-lang="en">The shutter is dead until you wind</li>
+    <li data-lang="zh">拍完没有预览，格子是黑的</li>
+    <li data-lang="en">No preview. Shot frames stay black</li>
+    <li data-lang="zh">装卷时选定胶片，洗完不能改</li>
+    <li data-lang="en">The look is locked when you load the roll</li>
+    <li data-lang="zh">相邻两格，自动成一对页</li>
+    <li data-lang="en">Two adjacent frames become one spread</li>
+  </ul>
+
+  <p data-lang="zh">免费即可拍完一卷。年卡或买断只是少等、多装。显影走 SpektraLab 光谱引擎。</p>
+  <p data-lang="en">Finish a full roll for free. Membership is more rolls, longer rolls, and monthly rush tickets. Development uses the SpektraLab spectral engine.</p>
+
+  <p class="foot">
+    <span data-lang="zh">© 2026 xuyue · GNU GPL-3.0-or-later · 独立 App，与任何胶片或相机品牌无关。</span>
+    <span data-lang="en">© 2026 xuyue · GNU GPL-3.0-or-later · Independent. Not affiliated with any film or camera brand.</span>
+  </p>
+</main>
+<script src="site.js"></script>
+</body>
+</html>

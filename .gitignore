@@ -2,6 +2,9 @@
 .venv/
 .opencode/
 photo/
+SimplePhoto/**
+!SimplePhoto/
+!SimplePhoto/README.md
 research/
 PLAN.md
 HalfCam/Resources/LUTs/
@@ -13,3 +16,15 @@ vendor/spektralab/resources/
 xcuserdata/
 DerivedData/
 *.xcuserstate
+docs/store/src/
+docs/store/screenshots/
+HalfCam/Resources/samples/**/*.jpg
+HalfCam/Resources/samples/**/*.jpeg
+HalfCam/Resources/samples/**/*.png
+HalfCam/Resources/samples/**/*.heic
+*.mobileprovision
+*.p12
+*.cer
+*.certSigningRequest
+.env
+.env.*

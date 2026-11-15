@@ -25,20 +25,13 @@ struct ViewfinderView: View {
                 RadialGradient(
                     colors: [
                         Color.clear,
-                        Color.black.opacity(0.18),
-                        Color.black.opacity(0.62)
+                        Color.clear,
+                        Color.black.opacity(0.16)
                     ],
                     center: .center,
-                    startRadius: min(geo.size.width, geo.size.height) * 0.22,
-                    endRadius: min(geo.size.width, geo.size.height) * 0.82
+                    startRadius: min(geo.size.width, geo.size.height) * 0.62,
+                    endRadius: min(geo.size.width, geo.size.height) * 0.98
                 )
-                .allowsHitTesting(false)
-                LinearGradient(
-                    colors: [Color.white.opacity(0.10), Color.clear, Color.black.opacity(0.12)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .blendMode(.screen)
                 .allowsHitTesting(false)
                 Rectangle()
                     .strokeBorder(Color.black.opacity(0.45), lineWidth: 1)

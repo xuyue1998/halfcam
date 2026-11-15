@@ -5,15 +5,23 @@ enum AppConst {
     static let tutorialCapacity = 2
     static let tutorialWaitSeconds: TimeInterval = 5
     static let advanceRadians: Double = .pi * 2
-    static let capacities = [12, 24, 36]
-    static let adSkipMinutes = 8
-    static let adFloorSeconds: TimeInterval = 60
+    static let capacities = [12, 24, 36, 54, 72]
+
+    static func monthlySkipGrant(_ tier: MembershipTier) -> Int {
+        switch tier {
+        case .free: 1
+        case .yearly: 3
+        case .lifetime: 6
+        }
+    }
 
     static func waitRange(capacity: Int) -> ClosedRange<Int> {
         switch capacity {
         case 12: 8...16
         case 24: 12...22
-        default: 18...30
+        case 36: 18...30
+        case 54: 22...36
+        default: 28...44
         }
     }
 
@@ -27,6 +35,43 @@ enum AppConst {
     static func waitDuration(capacity: Int, seed: Int64, tutorial: Bool) -> TimeInterval {
         if tutorial { return tutorialWaitSeconds }
         return TimeInterval(waitMinutes(capacity: capacity, seed: seed) * 60)
+    }
+
+    static func monthlyLimit(_ tier: MembershipTier) -> Int? {
+        switch tier {
+        case .free: 3
+        case .yearly: 9
+        case .lifetime: nil
+        }
+    }
+
+    static func allowedCapacities(_ tier: MembershipTier) -> [Int] {
+        switch tier {
+        case .free: [12]
+        case .yearly: [12, 24, 36]
+        case .lifetime: capacities
+        }
+    }
+
+    static func monthStamp(_ date: Date = .now) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.calendar = Calendar(identifier: .gregorian)
+        f.timeZone = .current
+        f.dateFormat = "yyyy-MM"
+        return f.string(from: date)
+    }
+}
+
+enum MembershipTier: String, CaseIterable, Identifiable, Codable {
+    case free, yearly, lifetime
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .free: L("免费")
+        case .yearly: L("年卡")
+        case .lifetime: L("买断")
+        }
     }
 }
 
@@ -124,13 +169,15 @@ struct Frame: Codable, Identifiable, Hashable {
     var leakHue: Float
     var developed: Bool
     var exported: Bool
+    var exportedAssetIds: [String]
+    var exportedPairAssetIds: [String]
     var iso: Float?
     var shutter: Double?
     var lens: Float?
 
     enum CodingKeys: String, CodingKey {
         case id, index, shotAt, fileName, posFileName, thumbFileName
-        case leakStrength, leakAngle, leakHue, developed, exported, iso, shutter, lens
+        case leakStrength, leakAngle, leakHue, developed, exported, exportedAssetIds, exportedPairAssetIds, iso, shutter, lens
     }
 
     init(
@@ -138,6 +185,8 @@ struct Frame: Codable, Identifiable, Hashable {
         posFileName: String?, thumbFileName: String? = nil,
         leakStrength: Float, leakAngle: Float, leakHue: Float, developed: Bool,
         exported: Bool = false,
+        exportedAssetIds: [String] = [],
+        exportedPairAssetIds: [String] = [],
         iso: Float? = nil, shutter: Double? = nil, lens: Float? = nil
     ) {
         self.id = id
@@ -151,6 +200,8 @@ struct Frame: Codable, Identifiable, Hashable {
         self.leakHue = leakHue
         self.developed = developed
         self.exported = exported
+        self.exportedAssetIds = exportedAssetIds
+        self.exportedPairAssetIds = exportedPairAssetIds
         self.iso = iso
         self.shutter = shutter
         self.lens = lens
@@ -169,6 +220,8 @@ struct Frame: Codable, Identifiable, Hashable {
         leakHue = try c.decode(Float.self, forKey: .leakHue)
         developed = try c.decode(Bool.self, forKey: .developed)
         exported = try c.decodeIfPresent(Bool.self, forKey: .exported) ?? false
+        exportedAssetIds = try c.decodeIfPresent([String].self, forKey: .exportedAssetIds) ?? []
+        exportedPairAssetIds = try c.decodeIfPresent([String].self, forKey: .exportedPairAssetIds) ?? []
         iso = try c.decodeIfPresent(Float.self, forKey: .iso)
         shutter = try c.decodeIfPresent(Double.self, forKey: .shutter)
         lens = try c.decodeIfPresent(Float.self, forKey: .lens)
@@ -376,10 +429,30 @@ struct PersistStore: Codable {
     var hasSeenEVHint: Bool?
     var hasSeenFlashHint: Bool?
     var hasSeenManualHint: Bool?
+    var hasSeenRewindHint: Bool?
     var hasSeenExportHint: Bool?
     var hasSeenKeepHint: Bool?
     var autoExportPrints: Bool?
+    var exportFilmBorder: Bool?
     var manualMode: Bool?
     var strictMode: Bool?
     var hasCompletedOnboarding: Bool?
+    var tutorialMaskDismissed: Bool?
+    var lensLock: Bool? = nil
+    var autoMacro: Bool? = nil
+    var loadsThisMonth: Int?
+    var loadMonthStamp: String?
+    var skipTickets: Int? = nil
+    var skipGranted: Int? = nil
+    var skipPurchased: Int? = nil
+    var skipGrantQuota: Int? = nil
+    var skipCloudUpdatedAt: TimeInterval? = nil
+}
+
+struct SkipCloudLedger: Codable {
+    var skipPurchased: Int
+    var skipGranted: Int
+    var skipGrantQuota: Int
+    var loadMonthStamp: String
+    var updatedAt: TimeInterval
 }

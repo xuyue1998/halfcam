@@ -195,26 +195,9 @@ struct DarkroomView: View {
     }
 
     private var tempPlate: some View {
-        Text("38°C")
-            .font(.system(size: 10, weight: .bold, design: .monospaced))
-            .foregroundStyle(Color(white: 0.12))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color(white: 0.78), Color(white: 0.52), Color(white: 0.64)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 3, style: .continuous)
-                            .stroke(Color.white.opacity(0.28), lineWidth: 0.6)
-                    )
-            )
-            .shadow(color: .black.opacity(0.35), radius: 2, y: 1)
+        BrassPlate(compact: true) {
+            Text("38°C")
+        }
     }
 
     private var stripAct: some View {
@@ -256,7 +239,8 @@ struct DarkroomView: View {
             }
             bottomBar
                 .padding(.horizontal, 20)
-                .padding(.bottom, 8)
+                .padding(.top, 10)
+                .padding(.bottom, 34)
         }
     }
 
@@ -267,18 +251,20 @@ struct DarkroomView: View {
                 keepCard
             } else if allDeveloped || model.developProgress >= 1 {
                 HStack(spacing: 10) {
-                    Button {
-                        Haptics.shared.tick()
-                        model.finishRitual(loadNew: true)
-                    } label: {
-                        ChromePlate(title: L("再拍一卷"), prominent: false)
+                    if !live.isTutorial {
+                        Button {
+                            Haptics.shared.tick()
+                            model.finishRitual(loadNew: true)
+                        } label: {
+                            HatchPlate(title: L("再拍一卷"), prominent: false)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                     Button {
                         Haptics.shared.latch()
                         model.finishRitual()
                     } label: {
-                        ChromePlate(title: L("收入相册"), prominent: true)
+                        HatchPlate(title: L("放入相册"), prominent: true)
                     }
                     .buttonStyle(.plain)
                 }
@@ -321,14 +307,14 @@ struct DarkroomView: View {
                     Haptics.shared.tick()
                     model.finishRitual(autoDump: false)
                 } label: {
-                    ChromePlate(title: L("先放着"), prominent: false)
+                    HatchPlate(title: L("先不倒"), prominent: false)
                 }
                 .buttonStyle(.plain)
                 .disabled(dumping)
                 Button {
                     Task { await dumpThenFinish() }
                 } label: {
-                    ChromePlate(title: dumping ? L("正在倒出") : L("先倒这卷"), prominent: true)
+                    HatchPlate(title: dumping ? L("正在倒出") : L("倒出这卷"), prominent: true)
                 }
                 .buttonStyle(.plain)
                 .disabled(dumping)

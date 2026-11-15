@@ -3,6 +3,7 @@ import CoreImage
 import Foundation
 import ImageIO
 import Observation
+import Photos
 import UIKit
 
 final class ImageStore: @unchecked Sendable {
@@ -12,7 +13,7 @@ final class ImageStore: @unchecked Sendable {
     private let displays = NSCache<NSString, UIImage>()
     private let negatives = NSCache<NSString, UIImage>()
     private let lock = NSLock()
-    private var inflight: [String: Task<UIImage?, Never>] = [:]
+    private var inflight: [String: Inflight] = [:]
     private let ci = CIContext(options: [.cacheIntermediates: false])
 
     private init() {
@@ -53,19 +54,26 @@ final class ImageStore: @unchecked Sendable {
         displayKeys.subtract(d)
         negativeKeys.subtract(n)
         let flying = inflight.keys.filter { $0.hasSuffix(prefix) || $0.contains(prefix) }
-        for key in flying { inflight[key] = nil }
+        for key in flying { inflight.removeValue(forKey: key) }
         lock.unlock()
         for key in p { previews.removeObject(forKey: key as NSString) }
         for key in d { displays.removeObject(forKey: key as NSString) }
         for key in n { negatives.removeObject(forKey: key as NSString) }
     }
 
-    func loadPreview(key: String, url: URL) async -> UIImage? {
+    func loadPreview(key: String, url: URL, priority: TaskPriority = .userInitiated) async -> UIImage? {
         if let hit = preview(key) { return hit }
-        return await coalesce("p:" + key) {
+        return await coalesce("p:" + key, priority: priority) {
             if let hit = self.preview(key) { return hit }
+            let disk = Self.previewDiskURL(for: url)
+            if FileManager.default.fileExists(atPath: disk.path),
+               let img = Self.decode(disk, maxSide: 360) {
+                self.remember(.preview, key: key, image: img)
+                return img
+            }
             guard let img = Self.decode(url, maxSide: 360) else { return nil }
             self.remember(.preview, key: key, image: img)
+            Self.writePreviewDisk(img, to: disk)
             return img
         }
     }
@@ -101,6 +109,13 @@ final class ImageStore: @unchecked Sendable {
         }
     }
 
+    private struct Inflight {
+        let gen: Int
+        let task: Task<UIImage?, Never>
+        let priority: TaskPriority
+        var waiters: Int
+    }
+
     private enum CacheKind { case preview, display, negative }
 
     private func remember(_ kind: CacheKind, key: String, image: UIImage) {
@@ -118,26 +133,52 @@ final class ImageStore: @unchecked Sendable {
         }
     }
 
-    private func coalesce(_ key: String, work: @escaping @Sendable () async -> UIImage?) async -> UIImage? {
-        let task = start(key, work: work)
-        let img = await task.value
-        end(key)
+    private func coalesce(
+        _ key: String,
+        priority: TaskPriority = .userInitiated,
+        work: @escaping @Sendable () async -> UIImage?
+    ) async -> UIImage? {
+        let started = start(key, priority: priority, work: work)
+        let img = await started.task.value
+        end(key, gen: started.gen)
         return img
     }
 
-    private func start(_ key: String, work: @escaping @Sendable () async -> UIImage?) -> Task<UIImage?, Never> {
+    private func start(
+        _ key: String,
+        priority: TaskPriority,
+        work: @escaping @Sendable () async -> UIImage?
+    ) -> Inflight {
         lock.lock()
         defer { lock.unlock() }
-        if let existing = inflight[key] { return existing }
-        let task = Task.detached(priority: .userInitiated, operation: work)
-        inflight[key] = task
-        return task
+        if let existing = inflight[key], existing.priority >= priority {
+            inflight[key]?.waiters += 1
+            return inflight[key]!
+        }
+        let task = Task.detached(priority: priority, operation: work)
+        let gen = (inflight[key]?.gen ?? 0) + 1
+        let entry = Inflight(gen: gen, task: task, priority: priority, waiters: 1)
+        inflight[key] = entry
+        return entry
     }
 
-    private func end(_ key: String) {
+    private static func previewDiskURL(for url: URL) -> URL {
+        URL(fileURLWithPath: url.path + ".p360.jpg")
+    }
+
+    private static func writePreviewDisk(_ image: UIImage, to url: URL) {
+        guard let data = image.jpegData(compressionQuality: 0.82) else { return }
+        try? data.write(to: url, options: .atomic)
+    }
+
+    private func end(_ key: String, gen: Int) {
         lock.lock()
-        inflight[key] = nil
-        lock.unlock()
+        defer { lock.unlock() }
+        guard inflight[key]?.gen == gen else { return }
+        inflight[key]?.waiters -= 1
+        if inflight[key]?.waiters == 0 {
+            inflight.removeValue(forKey: key)
+        }
     }
 
     static func decodeExport(_ url: URL, maxSide: CGFloat) -> UIImage? {
@@ -180,13 +221,29 @@ final class AppModel {
     var hasSeenEVHint = false
     var hasSeenFlashHint = false
     var hasSeenManualHint = false
+    var hasSeenRewindHint = false
     var hasSeenExportHint = false
     var hasSeenKeepHint = false
-    var autoExportPrints = false
+    var autoExportPrints = true
+    var exportFilmBorder = true
     var exportBusy = false
     var exportNotice = ""
     var hasCompletedOnboarding = false
+    var tutorialMaskDismissed = false
+    var autoMacro = true
     var pendingLoadRoll = false
+    var showPaywall = false
+    var presentingLoadRoll = false
+    var loadsThisMonth = 0
+    var loadMonthStamp = ""
+    var skipGranted = 0
+    var skipPurchased = 0
+    var skipGrantQuota = 0
+    private var skipCloudUpdatedAt: TimeInterval = 0
+    private var skipCloudReady = false
+
+    var skipTickets: Int { skipGranted + skipPurchased }
+    let membership = Entitlements.shared
     var pipelineRunning = false
     private var developQueue: [UUID] = []
     var manualMode = false
@@ -214,9 +271,11 @@ final class AppModel {
     var isCapturing = false
     var developProgress: Double = 0
     var camera = CameraSession()
-    var proRAW = true
+    var proRAW = false
     private var pendingWrites = 0
     private var persistTask: Task<Void, Never>?
+    private var coverWarmup: Task<Void, Never>?
+    private var coverWarmupPriority: TaskPriority?
 
     var currentRoll: Roll? {
         get {
@@ -243,7 +302,31 @@ final class AppModel {
         rolls.filter { $0.state == .ready }.sorted { ($0.developedAt ?? $0.loadedAt) > ($1.developedAt ?? $1.loadedAt) }
     }
 
+    var tier: MembershipTier { membership.tier }
+
+    var monthlyLimit: Int? { AppConst.monthlyLimit(tier) }
+
+    var canLoadRoll: Bool {
+        guard let cap = monthlyLimit else { return true }
+        return loadsThisMonth < cap
+    }
+
+    func canUseCapacity(_ n: Int) -> Bool {
+        AppConst.allowedCapacities(tier).contains(n)
+    }
+
+    var defaultCapacity: Int {
+        let allowed = AppConst.allowedCapacities(tier)
+        if allowed.contains(36) { return 36 }
+        return allowed.last ?? 12
+    }
+
     var isOnboarding: Bool { !hasCompletedOnboarding }
+
+    var tutorialDumpRollId: UUID? {
+        guard isOnboarding else { return nil }
+        return albumRolls.first(where: \.isTutorial)?.id
+    }
 
     var tutorialInProgress: Bool {
         isOnboarding && rolls.contains { $0.isTutorial && $0.state != .ready }
@@ -264,6 +347,11 @@ final class AppModel {
 
     init() {
         load()
+        listenSkipCloud()
+        pullSkipCloud()
+        membership.onSkipPackGranted = { [weak self] count in
+            self?.addSkipTickets(count)
+        }
         applyFeel()
         language = L10n.shared.language
         camera.start()
@@ -287,9 +375,42 @@ final class AppModel {
             }
         }
         Task { await DevelopLive.sync(rolls: rolls) }
+        rolloverMonth()
         if isOnboarding, currentRollId == nil, rolls.contains(where: { $0.isTutorial && $0.state != .ready }) {
             showDarkbox = true
         }
+        if tutorialDumpRollId != nil {
+            showAlbum = true
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(1200))
+            await warmupAlbumCovers()
+        }
+    }
+
+    @discardableResult
+    func rolloverMonth() -> Bool {
+        let stamp = AppConst.monthStamp()
+        let rolled = loadMonthStamp != stamp
+        if rolled {
+            loadMonthStamp = stamp
+            loadsThisMonth = 0
+            skipGranted = 0
+            skipGrantQuota = 0
+        }
+        syncSkipGrant()
+        if rolled { persistSoon() }
+        pushSkipCloud()
+        return rolled
+    }
+
+    func syncSkipGrant() {
+        let quota = AppConst.monthlySkipGrant(tier)
+        guard quota > skipGrantQuota else { return }
+        skipGranted += quota - skipGrantQuota
+        skipGrantQuota = quota
+        persistSoon()
+        pushSkipCloud()
     }
 
     func loadRoll(
@@ -303,6 +424,10 @@ final class AppModel {
         capacity: Int = AppConst.capacity,
         isTutorial: Bool = false
     ) {
+        if !isTutorial {
+            rolloverMonth()
+            guard canLoadRoll, canUseCapacity(capacity) else { return }
+        }
         let roll = Roll(
             id: UUID(),
             filmId: film.id,
@@ -333,6 +458,9 @@ final class AppModel {
         let paper = roll.paperId
         DispatchQueue.global(qos: .utility).async {
             SpektraEngine.shared.warmUp(film: FilmCatalog.spkFilm(id: filmId), paper: paper)
+        }
+        if !isTutorial {
+            loadsThisMonth += 1
         }
         Soundboard.shared.play("back")
         Haptics.shared.latch()
@@ -401,7 +529,7 @@ final class AppModel {
     }
 
     func setFocusLens(_ value: Float) {
-        focusLens = min(max(value, 0), 1)
+        focusLens = CameraSession.clampLens(value)
         let wasAuto = focusAuto
         focusAuto = false
         if wasAuto {
@@ -413,8 +541,8 @@ final class AppModel {
     var focusDistanceLabel: String {
         if focusLens >= 0.97 { return "∞" }
         let d = CameraSession.focusDistance(slider: focusLens, minFocus: camera.currentMinFocusMeters)
-        if d >= 10 { return String(format: "%.0f m", d) }
-        return String(format: "%.1f m", d)
+        let n = CameraSession.formatFocus(d)
+        return n == "∞" ? n : "\(n) m"
     }
 
     func setEV(_ value: Float, dragging: Bool = false) {
@@ -534,7 +662,9 @@ final class AppModel {
         currentRoll = nil
         upsert(roll)
         pendingDevelopId = roll.id
-        showDarkbox = true
+        if !isOnboarding {
+            showDarkbox = true
+        }
         persistNow()
     }
 
@@ -620,6 +750,31 @@ final class AppModel {
         presentRitual(id)
     }
 
+    func addSkipTickets(_ count: Int) {
+        guard count != 0 else { return }
+        skipPurchased = max(0, skipPurchased + count)
+        persistNow()
+        pushSkipCloud()
+    }
+
+    func applySkipTicket(_ id: UUID) {
+        guard skipTickets > 0 else { return }
+        guard let idx = rolls.firstIndex(where: { $0.id == id }) else { return }
+        guard rolls[idx].state == .waiting, !rolls[idx].isTutorial else { return }
+        guard rolls[idx].waitRemaining > 0 else { return }
+        if skipGranted > 0 {
+            skipGranted -= 1
+        } else {
+            skipPurchased = max(0, skipPurchased - 1)
+        }
+        rolls[idx].developReadyAt = Date()
+        persistNow()
+        pushSkipCloud()
+        let film = FilmCatalog.recipe(id: rolls[idx].filmId)
+        DevelopNotify.schedule(rollId: id, filmName: film.name, at: rolls[idx].developReadyAt ?? Date())
+        Task { await DevelopLive.sync(rolls: rolls) }
+    }
+
     func resumeRitual(_ id: UUID) {
         guard rolls.contains(where: { $0.id == id && $0.state == .developing }) else { return }
         ritualRollId = id
@@ -660,11 +815,10 @@ final class AppModel {
         if let id = dumpId, let i = rolls.firstIndex(where: { $0.id == id }) {
             rolls[i].state = .ready
             rolls[i].developedAt = Date()
-            if rolls[i].isTutorial {
-                hasCompletedOnboarding = true
-            }
         }
-        if isOnboarding { hasCompletedOnboarding = true }
+        if isOnboarding, !tutorial {
+            completeOnboarding()
+        }
         Task { await DevelopLive.sync(rolls: rolls) }
         showDarkroom = false
         ritualRollId = nil
@@ -674,6 +828,9 @@ final class AppModel {
             pendingLoadRoll = true
         } else {
             showAlbum = true
+            if let id = dumpId, let roll = rolls.first(where: { $0.id == id }) {
+                Task { await warmupCover(of: roll, priority: .userInitiated) }
+            }
         }
         persistNow()
         let shouldDump = autoDump ?? autoExportPrints
@@ -698,13 +855,84 @@ final class AppModel {
         persistNow()
     }
 
-    func markExported(rollId: UUID, frameIds: [UUID]) {
+    func markExported(rollId: UUID, frameIds: [UUID], assetId: String? = nil, asPair: Bool = false) {
         guard let ri = rolls.firstIndex(where: { $0.id == rollId }) else { return }
         for id in frameIds {
             guard let fi = rolls[ri].frames.firstIndex(where: { $0.id == id }) else { continue }
-            rolls[ri].frames[fi].exported = true
+            if asPair {
+                if let assetId, !assetId.isEmpty,
+                   !rolls[ri].frames[fi].exportedPairAssetIds.contains(assetId) {
+                    rolls[ri].frames[fi].exportedPairAssetIds.append(assetId)
+                }
+            } else {
+                rolls[ri].frames[fi].exported = true
+                if let assetId, !assetId.isEmpty,
+                   !rolls[ri].frames[fi].exportedAssetIds.contains(assetId) {
+                    rolls[ri].frames[fi].exportedAssetIds.append(assetId)
+                }
+            }
         }
         persistSoon()
+        completeOnboarding()
+    }
+
+    func isPairDumped(_ frames: [Frame]) -> Bool {
+        let ready = frames.filter { $0.developed && $0.posFileName != nil }
+        guard !ready.isEmpty else { return false }
+        if ready.count == 1 { return ready[0].exported }
+        return ready.allSatisfy { !$0.exportedPairAssetIds.isEmpty }
+    }
+
+    func unexportedDumpGroups(in roll: Roll) -> [[Frame]] {
+        filmPairs(roll.frames).filter { pair in
+            let ready = pair.filter { $0.developed && $0.posFileName != nil }
+            guard !ready.isEmpty else { return false }
+            return !isPairDumped(ready)
+        }
+    }
+
+    func dumpGroupCount(in roll: Roll) -> Int {
+        filmPairs(roll.frames).filter { pair in
+            pair.contains { $0.developed && $0.posFileName != nil }
+        }.count
+    }
+
+    func reconcileExportedPrints() async {
+        let ids = rolls.flatMap { roll in
+            roll.frames.flatMap { $0.exportedAssetIds + $0.exportedPairAssetIds }
+        }
+        guard !ids.isEmpty else { return }
+        let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+        guard status == .authorized || status == .limited else { return }
+        let live = await Task.detached(priority: .utility) {
+            PhotoExport.liveAssetIds(ids)
+        }.value
+        var changed = false
+        for ri in rolls.indices {
+            for fi in rolls[ri].frames.indices {
+                let singles = rolls[ri].frames[fi].exportedAssetIds
+                if !singles.isEmpty {
+                    let kept = singles.filter { live.contains($0) }
+                    if kept.isEmpty {
+                        rolls[ri].frames[fi].exported = false
+                        rolls[ri].frames[fi].exportedAssetIds = []
+                        changed = true
+                    } else if kept.count != singles.count {
+                        rolls[ri].frames[fi].exportedAssetIds = kept
+                        changed = true
+                    }
+                }
+                let pairs = rolls[ri].frames[fi].exportedPairAssetIds
+                if !pairs.isEmpty {
+                    let kept = pairs.filter { live.contains($0) }
+                    if kept.count != pairs.count {
+                        rolls[ri].frames[fi].exportedPairAssetIds = kept
+                        changed = true
+                    }
+                }
+            }
+        }
+        if changed { persistSoon() }
     }
 
     func liveFrame(rollId: UUID, frameId: UUID) -> Frame? {
@@ -747,6 +975,12 @@ final class AppModel {
         persistSoon()
     }
 
+    func markRewindHint() {
+        guard !hasSeenRewindHint else { return }
+        hasSeenRewindHint = true
+        persistSoon()
+    }
+
     func markExportHint() {
         guard !hasSeenExportHint else { return }
         hasSeenExportHint = true
@@ -764,16 +998,21 @@ final class AppModel {
         persistSoon()
     }
 
-    func unexportedFrames(in roll: Roll) -> [Frame] {
-        roll.frames.filter { $0.developed && !$0.exported && $0.posFileName != nil }
+    func setExportFilmBorder(_ on: Bool) {
+        exportFilmBorder = on
+        persistSoon()
     }
 
     func hasUnexportedPrints(_ roll: Roll) -> Bool {
-        !unexportedFrames(in: roll).isEmpty
+        !unexportedDumpGroups(in: roll).isEmpty
     }
 
     var unexportedRollCount: Int {
         albumRolls.filter { hasUnexportedPrints($0) }.count
+    }
+
+    var unexportedFrameCount: Int {
+        albumRolls.reduce(0) { $0 + unexportedDumpGroups(in: $1).count }
     }
 
     func formattedStorage() async -> String {
@@ -788,33 +1027,52 @@ final class AppModel {
         return fmt.string(fromByteCount: bytes)
     }
 
-    func exportPrints(rollId: UUID, frames: [Frame]? = nil) async -> PhotoExport.Outcome {
+    func exportPrints(rollId: UUID) async -> PhotoExport.Outcome {
         await beginExport()
         defer { exportBusy = false }
         guard let roll = rolls.first(where: { $0.id == rollId }) else { return .noPrints }
-        let targets = frames ?? unexportedFrames(in: roll)
-        let jobs = jpegJobs(roll: roll, frames: targets).map { (rollId, $0.0, $0.1) }
-        return await flushExportJobs(jobs)
+        return await flushDumpGroups(rollId: roll.id, groups: unexportedDumpGroups(in: roll))
     }
 
     func exportAllUnexportedPrints() async -> PhotoExport.Outcome {
         await beginExport()
         defer { exportBusy = false }
-        var jobs: [(UUID, UUID, URL)] = []
+        var saved = 0
+        var lastFail: PhotoExport.Outcome?
         for roll in albumRolls {
-            for (frameId, url) in jpegJobs(roll: roll, frames: unexportedFrames(in: roll)) {
-                jobs.append((roll.id, frameId, url))
+            let groups = unexportedDumpGroups(in: roll)
+            guard !groups.isEmpty else { continue }
+            let outcome = await flushDumpGroups(rollId: roll.id, groups: groups)
+            switch outcome {
+            case .saved(let count, _):
+                saved += count
+            case .noPrints:
+                continue
+            case .noPermission, .failed:
+                if saved == 0 { return outcome }
+                lastFail = outcome
+                return lastFail ?? .saved(saved, [])
             }
         }
-        return await flushExportJobs(jobs)
+        if saved > 0 { return .saved(saved, []) }
+        return lastFail ?? .noPrints
     }
 
-    func exportJPEGPayload(_ data: Data, rollId: UUID, frameIds: [UUID]) async -> PhotoExport.Outcome {
+    func exportJPEGPayload(_ data: Data, rollId: UUID, frameIds: [UUID], asPair: Bool = false) async -> PhotoExport.Outcome {
         await beginExport()
         defer { exportBusy = false }
+        let live = frameIds.compactMap { liveFrame(rollId: rollId, frameId: $0) }
+        let fresh: [UUID]
+        if asPair {
+            guard !isPairDumped(live) else { return .noPrints }
+            fresh = live.map(\.id)
+        } else {
+            fresh = live.filter { !$0.exported }.map(\.id)
+        }
+        guard !fresh.isEmpty else { return .noPrints }
         let outcome = await PhotoExport.saveJPEGs([data])
-        if case .saved = outcome {
-            markExported(rollId: rollId, frameIds: frameIds)
+        if case .saved(_, let assetIds) = outcome {
+            markExported(rollId: rollId, frameIds: fresh, assetId: assetIds.first, asPair: asPair)
         }
         return outcome
     }
@@ -835,19 +1093,40 @@ final class AppModel {
     }
 
     func setProRAW(_ on: Bool) {
-        proRAW = on
-        camera.setProRAW(on)
+        let next = on && camera.proRAWSupported
+        proRAW = next
+        camera.setProRAW(next)
         persistSoon()
+    }
+
+    func setAutoMacro(_ on: Bool) {
+        autoMacro = on
+        camera.setAutoMacro(on)
+        persistSoon()
+    }
+
+    func dismissTutorialMask() {
+        guard !tutorialMaskDismissed else { return }
+        tutorialMaskDismissed = true
+        persistSoon()
+    }
+
+    func completeOnboarding() {
+        guard isOnboarding else { return }
+        hasCompletedOnboarding = true
+        persistNow()
     }
 
     func resetOnboardingForTest() {
         hasCompletedOnboarding = false
+        tutorialMaskDismissed = false
         hasSeenHint = false
         hasSeenBlackHint = false
         hasSeenDarkboxHint = false
         hasSeenEVHint = false
         hasSeenFlashHint = false
         hasSeenManualHint = false
+        hasSeenRewindHint = false
         hasSeenKeepHint = false
         if let roll = currentRoll {
             if roll.isTutorial || roll.shotCount == 0 {
@@ -928,9 +1207,40 @@ final class AppModel {
         return ImageStore.shared.negative(key)
     }
 
-    func loadPreview(roll: Roll, frame: Frame) async -> UIImage? {
+    func loadPreview(roll: Roll, frame: Frame, priority: TaskPriority = .userInitiated) async -> UIImage? {
         guard let key = stillKey(roll: roll, frame: frame), let url = stillURL(roll: roll, frame: frame) else { return nil }
-        return await ImageStore.shared.loadPreview(key: key, url: url)
+        return await ImageStore.shared.loadPreview(key: key, url: url, priority: priority)
+    }
+
+    func warmupAlbumCovers(priority: TaskPriority = .utility) async {
+        if let flying = coverWarmup, let flyingPriority = coverWarmupPriority, flyingPriority >= priority {
+            await flying.value
+            return
+        }
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            let rolls = Array(self.albumRolls.prefix(8))
+            for roll in rolls {
+                await self.warmupCover(of: roll, priority: priority)
+            }
+        }
+        coverWarmup = task
+        coverWarmupPriority = priority
+        await task.value
+        if coverWarmup == task {
+            coverWarmup = nil
+            coverWarmupPriority = nil
+        }
+    }
+
+    func warmupCover(of roll: Roll, priority: TaskPriority = .utility) async {
+        let pair = filmPairs(roll.frames).first ?? []
+        for frame in pair {
+            while isCapturing {
+                try? await Task.sleep(for: .milliseconds(400))
+            }
+            _ = await loadPreview(roll: roll, frame: frame, priority: priority)
+        }
     }
 
     func loadDisplay(roll: Roll, frame: Frame) async -> UIImage? {
@@ -1033,6 +1343,10 @@ final class AppModel {
         }
         if track { developProgress = 1 }
         persistNow()
+        if let live = rolls.first(where: { $0.id == id }) {
+            await warmupCover(of: live)
+        }
+        Task { await warmupAlbumCovers() }
     }
 
     private func upsert(_ roll: Roll) {
@@ -1054,11 +1368,56 @@ final class AppModel {
         return url
     }
 
-    private func jpegJobs(roll: Roll, frames: [Frame]) -> [(UUID, URL)] {
-        frames.compactMap { frame in
-            guard let name = frame.posFileName else { return nil }
-            return (frame.id, positiveURL(rollId: roll.id, fileName: name))
+    private struct DumpJob {
+        var frameIds: [UUID]
+        var data: Data
+        var asPair: Bool
+    }
+
+    private func flushDumpGroups(rollId: UUID, groups: [[Frame]]) async -> PhotoExport.Outcome {
+        guard let roll = rolls.first(where: { $0.id == rollId }) else { return .noPrints }
+        var jobs: [DumpJob] = []
+        for pair in groups {
+            let ready = pair.filter { $0.developed && $0.posFileName != nil }
+            guard !ready.isEmpty else { continue }
+            let urls = ready.compactMap { exportJPEGURL(roll: roll, frame: $0) }
+            guard !urls.isEmpty else { continue }
+            let asPair = ready.count >= 2
+            let bordered = exportFilmBorder
+            let rebates = bordered ? ready.map { filmRebate($0.index) } : []
+            let data = await Task.detached(priority: .userInitiated) {
+                PhotoExport.composeJPEG(urls: urls, rebates: rebates, filmBorder: bordered)
+            }.value
+            guard let data else { continue }
+            jobs.append(DumpJob(frameIds: ready.map(\.id), data: data, asPair: asPair))
         }
+        return await flushDumpJobs(rollId: rollId, jobs: jobs)
+    }
+
+    private func flushDumpJobs(rollId: UUID, jobs: [DumpJob]) async -> PhotoExport.Outcome {
+        guard !jobs.isEmpty else { return .noPrints }
+        var saved = 0
+        var lastFail: PhotoExport.Outcome?
+        chunkLoop: for chunk in stride(from: 0, to: jobs.count, by: PhotoExport.batchSize) {
+            let slice = Array(jobs[chunk..<min(chunk + PhotoExport.batchSize, jobs.count)])
+            let outcome = await PhotoExport.saveJPEGs(slice.map(\.data))
+            switch outcome {
+            case .saved(let count, let assetIds):
+                saved += count
+                for (i, job) in slice.enumerated() {
+                    let assetId = i < assetIds.count ? assetIds[i] : nil
+                    markExported(rollId: rollId, frameIds: job.frameIds, assetId: assetId, asPair: job.asPair)
+                }
+            case .noPrints:
+                continue
+            case .noPermission, .failed:
+                if saved == 0 { return outcome }
+                lastFail = outcome
+                break chunkLoop
+            }
+        }
+        if saved > 0 { return .saved(saved, []) }
+        return lastFail ?? .noPrints
     }
 
     private func beginExport() async {
@@ -1074,46 +1433,6 @@ final class AppModel {
             try? await Task.sleep(for: .seconds(1.8))
             if exportNotice == text { exportNotice = "" }
         }
-    }
-
-    private func flushExportJobs(_ jobs: [(UUID, UUID, URL)]) async -> PhotoExport.Outcome {
-        guard !jobs.isEmpty else { return .noPrints }
-        var saved = 0
-        var lastFail: PhotoExport.Outcome?
-        chunkLoop: for chunk in stride(from: 0, to: jobs.count, by: PhotoExport.batchSize) {
-            let slice = Array(jobs[chunk..<min(chunk + PhotoExport.batchSize, jobs.count)])
-            let payloads = await Self.readJPEGRolls(slice)
-            guard !payloads.isEmpty else { continue }
-            let outcome = await PhotoExport.saveJPEGs(payloads.map(\.2))
-            switch outcome {
-            case .saved(let count):
-                saved += count
-                var grouped: [UUID: [UUID]] = [:]
-                for (rollId, frameId, _) in payloads {
-                    grouped[rollId, default: []].append(frameId)
-                }
-                for (rollId, ids) in grouped {
-                    markExported(rollId: rollId, frameIds: ids)
-                }
-            case .noPrints:
-                continue
-            case .noPermission, .failed:
-                if saved == 0 { return outcome }
-                lastFail = outcome
-                break chunkLoop
-            }
-        }
-        if saved > 0 { return .saved(saved) }
-        return lastFail ?? .noPrints
-    }
-
-    private nonisolated static func readJPEGRolls(_ jobs: [(UUID, UUID, URL)]) async -> [(UUID, UUID, Data)] {
-        await Task.detached(priority: .userInitiated) {
-            jobs.compactMap { rollId, frameId, url in
-                guard let data = try? Data(contentsOf: url), !data.isEmpty else { return nil }
-                return (rollId, frameId, data)
-            }
-        }.value
     }
 
     private nonisolated static func storageBytes(at root: URL) -> Int64 {
@@ -1161,12 +1480,22 @@ final class AppModel {
             hasSeenEVHint: hasSeenEVHint,
             hasSeenFlashHint: hasSeenFlashHint,
             hasSeenManualHint: hasSeenManualHint,
+            hasSeenRewindHint: hasSeenRewindHint,
             hasSeenExportHint: hasSeenExportHint,
             hasSeenKeepHint: hasSeenKeepHint,
             autoExportPrints: autoExportPrints,
+            exportFilmBorder: exportFilmBorder,
             manualMode: manualMode,
             strictMode: strictMode,
-            hasCompletedOnboarding: hasCompletedOnboarding
+            hasCompletedOnboarding: hasCompletedOnboarding,
+            tutorialMaskDismissed: tutorialMaskDismissed,
+            autoMacro: autoMacro,
+            loadsThisMonth: loadsThisMonth,
+            loadMonthStamp: loadMonthStamp,
+            skipGranted: skipGranted,
+            skipPurchased: skipPurchased,
+            skipGrantQuota: skipGrantQuota,
+            skipCloudUpdatedAt: skipCloudUpdatedAt
         )
         let url = supportDir().appendingPathComponent("store.json")
         let enc = JSONEncoder()
@@ -1187,7 +1516,7 @@ final class AppModel {
         flashOn = store.flashOn
         soundOn = store.soundOn
         hapticOn = store.hapticOn
-        proRAW = store.proRAW ?? true
+        proRAW = store.proRAW ?? false
         camera.setProRAW(proRAW)
         hasSeenHint = store.hasSeenHint
         hasSeenBlackHint = store.hasSeenBlackHint ?? false
@@ -1196,11 +1525,121 @@ final class AppModel {
         hasSeenEVHint = store.hasSeenEVHint ?? false
         hasSeenFlashHint = store.hasSeenFlashHint ?? false
         hasSeenManualHint = store.hasSeenManualHint ?? false
+        hasSeenRewindHint = store.hasSeenRewindHint ?? false
         hasSeenExportHint = store.hasSeenExportHint ?? false
         hasSeenKeepHint = store.hasSeenKeepHint ?? false
-        autoExportPrints = store.autoExportPrints ?? false
+        autoExportPrints = store.autoExportPrints ?? true
+        exportFilmBorder = store.exportFilmBorder ?? true
         manualMode = store.manualMode ?? false
         strictMode = store.strictMode ?? true
         hasCompletedOnboarding = store.hasCompletedOnboarding ?? !rolls.isEmpty
+        tutorialMaskDismissed = store.tutorialMaskDismissed ?? false
+        autoMacro = true
+        camera.setAutoMacro(true)
+        loadsThisMonth = store.loadsThisMonth ?? 0
+        loadMonthStamp = store.loadMonthStamp ?? ""
+        skipGranted = store.skipGranted ?? 0
+        skipPurchased = store.skipPurchased ?? store.skipTickets ?? 0
+        skipGrantQuota = store.skipGrantQuota ?? 0
+        skipCloudUpdatedAt = store.skipCloudUpdatedAt ?? 0
+    }
+
+    private static let cloudSkipLedgerKey = "halfcam.cloud.skipLedger"
+
+    private func listenSkipCloud() {
+        NSUbiquitousKeyValueStore.default.synchronize()
+        NotificationCenter.default.addObserver(
+            forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+            object: NSUbiquitousKeyValueStore.default,
+            queue: .main
+        ) { [weak self] note in
+            Task { @MainActor in
+                self?.handleSkipCloudChange(note)
+            }
+        }
+        NotificationCenter.default.addObserver(
+            forName: .halfcamSkipCloudRestore,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.pullSkipCloud()
+            }
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2.5))
+            guard !skipCloudReady else { return }
+            skipCloudReady = true
+            if skipPurchased > 0 {
+                pushSkipCloud()
+            }
+        }
+    }
+
+    private func handleSkipCloudChange(_ note: Notification) {
+        let reason = note.userInfo?[NSUbiquitousKeyValueStoreChangeReasonKey] as? Int
+        if reason == NSUbiquitousKeyValueStoreInitialSyncChange
+            || reason == NSUbiquitousKeyValueStoreServerChange {
+            skipCloudReady = true
+        }
+        pullSkipCloud()
+    }
+
+    private func pullSkipCloud() {
+        let cloud = NSUbiquitousKeyValueStore.default
+        cloud.synchronize()
+        guard let data = cloud.data(forKey: Self.cloudSkipLedgerKey),
+              let ledger = try? JSONDecoder().decode(SkipCloudLedger.self, from: data)
+        else {
+            if skipCloudReady, skipPurchased > 0 {
+                pushSkipCloud()
+            }
+            return
+        }
+        skipCloudReady = true
+        let firstUpgrade = skipCloudUpdatedAt == 0 && (skipPurchased > 0 || skipGranted > 0)
+        if firstUpgrade {
+            skipPurchased = max(skipPurchased, ledger.skipPurchased)
+            let current = AppConst.monthStamp()
+            if ledger.loadMonthStamp == current {
+                skipGranted = max(skipGranted, ledger.skipGranted)
+                skipGrantQuota = max(skipGrantQuota, ledger.skipGrantQuota)
+                if loadMonthStamp != current {
+                    loadMonthStamp = ledger.loadMonthStamp
+                }
+            }
+            persistNow()
+            pushSkipCloud()
+            return
+        }
+        guard ledger.updatedAt >= skipCloudUpdatedAt else { return }
+        skipPurchased = ledger.skipPurchased
+        let current = AppConst.monthStamp()
+        if ledger.loadMonthStamp == current {
+            skipGranted = ledger.skipGranted
+            skipGrantQuota = ledger.skipGrantQuota
+            if loadMonthStamp != current {
+                loadMonthStamp = ledger.loadMonthStamp
+            }
+        }
+        skipCloudUpdatedAt = ledger.updatedAt
+        persistNow()
+    }
+
+    private func pushSkipCloud() {
+        guard skipCloudReady else { return }
+        skipCloudUpdatedAt = Date().timeIntervalSince1970
+        let ledger = SkipCloudLedger(
+            skipPurchased: skipPurchased,
+            skipGranted: skipGranted,
+            skipGrantQuota: skipGrantQuota,
+            loadMonthStamp: loadMonthStamp,
+            updatedAt: skipCloudUpdatedAt
+        )
+        if let data = try? JSONEncoder().encode(ledger) {
+            NSUbiquitousKeyValueStore.default.set(data, forKey: Self.cloudSkipLedgerKey)
+            NSUbiquitousKeyValueStore.default.synchronize()
+        }
+        persistNow()
     }
 }
