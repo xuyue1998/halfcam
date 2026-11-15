@@ -122,6 +122,9 @@ final class WinderKnob: UIView {
     deinit { link?.invalidate() }
 
     @objc private func handlePan(_ g: UIPanGestureRecognizer) {
+        if g.state == .ended || g.state == .cancelled || g.state == .failed {
+            panning = false
+        }
         guard isKnobEnabled else { return }
         let p = g.location(in: self)
         let c = CGPoint(x: bounds.midX, y: bounds.midY)
@@ -166,6 +169,13 @@ final class WinderKnob: UIView {
         let now = link.timestamp
         let dt = CGFloat(min(0.024, now - lastStamp))
         lastStamp = now
+        if flash.opacity > 0.02 {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            flash.opacity = Float(CGFloat(flash.opacity) * exp(-14 * dt))
+            if flash.opacity < 0.03 { flash.opacity = 0 }
+            CATransaction.commit()
+        }
         guard !panning else { return }
         if springing {
             let force = -springK * accumulated - springD * speed
@@ -180,13 +190,6 @@ final class WinderKnob: UIView {
             }
             applyAngle()
             return
-        }
-        if flash.opacity > 0.02 {
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            flash.opacity = Float(CGFloat(flash.opacity) * exp(-14 * dt))
-            if flash.opacity < 0.03 { flash.opacity = 0 }
-            CATransaction.commit()
         }
         if abs(speed) > 0.002 {
             if speed > 0 {

@@ -205,7 +205,7 @@ struct DarkroomView: View {
             Text(recipe.name)
                 .font(.system(size: 16, weight: .semibold, design: .serif))
                 .foregroundStyle(Color(white: 0.9))
-                .padding(.top, 18)
+                .padding(.top, 4)
             Text(act == .negative ? L("负片显现") : L("\(live.shotCount) 格"))
                 .font(.system(size: 11, design: .monospaced))
                 .foregroundStyle(Color(white: 0.5))

@@ -12,7 +12,6 @@ struct RootView: View {
                 DarkroomView(rollId: id, roll: roll)
                     .environment(model)
                     .environment(\.locale, model.language.locale)
-                    .ignoresSafeArea()
                     .transition(.opacity)
             }
             if model.showPaywall, !model.presentingLoadRoll {

@@ -68,7 +68,10 @@ enum PhotoExport {
         let holeH = 9.4 * scale
         let pitch = 23 * scale
         let top = mark == nil
-        let holeY = y + (top ? (height - holeH) * 0.42 : (height - holeH) * 0.38)
+        let leftover = height - holeH
+        // Top: holes sit toward the outer edge. Bottom: same, so HALFCAM can
+        // live in the inner black rebate and never sit on a perforation.
+        let holeY = y + (top ? leftover * 0.42 : leftover * 0.78)
         let fill = UIColor(red: 0.93, green: 0.90, blue: 0.82, alpha: 1)
         let rim = UIColor(red: 0.22, green: 0.18, blue: 0.12, alpha: 1)
         var x = -holeW * 0.45
@@ -95,7 +98,15 @@ enum PhotoExport {
         }
         if let mark {
             let font = UIFont.monospacedSystemFont(ofSize: 8.2 * scale, weight: .medium)
-            drawCentered(mark, at: CGPoint(x: canvas.width / 2, y: y + (height - font.lineHeight) * 0.58), font: font, color: ink)
+            let gap = 1.2 * scale
+            let band = holeY - y
+            let textY = y + max(gap, (band - font.lineHeight) * 0.5)
+            drawCentered(
+                mark,
+                at: CGPoint(x: canvas.width / 2, y: min(textY, holeY - font.lineHeight - gap)),
+                font: font,
+                color: ink
+            )
         }
     }
 

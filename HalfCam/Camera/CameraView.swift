@@ -887,7 +887,7 @@ struct CameraView: View {
                 if model.currentRoll?.canShoot == true {
                     Circle().fill(HalfChrome.enamelFill)
                 } else {
-                    Circle().fill(HalfChrome.steelFill)
+                    Circle().fill(HalfColor.enamel.opacity(0.35))
                 }
             }
             .frame(width: 58, height: 58)

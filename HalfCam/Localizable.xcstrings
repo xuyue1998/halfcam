@@ -333,6 +333,9 @@
         }
       }
     },
+    "HALFCAM" : {
+
+    },
     "ISO %lld" : {
       "localizations" : {
         "ko" : {

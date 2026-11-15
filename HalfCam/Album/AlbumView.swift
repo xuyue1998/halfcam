@@ -945,7 +945,8 @@ struct FilmSprocketFrame<Content: View>: View {
             let holeW: CGFloat = 13.5
             let holeH: CGFloat = 9.4
             let pitch: CGFloat = 23
-            let y = top ? (size.height - holeH) * 0.42 : (size.height - holeH) * 0.38
+            let leftover = size.height - holeH
+            let y = top ? leftover * 0.42 : leftover * 0.78
             let holeFill = Color(red: 0.93, green: 0.90, blue: 0.82)
             let rim = Color(red: 0.22, green: 0.18, blue: 0.12)
             var x = -holeW * 0.45
@@ -959,6 +960,7 @@ struct FilmSprocketFrame<Content: View>: View {
                 ctx.fill(inner, with: .color(.white.opacity(0.22)))
                 x += pitch
             }
+            let ink = Color(red: 0.86, green: 0.62, blue: 0.18).opacity(0.92)
             if top, !rebates.isEmpty {
                 let font = Font.system(size: 9, weight: .medium, design: .monospaced)
                 for (i, code) in rebates.enumerated() {
@@ -966,11 +968,31 @@ struct FilmSprocketFrame<Content: View>: View {
                     let resolved = ctx.resolve(
                         Text(code)
                             .font(font)
-                            .foregroundColor(Color(red: 0.86, green: 0.62, blue: 0.18).opacity(0.92))
+                            .foregroundColor(ink)
                     )
                     let ts = resolved.measure(in: CGSize(width: 80, height: 16))
                     ctx.draw(resolved, in: CGRect(x: cx - ts.width / 2, y: size.height - ts.height - 1.5, width: ts.width, height: ts.height))
                 }
+            }
+            if !top {
+                let font = Font.system(size: 8.2, weight: .medium, design: .monospaced)
+                let resolved = ctx.resolve(
+                    Text("HALFCAM")
+                        .font(font)
+                        .foregroundColor(ink)
+                )
+                let ts = resolved.measure(in: CGSize(width: 120, height: 16))
+                let gap: CGFloat = 1.2
+                let textY = max(gap, (y - ts.height) * 0.5)
+                ctx.draw(
+                    resolved,
+                    in: CGRect(
+                        x: (size.width - ts.width) / 2,
+                        y: min(textY, y - ts.height - gap),
+                        width: ts.width,
+                        height: ts.height
+                    )
+                )
             }
         }
         .frame(height: 30)
