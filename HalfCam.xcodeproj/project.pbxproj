@@ -61,6 +61,7 @@
 		B30000000000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F30000000000000000000001 /* Assets.xcassets */; };
 		B30100000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F30100000000000000000001 /* Localizable.xcstrings */; };
 		B30200000000000000000001 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F30200000000000000000001 /* InfoPlist.xcstrings */; };
+		B30300000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F30300000000000000000001 /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -147,6 +148,7 @@
 		F30000000000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F30100000000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		F30200000000000000000001 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		F30300000000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		F40000000000000000000001 /* HalfCam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HalfCam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F50000000000000000000001 /* DevelopLive.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DevelopLive.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -324,6 +326,7 @@
 		G10000000000000000000000 /* DevelopLive */ = {
 			isa = PBXGroup;
 			children = (
+				F30300000000000000000001 /* Localizable.xcstrings */,
 				F13600000000000000000001 /* DevelopLiveBundle.swift */,
 				F13700000000000000000001 /* DevelopLiveLiveActivity.swift */,
 				F14000000000000000000001 /* Assets.xcassets */,
@@ -445,6 +448,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B14000000000000000000001 /* Assets.xcassets in Resources */,
+				B30300000000000000000001 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -586,9 +590,9 @@
 				INFOPLIST_FILE = HalfCam/AppInfo.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "HALF CAM";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "HALF CAM需要相机来拍摄胶片";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "HALF CAM需要把洗好的对页存进相册";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "HALF CAM需要把洗好的对页存进相册，并确认还在不在";
+				INFOPLIST_KEY_NSCameraUsageDescription = "允许 HALF CAM 使用相机，拍摄你的半格照片。";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "允许 HALF CAM 在你导出照片或开启自动导出时，将已显影的照片保存到系统相册。";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "允许 HALF CAM 将已显影的照片保存到系统相册，并检查已导出的照片是否仍在，以准确显示保存状态。";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -663,9 +667,9 @@
 				INFOPLIST_FILE = HalfCam/AppInfo.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "HALF CAM";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "HALF CAM需要相机来拍摄胶片";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "HALF CAM需要把洗好的对页存进相册";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "HALF CAM需要把洗好的对页存进相册，并确认还在不在";
+				INFOPLIST_KEY_NSCameraUsageDescription = "允许 HALF CAM 使用相机，拍摄你的半格照片。";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "允许 HALF CAM 在你导出照片或开启自动导出时，将已显影的照片保存到系统相册。";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "允许 HALF CAM 将已显影的照片保存到系统相册，并检查已导出的照片是否仍在，以准确显示保存状态。";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

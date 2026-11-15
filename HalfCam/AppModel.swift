@@ -1089,7 +1089,10 @@ final class AppModel {
     }
 
     func setLanguage(_ next: AppLanguage) {
+        guard next != language else { return }
         language = next
+        refreshLiveActivities()
+        Task { await DevelopNotify.relocalizePending(rolls: { rolls }) }
     }
 
     func setProRAW(_ on: Bool) {

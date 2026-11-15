@@ -12,6 +12,8 @@ struct DevelopActivityItem: Codable, Hashable {
 struct DevelopActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         var items: [DevelopActivityItem]
+        // Optional so activities created before language support still decode.
+        var languageCode: String? = nil
 
         var count: Int { items.count }
         var soonestLive: DevelopActivityItem? {

@@ -21,7 +21,7 @@ struct DevelopLiveLiveActivity: Widget {
                     expandedTrailing(context.state)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    Text(statusLine(context.state.count))
+                    Text(statusLine(context.state))
                         .font(.system(size: 11, design: .monospaced))
                         .foregroundStyle(Color.white.opacity(0.55))
                 }
@@ -54,13 +54,13 @@ struct DevelopLiveLiveActivity: Widget {
                         .font(.system(size: 15, weight: .semibold, design: .serif))
                         .lineLimit(1)
                     Spacer(minLength: 8)
-                    itemStatus(item)
+                    itemStatus(item, languageCode: context.state.languageCode)
                 }
             }
             HStack(spacing: 8) {
-                Text(statusLine(context.state.count))
+                Text(statusLine(context.state))
                 if extra > 0 {
-                    Text("另有 \(extra) 卷")
+                    Text(localized("另有 \(extra) 卷", languageCode: context.state.languageCode))
                 }
             }
             .font(.system(size: 11, design: .monospaced))
@@ -73,9 +73,9 @@ struct DevelopLiveLiveActivity: Widget {
     }
 
     @ViewBuilder
-    private func itemStatus(_ item: DevelopActivityItem) -> some View {
+    private func itemStatus(_ item: DevelopActivityItem, languageCode: String?) -> some View {
         if item.readyAt <= Date() {
-            Text("可取件")
+            Text(localized("可取件", languageCode: languageCode))
                 .font(.system(size: 13, weight: .medium, design: .monospaced))
                 .foregroundStyle(.white.opacity(0.7))
         } else {
@@ -120,8 +120,23 @@ struct DevelopLiveLiveActivity: Widget {
         state.soonestLive?.filmName ?? state.items.first?.filmName ?? "HALF CAM"
     }
 
-    private func statusLine(_ count: Int) -> String {
-        count > 1 ? "暗房冲洗中 · \(count) 卷" : "暗房冲洗中"
+    private func statusLine(_ state: DevelopActivityAttributes.ContentState) -> String {
+        let value: String.LocalizationValue
+        if state.allReady {
+            value = state.count > 1 ? "\(state.count) 卷可取件" : "可取件"
+        } else {
+            value = state.count > 1 ? "暗房显影中 · \(state.count) 卷" : "暗房显影中"
+        }
+        return localized(value, languageCode: state.languageCode)
+    }
+
+    private func localized(_ value: String.LocalizationValue, languageCode: String?) -> String {
+        guard let languageCode,
+              let path = Bundle.main.path(forResource: languageCode, ofType: "lproj"),
+              let bundle = Bundle(path: path) else {
+            return String(localized: value)
+        }
+        return String(localized: value, bundle: bundle, locale: Locale(identifier: languageCode))
     }
 
     private func countdown(_ item: DevelopActivityItem) -> Text {

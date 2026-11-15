@@ -53,31 +53,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld rolls · %2$lld undumped"
+            "value" : "Rolls: %1$lld · photos to export: %2$lld"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld巻 · 未書き出し%2$lld"
+            "value" : "%1$lld本 · 未書き出し %2$lld枚"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld권 · 미내보내기 %2$lld"
+            "value" : "%1$lld롤 · 내보낼 사진 %2$lld장"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld 卷 · 未倒 %2$lld"
+            "value" : "%1$lld 卷 · %2$lld 张待导出"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld 捲 · 未倒 %2$lld"
+            "value" : "%1$lld 捲 · %2$lld 張待匯出"
           }
         }
       }
@@ -122,13 +122,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld pairs"
+            "value" : "Spreads: %lld"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld対"
+            "value" : "%lld組"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld쌍"
           }
         },
         "zh-Hans" : {
@@ -185,7 +191,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld frames"
+            "value" : "Frames: %lld"
           }
         },
         "ja" : {
@@ -361,13 +367,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld rolls / month"
+            "value" : "%lld rolls per month"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ひと月%lld巻"
+            "value" : "毎月 %lld本"
           }
         },
         "ko" : {
@@ -379,13 +385,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一个月 %lld 卷"
+            "value" : "每月 %lld 卷"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一個月 %lld 捲"
+            "value" : "每月 %lld 捲"
           }
         }
       }
@@ -395,7 +401,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "up to %lld frames"
+            "value" : "Up to %lld frames per roll"
           }
         },
         "ja" : {
@@ -425,7 +431,38 @@
       }
     },
     "一对、单格都带齿孔和 HALFCAM。关掉就出净片。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adds sprocket holes and the HALFCAM mark to spreads and single frames. Turn off for borderless photos."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2コマ組にも単独のコマにも、パーフォレーションとHALFCAMの文字を付けます。オフにすると枠なしで保存します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "두 컷 사진과 단독 컷에 필름 구멍과 HALFCAM 표시를 넣습니다. 끄면 테두리 없이 저장합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为对页和单格保留齿孔与 HALFCAM 标记。关闭后，导出不带片边的照片。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為對頁和單格保留齒孔與 HALFCAM 標記。關閉後，匯出不帶片邊的照片。"
+          }
+        }
+      }
     },
     "一对带齿孔和 HALFCAM。单格不带边。" : {
       "extractionState" : "stale",
@@ -664,25 +701,25 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "上にスワイプ"
+            "value" : "上にスワイプして露出調整"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "위로 밀어 EV"
+            "value" : "위로 밀어 노출 조절"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "上拨曝光"
+            "value" : "上拨调节曝光"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "上撥曝光"
+            "value" : "上撥調整曝光"
           }
         }
       }
@@ -795,7 +832,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Strict"
+            "value" : "Strict mode"
           }
         },
         "ja" : {
@@ -894,10 +931,34 @@
     },
     "中性 · 黑白" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neutral · B&W"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ニュートラル · 白黒"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "뉴트럴 · 흑백"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中性 · 黑白"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中性 · 黑白"
           }
         }
       }
@@ -948,19 +1009,25 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "急ぎ券を買う"
+            "value" : "お急ぎ券を購入"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 현상권 구매"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "买加急券"
+            "value" : "购买加急券"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "買加急券"
+            "value" : "購買加急券"
           }
         }
       }
@@ -976,19 +1043,25 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "急ぎ券を買う · %@"
+            "value" : "お急ぎ券を購入 · %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 현상권 구매 · %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "买加急券 · %@"
+            "value" : "购买加急券 · %@"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "買加急券 · %@"
+            "value" : "購買加急券 · %@"
           }
         }
       }
@@ -1091,7 +1164,38 @@
       }
     },
     "买断：不限卷，一卷最多 72 格。每月赠 6 张加急券。一次付清。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lifetime: unlimited rolls, up to 72 frames each, and 6 rush tickets per month. One-time purchase."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "買い切り：本数無制限、1本最大72コマ。毎月お急ぎ券6枚を付与。一度の購入で利用できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "평생권: 롤 수 무제한, 롤당 최대 72컷. 매월 빠른 현상권 6장 증정. 한 번만 결제합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "买断：不限装卷，每卷最多 72 格，每月赠 6 张加急券。一次购买，长期使用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "買斷：不限裝捲，每捲最多 72 格，每月贈 6 張加急券。一次購買，長期使用。"
+          }
+        }
+      }
     },
     "买断一次付清。" : {
       "extractionState" : "stale",
@@ -1202,31 +1306,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unloads the camera roll and clears unfinished demo rolls in the darkbox"
+            "value" : "Unloads the current roll and deletes unfinished trial rolls from the darkbox."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "カメラの巻を外し、暗箱の未現像の体験巻も消します"
+            "value" : "装填中のフィルムを取り出し、暗箱の未現像の体験フィルムを削除します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "카메라 롤을 빼고, 암상자 속 미현상 체험 롤도 지웁니다"
+            "value" : "장전된 롤을 꺼내고 암상자의 미현상 체험 롤을 삭제합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "会卸下机身这卷，暗盒里未洗完的体验卷也清掉"
+            "value" : "将卸下当前胶卷，并删除暗盒中尚未显影的体验卷。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "會卸下機身這捲，暗盒裡未洗完的體驗捲也清掉"
+            "value" : "將卸下目前的膠捲，並刪除暗盒中尚未顯影的體驗捲。"
           }
         }
       }
@@ -1265,13 +1369,48 @@
         }
       }
     },
-    "低反差 · 人像" : {
-      "extractionState" : "stale",
+    "低光 · 人像" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Low contrast · portrait"
+            "value" : "Low light · portraits"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "低照度 · ポートレート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저조도 · 인물"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "低光 · 人像"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "低光 · 人像"
+          }
+        }
+      }
+    },
+    "低反差 · 人像" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low contrast · portraits"
           }
         },
         "ja" : {
@@ -1301,12 +1440,12 @@
       }
     },
     "低反差 · 电影" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Low contrast · cine"
+            "value" : "Low contrast · cinema"
           }
         },
         "ja" : {
@@ -1337,10 +1476,34 @@
     },
     "你的 %@ 好了" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your %@ is ready. Open the darkbox to collect it."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@の待ち時間が終わりました。暗箱を開いて受け取りましょう。"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 현상 완료"
+            "value" : "%@의 대기가 끝났습니다. 암상자를 열어 찾아보세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的 %@ 已可取件，打开暗盒看看。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的 %@ 已可取件，打開暗盒看看。"
           }
         }
       }
@@ -1350,7 +1513,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dump"
+            "value" : "Export"
           }
         },
         "ja" : {
@@ -1368,13 +1531,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出"
+            "value" : "导出"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出"
+            "value" : "匯出"
           }
         }
       }
@@ -1384,31 +1547,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Couldn’t dump"
+            "value" : "Export failed. Try again."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "出せなかった"
+            "value" : "書き出せませんでした。もう一度お試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "내보내지 못함"
+            "value" : "내보내지 못했습니다. 다시 시도해 주세요."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出失败"
+            "value" : "导出未完成，请重试"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出失敗"
+            "value" : "匯出未完成，請重試"
           }
         }
       }
@@ -1418,31 +1581,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dump with film edge"
+            "value" : "Include film border"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "フィルム縁つきで出す"
+            "value" : "フィルム枠を付ける"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "필름 가장자리로 내보내기"
+            "value" : "필름 테두리 포함"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出带片边"
+            "value" : "导出时保留片边"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出帶片邊"
+            "value" : "匯出時保留片邊"
           }
         }
       }
@@ -1452,31 +1615,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dump what’s still here"
+            "value" : "Export remaining photos"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まだ出していない分を出す"
+            "value" : "未書き出しの写真を保存"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "아직 안 내보낸 것 내보내기"
+            "value" : "남은 사진 내보내기"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出还未倒走的"
+            "value" : "导出剩余照片"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出還未倒走的"
+            "value" : "匯出剩餘照片"
           }
         }
       }
@@ -1486,13 +1649,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dump roll"
+            "value" : "Export roll"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この巻を書き出す"
+            "value" : "このフィルムを書き出す"
           }
         },
         "ko" : {
@@ -1504,13 +1667,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出这卷"
+            "value" : "导出整卷"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出這捲"
+            "value" : "匯出整捲"
           }
         }
       }
@@ -1520,31 +1683,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Export pair"
+            "value" : "Export spread"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この対を出す"
+            "value" : "2コマを書き出す"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 페어 내보내기"
+            "value" : "두 컷 내보내기"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出这对"
+            "value" : "导出对页"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出這對"
+            "value" : "匯出對頁"
           }
         }
       }
@@ -1560,7 +1723,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このコマを出す"
+            "value" : "このコマを書き出す"
           }
         },
         "ko" : {
@@ -1572,13 +1735,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出这格"
+            "value" : "导出单格"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒出這格"
+            "value" : "匯出單格"
           }
         }
       }
@@ -1691,31 +1854,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keep in app"
+            "value" : "Not now"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まだ出さない"
+            "value" : "あとで"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "아직 내보내지 않기"
+            "value" : "나중에"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "先不倒"
+            "value" : "暂不导出"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "先不倒"
+            "value" : "暫不匯出"
           }
         }
       }
@@ -1824,7 +1987,38 @@
       }
     },
     "免费：一个月 3 卷，一卷最多 12 格。每月赠 1 张加急券。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free: 3 rolls per month, up to 12 frames each, and 1 rush ticket per month."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料：毎月3本、1本最大12コマ。毎月お急ぎ券1枚を付与。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무료: 매월 3롤, 롤당 최대 12컷. 매월 빠른 현상권 1장 증정."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费：每月 3 卷，每卷最多 12 格，每月赠 1 张加急券。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免費：每月 3 捲，每捲最多 12 格，每月贈 1 張加急券。"
+          }
+        }
+      }
     },
     "全卷" : {
       "localizations" : {
@@ -1975,7 +2169,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "もう一卷"
+            "value" : "もう1本撮る"
           }
         },
         "ko" : {
@@ -1993,7 +2187,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "再拍一卷"
+            "value" : "再拍一捲"
           }
         }
       }
@@ -2038,31 +2232,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting the app also deletes prints you haven’t dumped. Developed frames can go to Photos first."
+            "value" : "Deleting the app removes all film stored here. Export developed photos to Photos first."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アプリを削除すると、書き出していない写真も消える。現像済みは先に写真アプリへ。"
+            "value" : "アプリを削除すると、アプリ内のフィルムもすべて失われます。現像済みの写真は、先に「写真」に保存してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "앱을 삭제하면 내보내지 않은 사진도 지워집니다. 현상된 컷은 먼저 사진 앱으로 보내세요."
+            "value" : "앱을 삭제하면 앱에 보관된 모든 필름이 삭제됩니다. 현상된 사진은 먼저 사진 앱에 저장해 주세요."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "删除 App 会把没倒走的照片一起清掉。洗好的，可以先倒进系统相册。"
+            "value" : "删除 App 会同时删除其中的全部胶片。请先将已显影的照片导出到系统相册。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "刪除 App 會把沒倒走的照片一起清掉。洗好的，可以先倒進系統相簿。"
+            "value" : "刪除 App 會同時刪除其中的全部膠片。請先將已顯影的照片匯出至系統相簿。"
           }
         }
       }
@@ -2078,7 +2272,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "急ぎ券を3枚追加"
+            "value" : "お急ぎ券を3枚追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 현상권 3장 추가"
           }
         },
         "zh-Hans" : {
@@ -2166,7 +2366,38 @@
       }
     },
     "加急一张，立刻洗完这一卷。三档都要等，加急只是把等待清掉。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One rush ticket skips the wait for one roll. All plans include a wait; processing the photos still takes a moment."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お急ぎ券1枚で、フィルム1本の待ち時間をスキップできます。すべてのプランに待ち時間があり、写真の処理には別途少し時間がかかります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 현상권 1장으로 한 롤의 대기 시간을 건너뜁니다. 모든 요금제에 대기 시간이 있으며, 사진 처리에는 별도의 시간이 조금 필요합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一张加急券，可跳过一卷的等待。所有档位均有等待时间，成片处理仍需片刻。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一張加急券，可跳過一捲的等待。所有方案均有等待時間，成片處理仍需片刻。"
+          }
+        }
+      }
     },
     "加急券" : {
       "localizations" : {
@@ -2179,7 +2410,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "急ぎ券"
+            "value" : "お急ぎ券"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 현상권"
           }
         },
         "zh-Hans" : {
@@ -2207,7 +2444,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "急ぎ券 %1$lld枚 · %2$@"
+            "value" : "お急ぎ券 %1$lld枚 · %2$@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 현상권 %1$lld장 · %2$@"
           }
         },
         "zh-Hans" : {
@@ -2338,7 +2581,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この巻を出す？"
+            "value" : "このフィルムを取り出しますか？"
           }
         },
         "ko" : {
@@ -2406,25 +2649,25 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "出して現像へ"
+            "value" : "取り出して現像"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "빼고 현상으로"
+            "value" : "꺼내고 현상하기"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "卸卷并送去显影"
+            "value" : "卸卷并显影"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "卸捲並送去顯影"
+            "value" : "卸捲並顯影"
           }
         }
       }
@@ -2481,7 +2724,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "촬영하러"
+            "value" : "촬영하러 가기"
           }
         },
         "zh-Hans" : {
@@ -2493,7 +2736,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "去拍一卷"
+            "value" : "去拍一捲"
           }
         }
       }
@@ -2509,7 +2752,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一卷入れる"
+            "value" : "フィルムを入れる"
           }
         },
         "ko" : {
@@ -2527,7 +2770,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "去裝一卷"
+            "value" : "去裝一捲"
           }
         }
       }
@@ -2624,23 +2867,47 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "反转"
+            "value" : "反转片"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "反轉"
+            "value" : "反轉片"
           }
         }
       }
     },
     "取出" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collect roll"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィルムを受け取る"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "꺼내기"
+            "value" : "필름 찾기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取回胶卷"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取回膠捲"
           }
         }
       }
@@ -2680,7 +2947,38 @@
       }
     },
     "另买的加急券留下，不过月，并跟 iCloud 走。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchased rush tickets do not expire. Enable iCloud to sync the unused balance with the same Apple Account."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入したお急ぎ券に有効期限はありません。iCloudを有効にすると、同じApple Accountで未使用の残数を同期できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "구매한 빠른 현상권은 만료되지 않습니다. iCloud를 켜면 같은 Apple 계정으로 미사용 잔여 수량을 동기화할 수 있습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买的加急券不过期。开启 iCloud 后，可在同一 Apple 账户下同步未用余量。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購買的加急券不過期。開啟 iCloud 後，可在同一 Apple 帳號下同步未用餘量。"
+          }
+        }
+      }
     },
     "只倒洗好的对页，进系统相册。" : {
       "extractionState" : "stale",
@@ -2821,31 +3119,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Only dumps what’s still here. Pairs as pairs, leftovers as singles."
+            "value" : "Saves only photos not yet exported. Two adjacent frames make one spread; an unpaired frame is saved on its own."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まだ出していない分だけ。対は対、1コマは1コマ。"
+            "value" : "未書き出しの写真だけを保存します。隣り合う2コマは1枚に、余った1コマは単独で保存します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "아직 안 내보낸 것만. 쌍은 쌍, 한 장은 한 장."
+            "value" : "아직 내보내지 않은 사진만 저장합니다. 인접한 두 컷은 한 장으로, 짝이 없는 컷은 단독으로 저장합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只倒还没倒走的。一对两格，一格一张。"
+            "value" : "仅保存尚未导出的照片。相邻两格合为一张对页，落单的一格单独保存。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只倒還沒倒走的。一對兩格，一格一張。"
+            "value" : "僅儲存尚未匯出的照片。相鄰兩格合為一張對頁，落單的一格單獨儲存。"
           }
         }
       }
@@ -2855,35 +3153,65 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adds local tickets only. Doesn't go through the store."
+            "value" : "Adds test tickets without an App Store purchase. The balance may sync via iCloud."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "端末の残数だけ増やす。ストアは通らない。"
+            "value" : "購入なしでテスト用の券を追加します。残数がiCloudで同期される場合があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스토어 결제 없이 테스트 티켓을 추가합니다. 잔여 수량이 iCloud로 동기화될 수 있습니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只加本机余数，不走商店"
+            "value" : "增加测试加急券，不产生商店交易。余量可能同步至 iCloud。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只加本機餘數，不走商店"
+            "value" : "增加測試加急券，不產生商店交易。餘量可能同步至 iCloud。"
           }
         }
       }
     },
     "可取件" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready to collect"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "受け取り可能"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "찾을 수 있음"
+            "value" : "수령 가능"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可取件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可取件"
           }
         }
       }
@@ -2997,31 +3325,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Store unavailable"
+            "value" : "Purchase service unavailable. Try again later."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ストア利用不可"
+            "value" : "購入サービスを利用できません。しばらくしてからお試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "스토어 사용 불가"
+            "value" : "구매 서비스를 이용할 수 없습니다. 잠시 후 다시 시도해 주세요."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "商店不可用"
+            "value" : "购买服务暂不可用，请稍后重试"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "商店不可用"
+            "value" : "購買服務暫時無法使用，請稍後再試"
           }
         }
       }
@@ -3066,7 +3394,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Back to camera. Turn rewind."
+            "value" : "Back to camera to rewind"
           }
         },
         "ja" : {
@@ -3084,13 +3412,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "回到相机，转动倒片"
+            "value" : "返回相机，转动倒片钮"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "回到相機，轉動倒片"
+            "value" : "返回相機，轉動倒片鈕"
           }
         }
       }
@@ -3232,18 +3560,18 @@
       }
     },
     "宽容 · 黑白" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Latitude · B&W"
+            "value" : "Wide latitude · B&W"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "寛容 · 白黒"
+            "value" : "広いラチチュード · 白黒"
           }
         },
         "ko" : {
@@ -3255,13 +3583,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "宽容 · 黑白"
+            "value" : "宽容度高 · 黑白"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "寬容 · 黑白"
+            "value" : "寬容度高 · 黑白"
           }
         }
       }
@@ -3271,31 +3599,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fuji paper · cool"
+            "value" : "Cool · cyan tones"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "フジ紙 · 寒色"
+            "value" : "寒色 · シアン"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "후지 인화지 · 한색"
+            "value" : "차가운 색감 · 시안"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "富士纸 · 青冷"
+            "value" : "青冷 · 通透"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "富士紙 · 青冷"
+            "value" : "青冷 · 通透"
           }
         }
       }
@@ -3336,7 +3664,38 @@
       }
     },
     "对照档，不用买" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free plan · no purchase needed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料プラン・購入不要"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무료 요금제 · 구매 불필요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费档位，无需购买"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免費方案，無需購買"
+          }
+        }
+      }
     },
     "已买断" : {
       "extractionState" : "stale",
@@ -3413,7 +3772,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dumped"
+            "value" : "Exported"
           }
         },
         "ja" : {
@@ -3431,23 +3790,47 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已倒出"
+            "value" : "已导出"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已倒出"
+            "value" : "已匯出"
           }
         }
       }
     },
     "已倒片" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rewound"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "巻き戻し完了"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "되감음"
+            "value" : "되감기 완료"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "倒片完成"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "倒片完成"
           }
         }
       }
@@ -3457,31 +3840,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dumped to Photos"
+            "value" : "Saved to Photos"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "写真アプリへ出した"
+            "value" : "「写真」に保存しました"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "사진 앱으로 보냄"
+            "value" : "사진 앱에 저장됨"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已倒进系统相册"
+            "value" : "已保存到系统相册"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已倒進系統相簿"
+            "value" : "已儲存至系統相簿"
           }
         }
       }
@@ -3526,7 +3909,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restored"
+            "value" : "Restore complete"
           }
         },
         "ja" : {
@@ -3544,13 +3927,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已恢复"
+            "value" : "恢复完成"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已恢復"
+            "value" : "回復完成"
           }
         }
       }
@@ -3560,31 +3943,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld shot. %lld left will be void."
+            "value" : "Taken: %1$lld · unused: %2$lld. Unloading discards all unused frames."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lldコマ撮影。残り%lldコマは無効。"
+            "value" : "%1$lldコマ撮影済み。残りの%2$lldコマは使えなくなります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld컷 촬영. 남은 %lld컷은 무효."
+            "value" : "%1$lld컷 촬영됨. 남은 %2$lld컷은 사용할 수 없게 됩니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已拍 %lld 格，剩下 %lld 格将作废。"
+            "value" : "已拍 %1$lld 格。卸卷后，剩余 %2$lld 格将作废。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已拍 %lld 格，剩下 %lld 格將作廢。"
+            "value" : "已拍 %1$lld 格。卸捲後，剩餘 %2$lld 格將作廢。"
           }
         }
       }
@@ -3594,7 +3977,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ready"
+            "value" : "Developed"
           }
         },
         "ja" : {
@@ -3612,13 +3995,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已洗好"
+            "value" : "已显影"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已洗好"
+            "value" : "已顯影"
           }
         }
       }
@@ -3628,31 +4011,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cleared"
+            "value" : "Deleted"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "消した"
+            "value" : "削除しました"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "지움"
+            "value" : "삭제됨"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已清掉"
+            "value" : "已删除"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已清掉"
+            "value" : "已刪除"
           }
         }
       }
@@ -3693,10 +4076,34 @@
     },
     "已送进暗房 · 约 %lld 分钟" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the darkroom · about %lld min"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗室へ · 約%lld分"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "암실로 · 약 %lld분"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已送入暗房 · 约 %lld 分钟"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已送入暗房 · 約 %lld 分鐘"
           }
         }
       }
@@ -3724,13 +4131,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已送进暗房 · 约 %lld 秒"
+            "value" : "已送入暗房 · 约 %lld 秒"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已送進暗房 · 約 %lld 秒"
+            "value" : "已送入暗房 · 約 %lld 秒"
           }
         }
       }
@@ -3758,13 +4165,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已送进暗房 · 约 5 秒"
+            "value" : "已送入暗房 · 约 5 秒"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已送進暗房 · 約 5 秒"
+            "value" : "已送入暗房 · 約 5 秒"
           }
         }
       }
@@ -3873,7 +4280,38 @@
       }
     },
     "年卡：一个月 9 卷，一卷最多 36 格。每月赠 3 张加急券。按年续订。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yearly: 9 rolls per month, up to 36 frames each, and 3 rush tickets per month. Renews annually."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年額：毎月9本、1本最大36コマ。毎月お急ぎ券3枚を付与。1年ごとに自動更新。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연간: 매월 9롤, 롤당 최대 36컷. 매월 빠른 현상권 3장 증정. 매년 자동 갱신됩니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年卡：每月 9 卷，每卷最多 36 格，每月赠 3 张加急券。按年自动续订。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年卡：每月 9 捲，每捲最多 36 格，每月贈 3 張加急券。按年自動續訂。"
+          }
+        }
+      }
     },
     "年卡已开，每月 9 卷" : {
       "extractionState" : "stale",
@@ -3911,7 +4349,38 @@
       }
     },
     "年卡按年自动续订，费用从 Apple ID 扣除。到期前 24 小时可在系统设置里取消。买断一次付清，之后不再扣费。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The yearly plan renews automatically and is billed to your Apple Account. Cancel in Settings at least 24 hours before the current period ends to avoid renewal. Lifetime is a one-time purchase with no recurring charge."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年額プランは自動更新され、Apple Accountに請求されます。更新を停止するには、期間終了の24時間前までに設定から解約してください。買い切りは一度の支払いで、継続課金はありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연간 요금제는 자동 갱신되며 Apple 계정으로 청구됩니다. 갱신을 막으려면 현재 이용 기간이 끝나기 최소 24시간 전에 설정에서 취소해 주세요. 평생권은 한 번만 결제하며 정기 요금이 없습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年卡按年自动续订，费用从 Apple 账户扣除。如不续订，请至少在当前周期结束前 24 小时于系统设置中取消。买断为一次性购买，无后续订阅扣费。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年卡按年自動續訂，費用從 Apple 帳號扣除。如不續訂，請至少在目前週期結束前 24 小時於系統設定中取消。買斷為一次性購買，無後續訂閱扣費。"
+          }
+        }
+      }
     },
     "年卡按年自动续订，费用从 Apple ID 扣除。到期前 24 小时可在系统设置里取消。买断一次付清。加急券为消耗型，不能恢复。" : {
       "extractionState" : "stale",
@@ -4051,31 +4520,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Negatives stay on this phone"
+            "value" : "Film is stored on this device"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ネガはこの端末だけ"
+            "value" : "フィルムはこの端末に保存されています"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "네거는 이 기기에만"
+            "value" : "필름은 이 기기에 보관됩니다"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "底片只在这台机里"
+            "value" : "胶片保存在本机"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "底片只在這台機裡"
+            "value" : "膠片儲存在本機"
           }
         }
       }
@@ -4218,29 +4687,91 @@
       }
     },
     "当前" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이용 중"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前"
+          }
+        }
+      }
     },
     "当前就是这一档" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your current plan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のプランです"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 이용 중인 요금제"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前使用的档位"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前使用的方案"
+          }
+        }
+      }
     },
     "彩显" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Color"
+            "value" : "Color development"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "発色"
+            "value" : "発色現像"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "발색"
+            "value" : "발색 현상"
           }
         },
         "zh-Hans" : {
@@ -4296,7 +4827,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rewind"
+            "value" : "Ready to rewind"
           }
         },
         "ja" : {
@@ -4399,19 +4930,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore"
+            "value" : "Restore purchases"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "復元"
+            "value" : "購入を復元"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "복원"
+            "value" : "구매 복원"
           }
         },
         "zh-Hans" : {
@@ -4606,31 +5137,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow camera"
+            "value" : "Camera access required"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "カメラを許可"
+            "value" : "カメラへのアクセスが必要です"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "카메라 허용"
+            "value" : "카메라 접근을 허용해 주세요"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开相机权限"
+            "value" : "请允许访问相机"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打開相機權限"
+            "value" : "請允許取用相機"
           }
         }
       }
@@ -4708,31 +5239,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finish the roll first"
+            "value" : "Finish the roll to unload"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "撮り切ってから"
+            "value" : "撮り切ってから取り出せます"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "다 찍은 뒤에"
+            "value" : "다 찍은 뒤 꺼낼 수 있습니다"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拍满才能卸"
+            "value" : "拍满后才能卸卷"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拍滿才能卸"
+            "value" : "拍滿後才能卸捲"
           }
         }
       }
@@ -4742,7 +5273,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finish the roll to develop"
+            "value" : "Develop after the last frame"
           }
         },
         "ja" : {
@@ -4754,19 +5285,19 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "다 찍어야 현상"
+            "value" : "마지막 컷을 찍은 뒤 현상"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拍满才能洗"
+            "value" : "拍满后即可显影"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拍滿才能洗"
+            "value" : "拍滿後即可顯影"
           }
         }
       }
@@ -4811,31 +5342,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Once you shoot, you can’t unload."
+            "value" : "Once you start shooting, finish the roll before unloading."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "撮ったら途中では出せない"
+            "value" : "撮影を始めたフィルムは、撮り切るまで取り出せません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "찍기 시작하면 중간에 뺄 수 없음"
+            "value" : "촬영을 시작한 롤은 끝까지 찍어야 꺼낼 수 있습니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拍过就不能中途卸卷"
+            "value" : "开始拍摄后，需拍满整卷才能卸卷。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拍過就不能中途卸捲"
+            "value" : "開始拍攝後，需拍滿整捲才能卸捲。"
           }
         }
       }
@@ -5084,7 +5615,7 @@
       }
     },
     "推一档" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5119,7 +5650,7 @@
       }
     },
     "推两档" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5228,31 +5759,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To album"
+            "value" : "Keep in album"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アルバムへ"
+            "value" : "アルバムに収める"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "앨범으로"
+            "value" : "앨범에 보관"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "放入相册"
+            "value" : "收入相册"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "放入相簿"
+            "value" : "收入相簿"
           }
         }
       }
@@ -5262,31 +5793,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Beginner tutorial"
+            "value" : "Your first roll"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "初心者ガイド"
+            "value" : "はじめての1本"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "초보 가이드"
+            "value" : "첫 번째 롤"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新手教程"
+            "value" : "从第一卷开始"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新手教程"
+            "value" : "從第一捲開始"
           }
         }
       }
@@ -5430,8 +5961,43 @@
         }
       }
     },
+    "日光 · 电影" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daylight · cinema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デイライト · 映画"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이라이트 · 시네마"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日光 · 电影"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日光 · 電影"
+          }
+        }
+      }
+    },
     "日光 · 细腻" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5504,19 +6070,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date"
+            "value" : "Date stamp"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "日付"
+            "value" : "日付写し込み"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "날짜"
+            "value" : "날짜 인쇄"
           }
         },
         "zh-Hans" : {
@@ -5710,31 +6276,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Darkbox is empty"
+            "value" : "No rolls in the darkbox yet"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暗箱は空"
+            "value" : "暗箱にはまだフィルムがありません"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "암상자가 비어 있음"
+            "value" : "아직 암상자에 필름이 없습니다"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暗盒是空的"
+            "value" : "暗盒里还没有胶卷"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暗盒是空的"
+            "value" : "暗盒裡還沒有膠捲"
           }
         }
       }
@@ -5779,7 +6345,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Undumped %lld"
+            "value" : "%lld not exported"
           }
         },
         "ja" : {
@@ -5797,13 +6363,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未倒 %lld"
+            "value" : "未导出 %lld"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未倒 %lld"
+            "value" : "未匯出 %lld"
           }
         }
       }
@@ -5871,7 +6437,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not dumped"
+            "value" : "Not exported"
           }
         },
         "ja" : {
@@ -5889,13 +6455,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未倒出"
+            "value" : "未导出"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未倒出"
+            "value" : "未匯出"
           }
         }
       }
@@ -6010,31 +6576,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Monthly rolls used up"
+            "value" : "Monthly roll limit reached"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今月の巻は使い切り"
+            "value" : "今月の装填上限に達しました"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이번 달 롤을 다 씀"
+            "value" : "이번 달 롤 한도에 도달했습니다"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "本月卷已用尽"
+            "value" : "本月装卷额度已用完"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "本月捲已用盡"
+            "value" : "本月裝捲額度已用完"
           }
         }
       }
@@ -6044,7 +6610,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "On this phone"
+            "value" : "Device storage"
           }
         },
         "ja" : {
@@ -6062,13 +6628,48 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "本机占用"
+            "value" : "本机存储"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "本機占用"
+            "value" : "本機儲存空間"
+          }
+        }
+      }
+    },
+    "柔和 · 人像" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soft tones · portraits"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "やわらかな階調 · ポートレート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "부드러운 톤 · 인물"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "柔和 · 人像"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "柔和 · 人像"
           }
         }
       }
@@ -6113,13 +6714,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Soft skin · portrait"
+            "value" : "Soft skin tones · portraits"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "柔肌 · ポートレート"
+            "value" : "やわらかな肌色 · ポートレート"
           }
         },
         "ko" : {
@@ -6319,7 +6920,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dumping…"
+            "value" : "Exporting…"
           }
         },
         "ja" : {
@@ -6337,13 +6938,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在倒出"
+            "value" : "正在导出"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在倒出"
+            "value" : "正在匯出"
           }
         }
       }
@@ -6447,7 +7048,38 @@
       }
     },
     "每月赠 %lld 张加急券" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly rush tickets: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎月お急ぎ券 %lld枚を付与"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매월 빠른 현상권 %lld장 증정"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每月赠 %lld 张加急券"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每月贈 %lld 張加急券"
+          }
+        }
+      }
     },
     "每月赠 3" : {
       "extractionState" : "stale",
@@ -6570,37 +7202,68 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gifted tickets reset each month. Bought ones stay, via iCloud."
+            "value" : "Monthly tickets expire at the start of the next month. Purchased tickets do not expire; their balance syncs when iCloud is enabled."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "付与分は月が変わると消える。買った分は残る。iCloud 経由。"
+            "value" : "毎月の付与分は翌月初めに失効します。購入分に有効期限はなく、iCloudが有効な場合は残数が同期されます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "증정권은 달이 바뀌면 사라집니다. 산 건 남고, iCloud를 탑니다."
+            "value" : "매월 증정된 티켓은 다음 달 초에 만료됩니다. 구매한 티켓은 만료되지 않으며, iCloud가 켜져 있으면 잔여 수량이 동기화됩니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每月赠券过月清掉。买的留下，并跟 iCloud 走。"
+            "value" : "每月赠券于次月初失效。购买的加急券不过期，开启 iCloud 后可同步余量。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每月贈券過月清掉。買的留下，並跟 iCloud 走。"
+            "value" : "每月贈券於次月初失效。購買的加急券不過期，開啟 iCloud 後可同步餘量。"
           }
         }
       }
     },
     "每月赠的加急券，按你当时的档位发放：免费 1 张，年卡 3 张，买断 6 张。到下个月初清掉，用不完作废。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly tickets depend on your plan: Free 1, Yearly 3, Lifetime 6. Unused monthly tickets expire at the start of the next month."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎月の付与枚数はプランにより異なります。無料1枚、年額3枚、買い切り6枚。未使用の付与分は翌月初めに失効します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매월 요금제에 따라 무료 1장, 연간 3장, 평생권 6장을 증정합니다. 사용하지 않은 월별 증정권은 다음 달 초에 만료됩니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每月按当前档位赠券：免费 1 张、年卡 3 张、买断 6 张。当月赠券于次月初失效，不累计。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每月按目前方案贈券：免費 1 張、年卡 3 張、買斷 6 張。當月贈券於次月初失效，不累計。"
+          }
+        }
+      }
     },
     "水洗" : {
       "localizations" : {
@@ -6681,7 +7344,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "書き出せない"
+            "value" : "書き出せる写真がありません"
           }
         },
         "ko" : {
@@ -6693,13 +7356,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "没有成片"
+            "value" : "暂无可导出的照片"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "沒有成片"
+            "value" : "暫無可匯出的照片"
           }
         }
       }
@@ -6709,31 +7372,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Photos access denied"
+            "value" : "Allow Photos access in Settings"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "写真へのアクセス不可"
+            "value" : "設定で「写真」へのアクセスを許可してください"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "사진 접근 불가"
+            "value" : "설정에서 사진 접근을 허용해 주세요"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "没有相册权限"
+            "value" : "请在设置中允许访问相册"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "沒有相簿權限"
+            "value" : "請在設定中允許取用照片"
           }
         }
       }
@@ -6785,6 +7448,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "法的情報 · プライバシー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "법적 고지 · 개인정보 처리방침"
           }
         },
         "zh-Hans" : {
@@ -6841,31 +7510,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld developed frames will be deleted from this phone. Prints already in Photos stay."
+            "value" : "Frame count: %lld. Deleting the roll from the app cannot be undone. Copies saved to Photos are not affected."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "現像済み%lldコマをこの端末から削除する。写真アプリに書き出したものは残る。"
+            "value" : "現像済みの%lldコマをアプリから削除します。元に戻せません。「写真」に保存したコピーは残ります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "현상된 %lld컷을 이 기기에서 삭제합니다. 사진 앱으로 보낸 것은 남습니다."
+            "value" : "현상된 %lld컷을 앱에서 삭제하며 되돌릴 수 없습니다. 사진 앱에 저장한 사본은 유지됩니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "洗好的 %lld 格会从本机清掉。系统相册里倒走过的还在。"
+            "value" : "将从 App 中删除已显影的 %lld 格，且无法恢复。已保存到系统相册的照片不受影响。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "洗好的 %lld 格會從本機清掉。系統相簿裡倒走過的還在。"
+            "value" : "將從 App 中刪除已顯影的 %lld 格，且無法回復。已儲存至系統相簿的照片不受影響。"
           }
         }
       }
@@ -6875,31 +7544,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Developed pairs dump to Photos."
+            "value" : "Saves the remaining developed photos to Photos."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "現像済みの対は写真アプリへ。"
+            "value" : "未書き出しの現像済み写真を「写真」に保存します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "현상된 쌍은 사진 앱으로."
+            "value" : "아직 내보내지 않은 현상 사진을 사진 앱에 저장합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "洗好的对页会倒进系统相册。"
+            "value" : "将尚未导出的已显影照片保存到系统相册。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "洗好的對頁會倒進系統相簿。"
+            "value" : "將尚未匯出的已顯影照片儲存至系統相簿。"
           }
         }
       }
@@ -6909,31 +7578,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Developed rolls land here"
+            "value" : "Your developed rolls will be kept here"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "現像した巻がここに来る"
+            "value" : "現像したフィルムはここに収まります"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "현상한 롤이 여기로 옵니다"
+            "value" : "현상한 롤은 이곳에 보관됩니다"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "洗好的胶卷会在这里"
+            "value" : "显影后的胶卷，收在这里"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "洗好的膠捲會在這裡"
+            "value" : "顯影後的膠捲，收在這裡"
           }
         }
       }
@@ -6943,7 +7612,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dump after develop"
+            "value" : "Auto-export after developing"
           }
         },
         "ja" : {
@@ -6961,13 +7630,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "洗完自动倒出"
+            "value" : "显影后自动导出"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "洗完自動倒出"
+            "value" : "顯影後自動匯出"
           }
         }
       }
@@ -7007,7 +7676,7 @@
       }
     },
     "浓彩 · 细腻" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7024,7 +7693,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "농채 · 섬세"
+            "value" : "진한 색감 · 섬세"
           }
         },
         "zh-Hans" : {
@@ -7042,7 +7711,7 @@
       }
     },
     "浓彩 · 风景" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7059,7 +7728,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "농채 · 풍경"
+            "value" : "진한 색감 · 풍경"
           }
         },
         "zh-Hans" : {
@@ -7081,31 +7750,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clear"
+            "value" : "Delete"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "消す"
+            "value" : "削除"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "지우기"
+            "value" : "삭제"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "清掉"
+            "value" : "删除"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "清掉"
+            "value" : "刪除"
           }
         }
       }
@@ -7115,31 +7784,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clear this roll?"
+            "value" : "Delete this roll?"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この巻を消す？"
+            "value" : "このフィルムを削除しますか？"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 롤을 지울까요?"
+            "value" : "이 롤을 삭제할까요?"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "清掉这卷？"
+            "value" : "删除这卷胶片？"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "清掉這捲？"
+            "value" : "刪除這捲膠片？"
           }
         }
       }
@@ -7149,31 +7818,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Filter"
+            "value" : "Color filter"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "フィルター"
+            "value" : "色フィルター"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "필터"
+            "value" : "색 필터"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "滤镜"
+            "value" : "黑白滤色镜"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "濾鏡"
+            "value" : "黑白濾色鏡"
           }
         }
       }
@@ -7318,7 +7987,7 @@
       }
     },
     "琥珀 · 日常" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7335,7 +8004,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "호박 · 일상"
+            "value" : "앰버 톤 · 일상"
           }
         },
         "zh-Hans" : {
@@ -7363,7 +8032,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "急ぎ券を使う · 残 %lld"
+            "value" : "お急ぎ券を使う · 残 %lld"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 현상권 사용 · %lld장 남음"
           }
         },
         "zh-Hans" : {
@@ -7487,31 +8162,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Better files. Slower shutter. Bigger size."
+            "value" : "More image detail. Capture takes longer and uses more storage."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "画質は上がる。シャッターは遅い。ファイルは大きい。"
+            "value" : "より多くの階調や細部を記録します。撮影に時間がかかり、保存容量も増えます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "화질은 낫고, 셔터는 느리고, 파일은 크다."
+            "value" : "더 많은 디테일을 기록합니다. 촬영 시간이 길어지고 저장 공간을 더 사용합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "画质更好，快门更慢，文件更大"
+            "value" : "保留更多影像细节，拍摄耗时更长，也更占存储空间。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "畫質更好，快門更慢，檔案更大"
+            "value" : "保留更多影像細節，拍攝耗時更長，也更占儲存空間。"
           }
         }
       }
@@ -7791,31 +8466,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Switches instantly. Follow Store = real purchase. Test builds only."
+            "value" : "Switches the test tier immediately. Store uses your actual purchase status. Test builds only."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "すぐ切替。ストアに従う = 本番購入。テストビルドのみ。"
+            "value" : "テスト用プランをすぐに切り替えます。「ストア」は実際の購入状態を使用します。テストビルドのみ有効です。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "즉시 전환. 스토어 따름 = 실제 구매. 테스트 빌드에서만."
+            "value" : "테스트 등급을 즉시 전환합니다. 스토어는 실제 구매 상태를 따릅니다. 테스트 빌드에서만 적용됩니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "立刻切档。跟商店 = 真实购买，只在测试包生效"
+            "value" : "立即切换测试档位。“跟商店”使用实际购买状态，仅测试版本生效。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "立刻切檔。跟商店 = 真實購買，只在測試包生效"
+            "value" : "立即切換測試方案。「跟商店」使用實際購買狀態，僅測試版本生效。"
           }
         }
       }
@@ -7855,7 +8530,7 @@
       }
     },
     "粗粒 · 街拍" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7958,7 +8633,7 @@
       }
     },
     "细腻 · 黑白" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8027,12 +8702,71 @@
         }
       }
     },
-    "胶卷好了" : {
+    "经典 · 暖调" : {
+      "extractionState" : "manual",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Classic · warm tones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クラシック · 暖色"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "필름이 준비됨"
+            "value" : "클래식 · 따뜻한 톤"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "经典 · 暖调"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "經典 · 暖調"
+          }
+        }
+      }
+    },
+    "胶卷好了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your roll is ready to collect"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィルムを受け取れます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "필름을 찾을 수 있습니다"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "胶卷可以取件了"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "膠捲可以取件了"
           }
         }
       }
@@ -8285,7 +9019,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Load · %lld"
+            "value" : "Load · %lld frames"
           }
         },
         "ja" : {
@@ -8319,7 +9053,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Load demo roll · 2"
+            "value" : "Load trial roll · 2 frames"
           }
         },
         "ja" : {
@@ -8353,31 +9087,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Into the body"
+            "value" : "Loading film"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ボディへ"
+            "value" : "フィルムを装填中"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "바디로"
+            "value" : "필름 장전 중"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "装入机身"
+            "value" : "正在装卷"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "裝入機身"
+            "value" : "正在裝捲"
           }
         }
       }
@@ -8456,31 +9190,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Offload to free space. Don’t delete the app — that clears undumped negatives."
+            "value" : "To free space, use Offload App in iPhone Storage to keep app data. Delete App removes all film stored in the app."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "容量を空けるなら取り除く。App を削除しない。削除すると、まだ出していないネガも消える。"
+            "value" : "容量を空けるには「iPhoneストレージ」の「Appを取り除く」を使うとデータを保持できます。「Appを削除」はアプリ内のフィルムもすべて削除します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "공간 비우려면 오프로드. 앱을 삭제하지 마세요. 삭제하면 아직 안 내보낸 네거티브도 지워집니다."
+            "value" : "공간을 확보하려면 iPhone 저장 공간에서 앱 정리하기를 사용해 데이터를 유지하세요. 앱 삭제는 앱에 보관된 모든 필름도 삭제합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要腾空间就卸载，别删除 App。删除会清掉还没倒走的底片。"
+            "value" : "如需腾出空间，请在“iPhone 储存空间”中选择“卸载 App”以保留数据。“删除 App”会同时删除其中的全部胶片。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要騰空間就卸載，別刪除 App。刪除會清掉還沒倒走的底片。"
+            "value" : "如需騰出空間，請在「iPhone 儲存空間」中選擇「卸載 App」以保留資料。「刪除 App」會同時刪除其中的全部膠片。"
           }
         }
       }
@@ -8694,13 +9428,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gift %1$lld · bought %2$lld"
+            "value" : "Monthly %1$lld · purchased %2$lld"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "付与 %1$lld · 購入 %2$lld"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "증정 %1$lld · 구매 %2$lld"
           }
         },
         "zh-Hans" : {
@@ -8843,13 +9583,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "转动倒片"
+            "value" : "转动倒片钮"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轉動倒片"
+            "value" : "轉動倒片鈕"
           }
         }
       }
@@ -8912,19 +9652,19 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "转过片轮"
+            "value" : "转动过片轮"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轉過片輪"
+            "value" : "轉動過片輪"
           }
         }
       }
     },
     "轻快 · 日常" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9067,31 +9807,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld left. Finish the roll first."
+            "value" : "Remaining: %lld. Finish the roll before unloading."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "残り%lldコマ。撮り切ってから。"
+            "value" : "残り%lldコマ。すべて撮影してから取り出せます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "남은 %lld컷. 다 찍은 뒤에."
+            "value" : "남은 %lld컷을 모두 찍은 뒤 꺼낼 수 있습니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "还剩 %lld 格，拍满才能卸。"
+            "value" : "还剩 %lld 格，拍满整卷后才能卸卷。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "還剩 %lld 格，拍滿才能卸。"
+            "value" : "還剩 %lld 格，拍滿整捲後才能卸捲。"
           }
         }
       }
@@ -9101,31 +9841,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Still printing"
+            "value" : "Preparing your photos"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まだ出る"
+            "value" : "写真を仕上げています"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "아직 나옴"
+            "value" : "사진을 완성하는 중"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "还在出片"
+            "value" : "正在生成成片"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "還在出片"
+            "value" : "正在產生成片"
           }
         }
       }
@@ -9135,25 +9875,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pair dumped"
+            "value" : "Spread exported"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この対は書き出し済"
+            "value" : "2コマ書き出し済み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "두 컷 내보내기 완료"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这对已倒出"
+            "value" : "对页已导出"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這對已倒出"
+            "value" : "對頁已匯出"
           }
         }
       }
@@ -9192,25 +9938,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Frame dumped"
+            "value" : "Frame exported"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このコマは書き出し済"
+            "value" : "コマ書き出し済み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한 컷 내보내기 완료"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这格已倒出"
+            "value" : "单格已导出"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這格已倒出"
+            "value" : "單格已匯出"
           }
         }
       }
@@ -9283,7 +10035,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Send to develop"
+            "value" : "Send for developing"
           }
         },
         "ja" : {
@@ -9295,7 +10047,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "현상하러 보내기"
+            "value" : "현상 맡기기"
           }
         },
         "zh-Hans" : {
@@ -9317,66 +10069,66 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Into the darkroom"
+            "value" : "Entering the darkroom"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暗室へ"
+            "value" : "暗室に搬入中"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "암실로"
+            "value" : "암실로 이동 중"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "送进暗房"
+            "value" : "正在送入暗房"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "送進暗房"
+            "value" : "正在送入暗房"
           }
         }
       }
     },
     "通透 · 万能" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clear · all-round"
+            "value" : "Clear tones · everyday"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "透明 · 万能"
+            "value" : "クリア · 日常"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "투명 · 만능"
+            "value" : "맑은 톤 · 일상"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "通透 · 万能"
+            "value" : "通透 · 日常"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "通透 · 萬能"
+            "value" : "通透 · 日常"
           }
         }
       }
@@ -9420,7 +10172,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "All dumped"
+            "value" : "All exported"
           }
         },
         "ja" : {
@@ -9438,13 +10190,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "都已倒走"
+            "value" : "全部已导出"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "都已倒走"
+            "value" : "全部已匯出"
           }
         }
       }
@@ -9554,7 +10306,7 @@
       }
     },
     "钨灯 · 夜戏" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9589,7 +10341,7 @@
       }
     },
     "钨灯 · 夜色" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9624,12 +10376,12 @@
       }
     },
     "钨灯 · 电影" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tungsten · cine"
+            "value" : "Tungsten · cinema"
           }
         },
         "ja" : {
@@ -9659,7 +10411,7 @@
       }
     },
     "锐利 · 黑白" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9797,12 +10549,12 @@
       }
     },
     "青冷 · 人像" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cool · portrait"
+            "value" : "Cool tones · portraits"
           }
         },
         "ja" : {
@@ -9827,6 +10579,41 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "青冷 · 人像"
+          }
+        }
+      }
+    },
+    "青绿 · 日常" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Green tones · everyday"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "青緑 · 日常"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "청록빛 · 일상"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "青绿 · 日常"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "青綠 · 日常"
           }
         }
       }
@@ -9936,7 +10723,7 @@
       }
     },
     "饱和 · 日常" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10000,6 +10787,41 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高反差 · 鮮豔"
+          }
+        }
+      }
+    },
+    "鲜明 · 通用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vivid · all-round"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鮮やか · オールラウンド"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선명한 색감 · 다용도"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鲜明 · 通用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鮮明 · 通用"
           }
         }
       }

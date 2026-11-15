@@ -27,7 +27,10 @@ enum DevelopLive {
             return
         }
 
-        let state = DevelopActivityAttributes.ContentState(items: items)
+        let state = DevelopActivityAttributes.ContentState(
+            items: items,
+            languageCode: L10n.shared.language.appleCode
+        )
         let stale = state.soonestLive?.readyAt ?? now
         let content = ActivityContent(state: state, staleDate: stale)
 

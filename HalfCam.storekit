@@ -10,14 +10,29 @@
       "internalID" : "057A3447-2406-4F19-9319-208A17AF35DA",
       "localizations" : [
         {
-          "description" : "Unlimited rolls. Same wait. 6 rush tickets a month.",
+          "description" : "Unlimited rolls, up to 72 frames. 6 rush tickets/month.",
           "displayName" : "Lifetime",
           "locale" : "en_US"
         },
         {
-          "description" : "无限装卷。等待不变。每月赠 6 张加急券。",
+          "description" : "不限装卷，每卷最多 72 格，每月赠 6 张加急券。一次性购买。",
           "displayName" : "买断",
           "locale" : "zh_CN"
+        },
+        {
+          "description" : "不限裝捲，每捲最多 72 格，每月贈 6 張加急券。一次性購買。",
+          "displayName" : "買斷",
+          "locale" : "zh_TW"
+        },
+        {
+          "description" : "本数無制限、1本最大72コマ。毎月お急ぎ券6枚。一度の購入で利用可能。",
+          "displayName" : "買い切り",
+          "locale" : "ja"
+        },
+        {
+          "description" : "롤 무제한, 롤당 최대 72컷. 매월 빠른 현상권 6장. 한 번만 결제.",
+          "displayName" : "평생권",
+          "locale" : "ko"
         }
       ],
       "productID" : "halfcam.unlock",
@@ -30,14 +45,29 @@
       "internalID" : "B3C1E8A4-7F52-4D9B-91C0-6A2E5D8F4B17",
       "localizations" : [
         {
-          "description" : "3 rush tickets. One ticket finishes one roll's wait.",
+          "description" : "3 rush tickets. Each skips the wait for one roll.",
           "displayName" : "Rush tickets ×3",
           "locale" : "en_US"
         },
         {
-          "description" : "3 张加急券。一张清掉一卷等待。",
+          "description" : "3 张加急券，每张可跳过一卷的等待时间。",
           "displayName" : "加急券 ×3",
           "locale" : "zh_CN"
+        },
+        {
+          "description" : "3 張加急券，每張可跳過一捲的等待時間。",
+          "displayName" : "加急券 ×3",
+          "locale" : "zh_TW"
+        },
+        {
+          "description" : "お急ぎ券3枚。1枚でフィルム1本の待ち時間をスキップ。",
+          "displayName" : "お急ぎ券 ×3",
+          "locale" : "ja"
+        },
+        {
+          "description" : "빠른 현상권 3장. 한 장으로 한 롤의 대기 시간을 건너뜁니다.",
+          "displayName" : "빠른 현상권 ×3",
+          "locale" : "ko"
         }
       ],
       "productID" : "halfcam.skip.3",
@@ -60,14 +90,29 @@
       "id" : "933D622A-B647-4149-9030-CE31E1E12543",
       "localizations" : [
         {
-          "description" : "HalfCam membership",
-          "displayName" : "HalfCam",
+          "description" : "HALF CAM membership",
+          "displayName" : "HALF CAM",
           "locale" : "en_US"
         },
         {
-          "description" : "半格权益",
-          "displayName" : "半格",
+          "description" : "HALF CAM 会员",
+          "displayName" : "HALF CAM",
           "locale" : "zh_CN"
+        },
+        {
+          "description" : "HALF CAM 會員",
+          "displayName" : "HALF CAM",
+          "locale" : "zh_TW"
+        },
+        {
+          "description" : "HALF CAM メンバーシップ",
+          "displayName" : "HALF CAM",
+          "locale" : "ja"
+        },
+        {
+          "description" : "HALF CAM 멤버십",
+          "displayName" : "HALF CAM",
+          "locale" : "ko"
         }
       ],
       "name" : "HalfCam",
@@ -86,14 +131,29 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "9 rolls a month. 12 / 24 / 36. 3 rush tickets a month.",
+              "description" : "9 rolls/month, up to 36 frames. 3 rush tickets/month.",
               "displayName" : "Yearly",
               "locale" : "en_US"
             },
             {
-              "description" : "每月 9 卷，可选 12 / 24 / 36。每月赠 3 张加急券。",
+              "description" : "每月 9 卷，每卷最多 36 格，每月赠 3 张加急券。按年自动续订。",
               "displayName" : "年卡",
               "locale" : "zh_CN"
+            },
+            {
+              "description" : "每月 9 捲，每捲最多 36 格，每月贈 3 張加急券。按年自動續訂。",
+              "displayName" : "年卡",
+              "locale" : "zh_TW"
+            },
+            {
+              "description" : "毎月9本、1本最大36コマ。毎月お急ぎ券3枚。1年ごとに自動更新。",
+              "displayName" : "年額",
+              "locale" : "ja"
+            },
+            {
+              "description" : "매월 9롤, 롤당 최대 36컷. 매월 빠른 현상권 3장. 매년 자동 갱신.",
+              "displayName" : "연간",
+              "locale" : "ko"
             }
           ],
           "productID" : "halfcam.yearly",

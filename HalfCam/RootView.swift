@@ -248,6 +248,8 @@ struct HatchPlate: View {
         Text(title)
             .font(HalfType.mono(13, weight: prominent ? .semibold : .regular))
             .foregroundStyle(prominent ? HalfColor.ink : HalfColor.fog)
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
             .frame(maxWidth: .infinity)
             .frame(height: 36)
             .background(
@@ -279,6 +281,8 @@ struct ChromeToast: View {
         Text(text)
             .font(HalfType.plate(12))
             .foregroundStyle(Color(white: 0.12))
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 14)
             .padding(.vertical, 7)
             .background(
