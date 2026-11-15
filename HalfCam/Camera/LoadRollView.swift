@@ -8,10 +8,11 @@ struct LoadRollView: View {
     @State private var dateStamp = false
     @State private var paperId = "kodak_portra_endura"
     @State private var cameraFilter = ""
-    @State private var capacity = AppConst.capacity
+    @State private var capacity = 12
     @State private var group: FilmGroup = .color
     @State private var inserting = false
     @State private var cassetteY: CGFloat = -80
+    @State private var sampleIndex: Int? = nil
 
     private var film: FilmRecipe { FilmCatalog.recipe(id: selected) }
     private var groupFilms: [FilmRecipe] { FilmCatalog.films(in: group) }
@@ -31,22 +32,46 @@ struct LoadRollView: View {
         .statusBarHidden()
         .preferredColorScheme(.dark)
         .onAppear {
+            model.presentingLoadRoll = true
             Soundboard.shared.play("back")
             syncFilmDefaults()
+            if !tutorial {
+                capacity = model.defaultCapacity
+            }
+        }
+        .onDisappear {
+            model.presentingLoadRoll = false
+        }
+        .onChange(of: model.tier) { _, _ in
+            model.syncSkipGrant()
+            if !tutorial, !model.canUseCapacity(capacity) {
+                capacity = model.defaultCapacity
+            }
         }
         .onChange(of: selected) { _, _ in
+            sampleIndex = nil
             syncFilmDefaults()
         }
         .onChange(of: group) { _, newGroup in
             pickGroup(newGroup)
         }
+        .overlay {
+            if model.showPaywall {
+                PaywallView()
+                    .environment(model)
+                    .environment(\.locale, model.language.locale)
+            }
+            if sampleIndex != nil {
+                FilmSampleLightbox(urls: FilmSamples.urls(for: selected), index: $sampleIndex)
+            }
+        }
     }
 
     private var cavity: some View {
         ZStack {
-            Color(red: 0.05, green: 0.04, blue: 0.04)
+            HalfColor.cavity
             RadialGradient(
-                colors: [Color(red: 0.28, green: 0.04, blue: 0.04).opacity(0.55), Color.clear],
+                colors: [HalfColor.safelight.opacity(0.55), Color.clear],
                 center: .top,
                 startRadius: 10,
                 endRadius: 420
@@ -59,14 +84,16 @@ struct LoadRollView: View {
         VStack(spacing: 22) {
             Spacer()
             FilmPackView(film: film, selected: true)
-            Text(L("先走一遍完整循环"))
+            Text(L("新手教程"))
                 .font(.system(size: 13, design: .monospaced))
                 .foregroundStyle(Color(white: 0.5))
+            FilmSampleStrip(filmId: selected) { sampleIndex = $0 }
+                .padding(.horizontal, 8)
             Spacer()
             Button {
                 beginInsert()
             } label: {
-                ChromePlate(title: L("装入体验卷 · 2 格"), prominent: true)
+                HatchPlate(title: L("装入体验卷 · 2 格"), prominent: true)
             }
             .buttonStyle(.plain)
             .disabled(inserting)
@@ -78,12 +105,16 @@ struct LoadRollView: View {
     private var fullBody: some View {
         VStack(alignment: .leading, spacing: 16) {
             latch
+            QuotaPlate()
+                .padding(.horizontal, 20)
             groupBar
                 .padding(.horizontal, 20)
             packRow
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 18) {
                     personality
+                        .padding(.horizontal, 20)
+                    FilmSampleStrip(filmId: selected) { sampleIndex = $0 }
                         .padding(.horizontal, 20)
                     VStack(alignment: .leading, spacing: 14) {
                         capacityRow
@@ -122,9 +153,9 @@ struct LoadRollView: View {
                 }
             }
             Button {
-                beginInsert()
+                tapInsert()
             } label: {
-                ChromePlate(title: L("装入 · \(capacity) 格"), prominent: true)
+                HatchPlate(title: insertTitle, prominent: true)
             }
             .buttonStyle(.plain)
             .disabled(inserting)
@@ -189,35 +220,43 @@ struct LoadRollView: View {
     }
 
     private var capacityRow: some View {
-        HStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(L("格数"))
                 .font(.system(size: 14))
                 .foregroundStyle(Color(white: 0.78))
-            Spacer()
-            ForEach(Array(AppConst.capacities.enumerated()), id: \.offset) { _, n in
-                let on = capacity == n
-                Button {
-                    capacity = n
-                    Haptics.shared.chrome()
-                } label: {
-                    VStack(spacing: 3) {
-                        Text("\(n)")
-                            .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                        Text(capacityLabel(n))
-                            .font(.system(size: 9, design: .monospaced))
+            HStack(spacing: 6) {
+                ForEach(AppConst.capacities, id: \.self) { n in
+                    let on = capacity == n
+                    let allowed = model.canUseCapacity(n)
+                    Button {
+                        if allowed {
+                            capacity = n
+                        } else {
+                            model.showPaywall = true
+                        }
+                        Haptics.shared.chrome()
+                    } label: {
+                        VStack(spacing: 2) {
+                            Text("\(n)")
+                                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                            Text(capacityLabel(n))
+                                .font(.system(size: 8, design: .monospaced))
+                        }
+                        .foregroundStyle(on ? Color.white : Color(white: allowed ? 0.5 : 0.28))
+                        .opacity(allowed ? 1 : 0.45)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color.white.opacity(on ? 0.16 : 0.06))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .stroke(Color.white.opacity(on ? 0.42 : 0.14), lineWidth: 0.8)
+                                )
+                        )
                     }
-                    .foregroundStyle(on ? Color.white : Color(white: 0.5))
-                    .frame(width: 64, height: 40)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(Color.white.opacity(on ? 0.16 : 0.06))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                    .stroke(Color.white.opacity(on ? 0.42 : 0.14), lineWidth: 0.8)
-                            )
-                    )
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
     }
@@ -290,7 +329,7 @@ struct LoadRollView: View {
                     .frame(width: 92, height: 56)
                     .offset(y: cassetteY)
             }
-            Text(L("推进暗盒"))
+            Text(L("装入机身"))
                 .font(.system(size: 13, weight: .medium, design: .monospaced))
                 .foregroundStyle(Color(white: 0.7))
             Spacer()
@@ -301,7 +340,9 @@ struct LoadRollView: View {
         switch n {
         case 12: L("短卷")
         case 24: L("中卷")
-        default: L("长卷")
+        case 36: L("长卷")
+        case 54: L("加长")
+        default: L("全卷")
         }
     }
 
@@ -322,6 +363,19 @@ struct LoadRollView: View {
         if film.group != group {
             group = film.group
         }
+    }
+
+    private var insertTitle: String {
+        model.canLoadRoll ? L("装入 · \(capacity) 格") : L("本月卷已用尽")
+    }
+
+    private func tapInsert() {
+        if !model.canLoadRoll || !model.canUseCapacity(capacity) {
+            model.showPaywall = true
+            Haptics.shared.chrome()
+            return
+        }
+        beginInsert()
     }
 
     private func beginInsert() {

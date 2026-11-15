@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 import UIKit
 
@@ -44,7 +45,9 @@ struct AlbumView: View {
                         if let roll = openedRoll, model.hasUnexportedPrints(roll) {
                             dumpRollButton(roll)
                         }
-                        gearButton
+                        if openedRoll == nil {
+                            gearButton
+                        }
                     }
                 }
                 .contentShape(Rectangle())
@@ -67,19 +70,18 @@ struct AlbumView: View {
                 PairViewer(
                     roll: live,
                     startIndex: item.index,
+                    coachDump: model.tutorialDumpRollId == live.id,
                     onClose: { viewingPair = nil }
                 ) { pair in
-                    model.markExportHint()
-                    Task { await exportFrames(live, pair) }
+                    await exportFrames(live, pair)
                 }
-                .onAppear { model.markExportHint() }
             }
 
             if showKeepHint, pendingDelete == nil, viewingPair == nil {
                 ChromeConfirm(
                     title: L("底片只在这台机里"),
                     message: L("删除 App 会把没倒走的照片一起清掉。洗好的，可以先倒进系统相册。"),
-                    confirmTitle: L("倒出全部未导出"),
+                    confirmTitle: L("倒出还未倒走的"),
                     confirm: {
                         showKeepHint = false
                         model.markKeepHint()
@@ -94,16 +96,16 @@ struct AlbumView: View {
 
             if let roll = pendingDelete {
                 ChromeConfirm(
-                    title: L("抽出这卷？"),
+                    title: L("清掉这卷？"),
                     message: L("洗好的 \(roll.shotCount) 格会从本机清掉。系统相册里倒走过的还在。"),
-                    confirmTitle: L("抽出"),
+                    confirmTitle: L("清掉"),
                     confirm: {
                         if openedRollId == roll.id { openedRollId = nil }
                         viewingPair = nil
                         withAnimation(.easeInOut(duration: 0.22)) {
                             model.deleteAlbumRoll(roll.id)
                         }
-                        toast = L("已抽出")
+                        toast = L("已清掉")
                         clearToast()
                         pendingDelete = nil
                     },
@@ -122,7 +124,10 @@ struct AlbumView: View {
                 viewingPair = nil
             }
         }
-        .onAppear { maybeShowKeepHint() }
+        .onAppear {
+            maybeShowKeepHint()
+            Task { await model.reconcileExportedPrints() }
+        }
     }
 
     private var openedGone: Bool {
@@ -191,7 +196,19 @@ struct AlbumView: View {
                     } content: {
                         collapsedCard(roll)
                     }
+                    .modifier(PulseScaleModifier(
+                        amount: 1.03,
+                        active: model.tutorialDumpRollId == roll.id,
+                        repeats: true
+                    ))
                     .padding(.vertical, 8)
+                }
+                if model.tutorialDumpRollId != nil {
+                    Text(L("底片只在这台机里"))
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundStyle(Color(white: 0.48))
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 8)
                 }
             }
             .padding(.bottom, 20)
@@ -204,13 +221,6 @@ struct AlbumView: View {
                 VStack {
                     Spacer()
                     ChromeToast(text: toast)
-                        .padding(.bottom, 24)
-                }
-                .allowsHitTesting(false)
-            } else if !model.hasSeenExportHint, viewingPair != nil {
-                VStack {
-                    Spacer()
-                    ChromeToast(text: L("点一格倒出单张"))
                         .padding(.bottom, 24)
                 }
                 .allowsHitTesting(false)
@@ -227,6 +237,7 @@ struct AlbumView: View {
             withAnimation(.easeOut(duration: 0.28)) {
                 model.showAlbum = false
             }
+            model.completeOnboarding()
         }
     }
 
@@ -261,6 +272,7 @@ struct AlbumView: View {
             t.disablesAnimations = true
             withTransaction(t) {
                 model.showAlbum = false
+                model.completeOnboarding()
             }
         }
     }
@@ -268,27 +280,17 @@ struct AlbumView: View {
     private func collapsedCard(_ roll: Roll) -> some View {
         let film = FilmCatalog.recipe(id: roll.filmId)
         let pairs = filmPairs(roll.frames)
-        let extra = max(0, pairs.count - 1)
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
                 FilmPackChip(film: film, width: 10, height: 14)
                 Text(film.name)
                     .font(.system(size: 14, weight: .semibold, design: .serif))
                     .foregroundStyle(Color(white: 0.88))
-                Text(L("\(roll.shotCount) 格"))
+                Text(L("\(pairs.count) 对"))
                     .font(.system(size: 11, design: .monospaced))
                     .foregroundStyle(Color(white: 0.45))
                 Spacer()
-                if model.hasUnexportedPrints(roll) {
-                    Text(L("未倒出"))
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundStyle(Color(white: 0.55))
-                }
-                if extra > 0 {
-                    Text(L("\(extra) 对在卷里"))
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundStyle(Color(white: 0.5))
-                }
+                DumpChip(roll: roll)
             }
             if let first = pairs.first {
                 previewStrip(roll, first)
@@ -318,6 +320,11 @@ struct AlbumView: View {
             Haptics.shared.tick()
         } label: {
             previewStrip(roll, pair)
+                .overlay(alignment: .bottomTrailing) {
+                    if model.isPairDumped(pair) {
+                        DumpStamp(text: L("这对已倒出"))
+                    }
+                }
         }
         .buttonStyle(.plain)
     }
@@ -391,12 +398,17 @@ struct AlbumView: View {
         } label: {
             ChromePlate(
                 title: exporting || model.exportBusy ? L("正在倒出") : L("倒出这卷"),
-                prominent: false
+                prominent: model.tutorialDumpRollId == roll.id
             )
             .frame(width: 96)
         }
         .buttonStyle(.plain)
         .disabled(exporting || model.exportBusy)
+        .modifier(PulseScaleModifier(
+            amount: 1.04,
+            active: model.tutorialDumpRollId == roll.id && model.hasUnexportedPrints(roll),
+            repeats: true
+        ))
     }
 
     private func dumpRoll(_ roll: Roll) async {
@@ -411,59 +423,46 @@ struct AlbumView: View {
         clearToast()
     }
 
-    private func exportFrames(_ roll: Roll, _ frames: [Frame]) async {
+    @discardableResult
+    private func exportFrames(_ roll: Roll, _ frames: [Frame]) async -> String {
         let live = liveFrames(roll, frames)
-        guard !live.isEmpty else { return }
-        guard !exporting else { return }
+        let asPair = live.count >= 2
+        let targets = asPair
+            ? (model.isPairDumped(live) ? [] : live)
+            : live.filter { !$0.exported }
+        guard !targets.isEmpty else { return "" }
+        guard !exporting else { return "" }
         exporting = true
         defer { exporting = false }
-        let urls: [URL] = live.compactMap { frame in
+        let urls: [URL] = targets.compactMap { frame in
             model.exportJPEGURL(roll: roll, frame: frame)
         }
         guard !urls.isEmpty else {
-            toast = L("没有成片")
+            let text = L("没有成片")
+            toast = text
             clearToast()
-            return
+            return text
         }
-        let ids = live.map(\.id)
+        let ids = targets.map(\.id)
+        let bordered = model.exportFilmBorder
+        let rebates = bordered ? targets.map { filmRebate($0.index) } : []
         let payload = await Task.detached(priority: .userInitiated) {
-            Self.exportJPEG(urls: urls)
+            PhotoExport.composeJPEG(urls: urls, rebates: rebates, filmBorder: bordered)
         }.value
         guard let payload else {
-            toast = L("没有成片")
+            let text = L("没有成片")
+            toast = text
             clearToast()
-            return
+            return text
         }
-        let outcome = await model.exportJPEGPayload(payload, rollId: roll.id, frameIds: ids)
+        let outcome = await model.exportJPEGPayload(payload, rollId: roll.id, frameIds: ids, asPair: asPair)
         if case .saved = outcome {
             Haptics.shared.latch()
         }
-        toast = PhotoExport.toast(outcome)
+        let text = PhotoExport.toast(outcome)
+        toast = text
         clearToast()
-    }
-
-    nonisolated private static func exportJPEG(urls: [URL]) -> Data? {
-        if urls.count == 1, let data = try? Data(contentsOf: urls[0]), !data.isEmpty {
-            return data
-        }
-        let images = urls.compactMap { ImageStore.decodeExport($0, maxSide: 1600) }
-        guard !images.isEmpty else { return nil }
-        let h: CGFloat = 1600
-        let w: CGFloat = h * 3 / 4
-        let gap: CGFloat = images.count > 1 ? 10 : 0
-        let canvas = CGSize(width: w * CGFloat(images.count) + gap * CGFloat(max(0, images.count - 1)), height: h)
-        let renderer = UIGraphicsImageRenderer(size: canvas)
-        let composed = renderer.image { ctx in
-            UIColor.black.setFill()
-            ctx.fill(CGRect(origin: .zero, size: canvas))
-            for (i, img) in images.enumerated() {
-                let rect = CGRect(x: CGFloat(i) * (w + gap), y: 0, width: w, height: h)
-                img.draw(in: rect)
-            }
-        }
-        guard let jpeg = composed.jpegData(compressionQuality: 0.92) else { return nil }
-        guard let source = try? Data(contentsOf: urls[0]) else { return jpeg }
-        return FilmRenderer.stampExport(jpeg, like: source)
+        return text
     }
 
     private func clearToast() {
@@ -471,6 +470,7 @@ struct AlbumView: View {
     }
 
     private func maybeShowKeepHint() {
+        guard model.tutorialDumpRollId == nil else { return }
         guard !model.hasSeenKeepHint, model.unexportedRollCount > 0 else { return }
         showKeepHint = true
     }
@@ -516,7 +516,7 @@ private struct AlbumRollCard<Content: View>: View {
                         )
                         .frame(width: 18, height: 6)
                         .overlay(Capsule().stroke(Color.white.opacity(0.28), lineWidth: 0.5))
-                    Text(L("抽出"))
+                    Text(L("清掉"))
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
                         .foregroundStyle(Color(white: 0.82))
                 }
@@ -593,13 +593,22 @@ private struct PairViewer: View {
     var roll: Roll
     var startIndex: Int
     var onClose: () -> Void
-    var export: ([Frame]) -> Void
+    var export: ([Frame]) async -> String
+    var coachDump: Bool = false
     @State private var page: Int
     @State private var selectedId: UUID?
+    @State private var notice = ""
 
-    init(roll: Roll, startIndex: Int, onClose: @escaping () -> Void, export: @escaping ([Frame]) -> Void) {
+    init(
+        roll: Roll,
+        startIndex: Int,
+        coachDump: Bool = false,
+        onClose: @escaping () -> Void,
+        export: @escaping ([Frame]) async -> String
+    ) {
         self.roll = roll
         self.startIndex = startIndex
+        self.coachDump = coachDump
         self.onClose = onClose
         self.export = export
         let count = max(1, filmPairs(roll.frames).count)
@@ -617,8 +626,37 @@ private struct PairViewer: View {
         return pairs[page]
     }
 
-    private var selectedFrame: Frame? {
-        current.first { $0.id == selectedId }
+    private var framedFrame: Frame? {
+        guard current.count >= 2 else { return nil }
+        return current.first { $0.id == selectedId }.map {
+            model.liveFrame(rollId: live.id, frameId: $0.id) ?? $0
+        }
+    }
+
+    private var pairPending: [Frame] {
+        model.isPairDumped(current) ? [] : current
+    }
+
+    private var framedPending: [Frame] {
+        if let frame = framedFrame {
+            return frameDumped(frame) ? [] : [frame]
+        }
+        return pairPending
+    }
+
+    private func frameDumped(_ frame: Frame) -> Bool {
+        frame.exported
+    }
+
+    private var dumpTitle: String {
+        if let frame = framedFrame {
+            return frameDumped(frame) ? L("这格已倒出") : L("倒出这格")
+        }
+        if model.isPairDumped(current) {
+            return current.count == 1 ? L("这格已倒出") : L("这对已倒出")
+        }
+        if current.count == 1 { return L("倒出这格") }
+        return L("倒出这对")
     }
 
     private var capTitle: String {
@@ -632,17 +670,18 @@ private struct PairViewer: View {
             VStack(spacing: 0) {
                 HatchBar(title: capTitle, close: onClose) {
                     Button {
-                        if let frame = selectedFrame {
-                            export([frame])
-                        } else {
-                            export(current)
-                        }
+                        Task { await dump(framedPending) }
                     } label: {
-                        ChromePlate(title: selectedFrame == nil ? L("倒出这对") : L("倒出这格"), prominent: false)
-                            .frame(width: 96)
+                        ChromePlate(title: dumpTitle, prominent: coachDump && !framedPending.isEmpty)
+                            .frame(width: 110)
                     }
                     .buttonStyle(.plain)
-                    .disabled(model.exportBusy)
+                    .disabled(model.exportBusy || framedPending.isEmpty)
+                    .modifier(PulseScaleModifier(
+                        amount: 1.04,
+                        active: coachDump && !framedPending.isEmpty,
+                        repeats: true
+                    ))
                 }
                 TabView(selection: $page) {
                     ForEach(Array(pairs.enumerated()), id: \.offset) { i, pair in
@@ -655,6 +694,14 @@ private struct PairViewer: View {
                     selectedId = nil
                 }
             }
+            if !notice.isEmpty {
+                VStack {
+                    Spacer()
+                    ChromeToast(text: notice)
+                        .padding(.bottom, 24)
+                }
+                .allowsHitTesting(false)
+            }
         }
         .statusBarHidden()
     }
@@ -662,26 +709,46 @@ private struct PairViewer: View {
     private func pairPage(_ pair: [Frame]) -> some View {
         VStack {
             Spacer(minLength: 0)
-            let strip = FilmSprocketFrame(rebates: pair.map { filmRebate($0.index) }) {
-                HStack(spacing: 2) {
-                    ForEach(pair) { frame in
-                        let on = selectedId == frame.id
-                        FrameStill(roll: live, frame: frame, kind: .display)
-                            .overlay {
-                                Rectangle()
-                                    .stroke(Color(white: 0.82), lineWidth: on ? 2 : 0)
-                            }
-                            .clipped()
-                            .frame(maxWidth: .infinity)
-                            .aspectRatio(3 / 4, contentMode: .fit)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                selectedId = selectedId == frame.id ? nil : frame.id
-                                Haptics.shared.tick()
-                            }
-                    }
+            pairStrip(pair)
+            if coachDump, !model.isPairDumped(pair) {
+                Text(L("底片只在这台机里"))
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundStyle(Color(white: 0.48))
+                    .padding(.top, 12)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func pairStrip(_ pair: [Frame]) -> some View {
+        let strip = FilmSprocketFrame(rebates: pair.map { filmRebate($0.index) }) {
+            HStack(spacing: 2) {
+                ForEach(pair) { frame in
+                    let liveFrame = model.liveFrame(rollId: live.id, frameId: frame.id) ?? frame
+                    let on = selectedId == liveFrame.id
+                    FrameStill(roll: live, frame: liveFrame, kind: .display)
+                        .clipped()
+                        .frame(maxWidth: .infinity)
+                        .aspectRatio(3 / 4, contentMode: .fit)
+                        .contentShape(Rectangle())
+                        .overlay {
+                            if on { CarrierWindow() }
+                        }
+                        .opacity(selectedId == nil || on ? 1 : 0.82)
+                        .onTapGesture {
+                            guard pair.count >= 2 else { return }
+                            selectedId = on ? nil : liveFrame.id
+                            Haptics.shared.tick()
+                        }
                 }
             }
+        }
+        .onTapGesture {
+            guard selectedId != nil else { return }
+            selectedId = nil
+            Haptics.shared.tick()
+        }
+        return Group {
             if pair.count == 1 {
                 HStack(spacing: 0) {
                     strip
@@ -691,8 +758,98 @@ private struct PairViewer: View {
             } else {
                 strip.padding(.horizontal, 16)
             }
-            Spacer(minLength: 0)
         }
+    }
+
+    private func dump(_ frames: [Frame]) async {
+        let text = await export(frames)
+        guard !text.isEmpty else { return }
+        notice = text
+        try? await Task.sleep(for: .seconds(1.6))
+        if notice == text { notice = "" }
+    }
+}
+
+private struct CarrierWindow: View {
+    var body: some View {
+        GeometryReader { geo in
+            let arm = min(14, min(geo.size.width, geo.size.height) * 0.16)
+            ZStack {
+                Rectangle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color(white: 0.82), Color(white: 0.42)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 1.1
+                    )
+                    .padding(2.5)
+                Path { path in
+                    let w = geo.size.width
+                    let h = geo.size.height
+                    path.move(to: CGPoint(x: 0, y: arm))
+                    path.addLine(to: .zero)
+                    path.addLine(to: CGPoint(x: arm, y: 0))
+                    path.move(to: CGPoint(x: w - arm, y: 0))
+                    path.addLine(to: CGPoint(x: w, y: 0))
+                    path.addLine(to: CGPoint(x: w, y: arm))
+                    path.move(to: CGPoint(x: 0, y: h - arm))
+                    path.addLine(to: CGPoint(x: 0, y: h))
+                    path.addLine(to: CGPoint(x: arm, y: h))
+                    path.move(to: CGPoint(x: w - arm, y: h))
+                    path.addLine(to: CGPoint(x: w, y: h))
+                    path.addLine(to: CGPoint(x: w, y: h - arm))
+                }
+                .stroke(Color(white: 0.88), lineWidth: 1.8)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+struct DumpChip: View {
+    @Environment(AppModel.self) private var model
+    var roll: Roll
+
+    private var pending: Int { model.unexportedDumpGroups(in: roll).count }
+    private var total: Int { model.dumpGroupCount(in: roll) }
+
+    private var label: String {
+        if pending == 0 { return L("已倒出") }
+        if pending == total { return L("未倒出") }
+        return L("未倒 \(pending)")
+    }
+
+    var body: some View {
+        Text(label)
+            .font(.system(size: 11, weight: pending > 0 ? .semibold : .medium, design: .monospaced))
+            .foregroundStyle(pending > 0 ? Color(red: 1, green: 0.32, blue: 0.22) : Color(white: 0.55))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
+            .background(
+                Capsule()
+                    .fill(Color.black.opacity(0.45))
+                    .overlay(Capsule().stroke(Color(white: pending > 0 ? 0.48 : 0.32), lineWidth: 0.8))
+            )
+    }
+}
+
+struct DumpStamp: View {
+    var text: String = L("已倒出")
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 9, weight: .medium, design: .monospaced))
+            .foregroundStyle(Color(white: 0.78))
+            .padding(.horizontal, 5)
+            .padding(.vertical, 3)
+            .background(
+                Capsule()
+                    .fill(Color.black.opacity(0.62))
+                    .overlay(Capsule().stroke(Color(white: 0.32), lineWidth: 0.6))
+            )
+            .padding(6)
     }
 }
 
@@ -716,8 +873,8 @@ struct FrameStill: View {
     var body: some View {
         Color.black
             .overlay {
-                if let image {
-                    Image(uiImage: image)
+                if let shown = image ?? cached {
+                    Image(uiImage: shown)
                         .renderingMode(.original)
                         .resizable()
                         .scaledToFill()
@@ -727,16 +884,23 @@ struct FrameStill: View {
             }
             .clipped()
             .task(id: token) {
-                image = cached
-                if image != nil { return }
+                if cached != nil {
+                    try? await Task.sleep(for: .milliseconds(320))
+                    guard !Task.isCancelled, image == nil, let hit = cached else { return }
+                    pin(hit)
+                    return
+                }
+                let loaded: UIImage?
                 switch kind {
                 case .preview:
-                    image = await model.loadPreview(roll: roll, frame: frame)
+                    loaded = await model.loadPreview(roll: roll, frame: frame)
                 case .display:
-                    image = await model.loadDisplay(roll: roll, frame: frame)
+                    loaded = await model.loadDisplay(roll: roll, frame: frame)
                 case .negative:
-                    image = await model.loadNegative(roll: roll, frame: frame)
+                    loaded = await model.loadNegative(roll: roll, frame: frame)
                 }
+                guard let loaded else { return }
+                pin(loaded)
             }
     }
 
@@ -750,6 +914,12 @@ struct FrameStill: View {
         case .display: model.cachedDisplay(roll: roll, frame: frame)
         case .negative: model.cachedNegative(roll: roll, frame: frame)
         }
+    }
+
+    private func pin(_ loaded: UIImage) {
+        var t = Transaction()
+        t.disablesAnimations = true
+        withTransaction(t) { image = loaded }
     }
 }
 
@@ -811,6 +981,8 @@ struct FilmSprocketFrame<Content: View>: View {
 struct SettingsPanel: View {
     @Environment(AppModel.self) private var model
     @State private var dragY: CGFloat = 0
+    @State private var dumpNote = ""
+    @State private var confirmDumpAll = false
 
     var body: some View {
         let h = UIScreen.main.bounds.height
@@ -827,26 +999,24 @@ struct SettingsPanel: View {
                         .padding(.top, 10)
                         .padding(.bottom, 8)
                     Text(L("设置"))
-                        .font(.system(size: 13, weight: .semibold, design: .serif))
-                        .foregroundStyle(Color(white: 0.78))
+                        .font(HalfType.serif(13))
+                        .foregroundStyle(HalfColor.ink.opacity(0.86))
                         .padding(.bottom, 10)
                 }
                 .frame(maxWidth: .infinity)
                 .contentShape(Rectangle())
                 .gesture(drag)
-                ScrollView(showsIndicators: false) {
-                    SettingsView()
-                }
+                SettingsView(dumpNote: dumpNote, confirmDumpAll: $confirmDumpAll)
             }
             .frame(maxWidth: .infinity)
             .frame(maxHeight: sheetH, alignment: .top)
-            .background(Color(red: 0.07, green: 0.06, blue: 0.055))
+            .background(HalfColor.cavity)
             .clipShape(
                 UnevenRoundedRectangle(
-                    topLeadingRadius: 24,
+                    topLeadingRadius: HalfRadius.sheet,
                     bottomLeadingRadius: 0,
                     bottomTrailingRadius: 0,
-                    topTrailingRadius: 24,
+                    topTrailingRadius: HalfRadius.sheet,
                     style: .continuous
                 )
             )
@@ -854,6 +1024,29 @@ struct SettingsPanel: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(edges: .bottom)
+        .overlay {
+            if confirmDumpAll {
+                ChromeConfirm(
+                    title: L("倒出还未倒走的"),
+                    message: L("洗好的对页会倒进系统相册。"),
+                    confirmTitle: L("倒出"),
+                    confirm: {
+                        confirmDumpAll = false
+                        Task { await dumpAll() }
+                    },
+                    cancel: { confirmDumpAll = false }
+                )
+            }
+        }
+    }
+
+    private func dumpAll() async {
+        dumpNote = ""
+        let outcome = await model.exportAllUnexportedPrints()
+        if case .saved = outcome {
+            Haptics.shared.latch()
+        }
+        dumpNote = PhotoExport.toast(outcome)
     }
 
     private var drag: some Gesture {
@@ -891,47 +1084,22 @@ struct SettingsPanel: View {
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
+    var dumpNote: String
+    @Binding var confirmDumpAll: Bool
     @State private var storageText = "—"
-    @State private var dumpNote = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
-            group(L("手感")) {
-                feelRow(L("声音"), on: model.soundOn) {
-                    model.soundOn.toggle()
-                    model.applyFeel()
-                }
-                feelRow(L("触感"), on: model.hapticOn) {
-                    model.hapticOn.toggle()
-                    model.applyFeel()
-                }
-            }
-            group(L("规则")) {
-                feelRow(L("严格模式"), on: model.strictMode) {
-                    model.setStrictMode(!model.strictMode)
-                }
-                note(L("拍过就不能中途卸，拍满才能洗"))
-            }
-            group(L("拍摄")) {
-                feelRow("ProRAW", on: model.proRAW) {
-                    model.setProRAW(!model.proRAW)
-                }
-                note(L("打开后负片按 RAW 保存，冲洗更慢、更占空间"))
-            }
-            group(L("底片")) {
-                infoRow(L("本机占用"), storageText)
-                infoRow(L("未倒出"), unexportedLabel)
-                feelRow(L("洗完自动倒出"), on: model.autoExportPrints) {
-                    model.setAutoExportPrints(!model.autoExportPrints)
-                }
-                note(L("只倒洗好的正片。打开后，之后洗完的卷会自动倒走；已经洗好的用下面倒出。"))
-                note(L("要腾地方用卸载，不要删除。卸载会留下底片。"))
-                if model.unexportedRollCount > 0 {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 26) {
+                QuotaPlate()
+                infoRow(L("加急券"), L("赠 \(model.skipGranted) · 购 \(model.skipPurchased)"))
+                ForEach(model.membership.skipProducts, id: \.id) { product in
                     Button {
-                        Task { await dumpAll() }
+                        Haptics.shared.chrome()
+                        Task { await model.membership.buySkipPack(product) }
                     } label: {
                         HStack {
-                            Text(model.exportBusy ? L("正在倒出") : L("倒出全部未导出"))
+                            Text(skipTitle(product))
                                 .font(.system(size: 14, design: .monospaced))
                                 .foregroundStyle(Color(white: 0.78))
                             Spacer()
@@ -939,94 +1107,222 @@ struct SettingsView: View {
                                 .font(.system(size: 18, design: .monospaced))
                                 .foregroundStyle(Color(white: 0.42))
                         }
-                        .padding(.vertical, 8)
+                        .padding(.vertical, 4)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .disabled(model.exportBusy)
+                    .disabled(model.membership.purchasing)
                 }
-                if !dumpNote.isEmpty {
-                    note(dumpNote)
-                }
-            }
-            group(L("语言")) {
-                VStack(spacing: 0) {
-                    ForEach(AppLanguage.allCases) { item in
-                        Button {
-                            model.setLanguage(item)
-                            Haptics.shared.chrome()
-                        } label: {
-                            HStack {
-                                Text(item.menuTitle)
-                                    .font(.system(size: 14, design: .monospaced))
-                                    .foregroundStyle(Color(white: 0.78))
-                                Spacer()
-                                Capsule()
-                                    .fill(Color.black.opacity(0.45))
-                                    .overlay(Capsule().stroke(Color(white: 0.32), lineWidth: 0.8))
-                                    .frame(width: 28, height: 18)
-                                    .overlay {
-                                        if model.language == item {
-                                            Capsule()
-                                                .fill(
-                                                    LinearGradient(
-                                                        colors: [Color(white: 0.82), Color(white: 0.42)],
-                                                        startPoint: .top,
-                                                        endPoint: .bottom
-                                                    )
-                                                )
-                                                .overlay(Capsule().stroke(Color.white.opacity(0.28), lineWidth: 0.5))
-                                                .padding(2)
-                                        }
-                                    }
-                            }
-                            .padding(.vertical, 8)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-            #if DEBUG
-            group(L("测试")) {
+                note(L("每月赠券过月清掉。买的留下，并跟 iCloud 走。"))
                 Button {
-                    Haptics.shared.latch()
-                    model.resetOnboardingForTest()
+                    Task { await model.membership.restore() }
                 } label: {
                     HStack {
-                        Text(L("重做新手引导"))
+                        Text(model.membership.purchasing ? L("正在恢复") : L("恢复购买"))
                             .font(.system(size: 14, design: .monospaced))
                             .foregroundStyle(Color(white: 0.78))
                         Spacer()
                     }
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 4)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                note(L("会卸下机身这卷，暗盒里未洗完的体验卷也清掉"))
+                .disabled(model.membership.purchasing)
+                if !model.membership.note.isEmpty {
+                    note(model.membership.note)
+                }
+                group(L("手感")) {
+                    feelRow(L("声音"), on: model.soundOn) {
+                        model.soundOn.toggle()
+                        model.applyFeel()
+                    }
+                    feelRow(L("触感"), on: model.hapticOn) {
+                        if model.hapticOn {
+                            model.hapticOn = false
+                            model.applyFeel()
+                        } else {
+                            model.hapticOn = true
+                            model.applyFeel()
+                            Haptics.shared.chrome()
+                        }
+                    }
+                }
+                group(L("规则")) {
+                    feelRow(L("严格模式"), on: model.strictMode) {
+                        model.setStrictMode(!model.strictMode)
+                    }
+                    note(L("拍过就不能中途卸卷"))
+                }
+                if model.camera.proRAWSupported {
+                    group(L("拍摄")) {
+                        feelRow("ProRAW", on: model.proRAW) {
+                            model.setProRAW(!model.proRAW)
+                        }
+                        note(L("画质更好，快门更慢，文件更大"))
+                    }
+                }
+                group(L("底片")) {
+                    infoRow(L("本机占用"), storageText)
+                    note(L("要腾空间就卸载，别删除 App。删除会清掉还没倒走的底片。"))
+                    infoRow(L("未倒出"), unexportedLabel)
+                    feelRow(L("洗完自动倒出"), on: model.autoExportPrints) {
+                        model.setAutoExportPrints(!model.autoExportPrints)
+                    }
+                    note(L("只倒还没倒走的。一对两格，一格一张。"))
+                    feelRow(L("倒出带片边"), on: model.exportFilmBorder) {
+                        model.setExportFilmBorder(!model.exportFilmBorder)
+                    }
+                    note(L("一对、单格都带齿孔和 HALFCAM。关掉就出净片。"))
+                    if model.unexportedRollCount > 0 {
+                        Button {
+                            Haptics.shared.chrome()
+                            confirmDumpAll = true
+                        } label: {
+                            HStack {
+                                Text(model.exportBusy ? L("正在倒出") : L("倒出还未倒走的"))
+                                    .font(.system(size: 14, design: .monospaced))
+                                    .foregroundStyle(Color(white: 0.78))
+                                Spacer()
+                                Text("›")
+                                    .font(.system(size: 18, design: .monospaced))
+                                    .foregroundStyle(Color(white: 0.42))
+                            }
+                            .padding(.vertical, 4)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(model.exportBusy)
+                    }
+                    if !dumpNote.isEmpty {
+                        note(dumpNote)
+                    }
+                }
+                group(L("语言")) {
+                    VStack(spacing: 0) {
+                        ForEach(AppLanguage.allCases) { item in
+                            Button {
+                                model.setLanguage(item)
+                                Haptics.shared.chrome()
+                            } label: {
+                                HStack {
+                                    Text(item.menuTitle)
+                                        .font(.system(size: 14, design: .monospaced))
+                                        .foregroundStyle(Color(white: 0.78))
+                                    Spacer()
+                                    Capsule()
+                                        .fill(Color.black.opacity(0.45))
+                                        .overlay(Capsule().stroke(Color(white: 0.32), lineWidth: 0.8))
+                                        .frame(width: 28, height: 18)
+                                        .overlay {
+                                            if model.language == item {
+                                                Capsule()
+                                                    .fill(
+                                                        LinearGradient(
+                                                            colors: [Color(white: 0.82), Color(white: 0.42)],
+                                                            startPoint: .top,
+                                                            endPoint: .bottom
+                                                        )
+                                                    )
+                                                    .overlay(Capsule().stroke(Color.white.opacity(0.28), lineWidth: 0.5))
+                                                    .padding(2)
+                                            }
+                                        }
+                                }
+                                .padding(.vertical, 6)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                if AppLab.enabled {
+                    group(L("测试")) {
+                        Button {
+                            Haptics.shared.latch()
+                            model.resetOnboardingForTest()
+                        } label: {
+                            HStack {
+                                Text(L("重做新手引导"))
+                                    .font(.system(size: 14, design: .monospaced))
+                                    .foregroundStyle(Color(white: 0.78))
+                                Spacer()
+                            }
+                            .padding(.vertical, 4)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        note(L("会卸下机身这卷，暗盒里未洗完的体验卷也清掉"))
+                        Button {
+                            Haptics.shared.latch()
+                            model.addSkipTickets(3)
+                        } label: {
+                            HStack {
+                                Text(L("加 3 张加急券"))
+                                    .font(.system(size: 14, design: .monospaced))
+                                    .foregroundStyle(Color(white: 0.78))
+                                Spacer()
+                            }
+                            .padding(.vertical, 4)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        note(L("只加本机余数，不走商店"))
+                        MetalSelector(
+                            labels: [L("跟商店")] + MembershipTier.allCases.map(\.title),
+                            selected: debugTierIndex
+                        ) { i in
+                            if i == 0 {
+                                model.membership.setDebugTier(nil)
+                            } else {
+                                model.membership.setDebugTier(MembershipTier.allCases[i - 1])
+                            }
+                            model.syncSkipGrant()
+                        }
+                        note(L("立刻切档。跟商店 = 真实购买，只在测试包生效"))
+                    }
+                }
+                footer
             }
-            #endif
-            Button {
-                Haptics.shared.chrome()
-                UIApplication.shared.open(Legal.page)
-            } label: {
-                Text(L("法律信息"))
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundStyle(Color(white: 0.32))
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 18)
-            }
-            .buttonStyle(.plain)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 36)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 36)
-        .frame(maxWidth: .infinity, alignment: .topLeading)
         .preferredColorScheme(.dark)
         .onAppear { refreshStorage() }
+        .onChange(of: dumpNote) { _, _ in refreshStorage() }
+    }
+
+    private var footer: some View {
+        Button {
+            Haptics.shared.chrome()
+            UIApplication.shared.open(Legal.page)
+        } label: {
+            Text(L("法律信息 · 隐私政策"))
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundStyle(Color(white: 0.32))
+                .frame(maxWidth: .infinity)
+                .padding(.top, 8)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var debugTierIndex: Int {
+        if let debug = model.membership.debugTier,
+           let i = MembershipTier.allCases.firstIndex(of: debug) {
+            return i + 1
+        }
+        return 0
+    }
+
+    private func skipTitle(_ product: Product) -> String {
+        let n = Entitlements.skipCount(for: product.id)
+        return L("加急券 \(n) 张 · \(product.displayPrice)")
     }
 
     private var unexportedLabel: String {
-        let count = model.unexportedRollCount
-        return count == 0 ? L("都已倒走") : L("\(count) 卷未倒出")
+        let rolls = model.unexportedRollCount
+        let frames = model.unexportedFrameCount
+        if rolls == 0 { return L("都已倒走") }
+        return L("\(rolls) 卷 · 未倒 \(frames)")
     }
 
     private func refreshStorage() {
@@ -1035,21 +1331,11 @@ struct SettingsView: View {
         }
     }
 
-    private func dumpAll() async {
-        dumpNote = ""
-        let outcome = await model.exportAllUnexportedPrints()
-        if case .saved = outcome {
-            Haptics.shared.latch()
-        }
-        dumpNote = PhotoExport.toast(outcome)
-        refreshStorage()
-    }
-
     private func group<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.system(size: 12, weight: .semibold, design: .serif))
-                .foregroundStyle(Color(white: 0.48))
+                .foregroundStyle(Color(white: 0.62))
             content()
         }
     }
@@ -1057,7 +1343,7 @@ struct SettingsView: View {
     private func note(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 11, design: .monospaced))
-            .foregroundStyle(Color(white: 0.38))
+            .foregroundStyle(Color(white: 0.32))
             .fixedSize(horizontal: false, vertical: true)
     }
 
@@ -1071,7 +1357,7 @@ struct SettingsView: View {
                 .font(.system(size: 13, design: .monospaced))
                 .foregroundStyle(Color(white: 0.48))
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
     }
 
     private func feelRow(_ title: String, on: Bool, toggle: @escaping () -> Void) -> some View {
@@ -1086,6 +1372,9 @@ struct SettingsView: View {
             .allowsHitTesting(false)
         }
         .contentShape(Rectangle())
-        .onTapGesture { toggle() }
+        .onTapGesture {
+            Haptics.shared.chrome()
+            toggle()
+        }
     }
 }

@@ -27,12 +27,26 @@ final class CameraSession: NSObject, @unchecked Sendable {
     @ObservationIgnored private var zoomFactor: CGFloat = 1
     @ObservationIgnored private var lastFocusPoint: CGPoint?
     @ObservationIgnored private var focusRetry = 0
+    @ObservationIgnored private var lensLockInFlight = false
     @ObservationIgnored private var continuation: CheckedContinuation<Data?, Never>?
     @ObservationIgnored private var committed: (() -> Void)?
     private let lock = NSLock()
-    @ObservationIgnored private var proRAWEnabled = true
+    @ObservationIgnored private var proRAWEnabled = false
+    @ObservationIgnored private var autoMacroOn = true
+    @ObservationIgnored private var macroSuppressed = false
+    @ObservationIgnored private var macroSessionActive = false
+    @ObservationIgnored private var macroHoldUntil: TimeInterval = 0
+    @ObservationIgnored private var macroFarSince: TimeInterval = 0
+    @ObservationIgnored private var macroUIGeneration = 0
+    @ObservationIgnored private var macroDeviceObs: NSKeyValueObservation?
+    @ObservationIgnored private var macroLensObs: NSKeyValueObservation?
     var hasCamera = false
     var cameraDenied = false
+    var proRAWSupported = false
+    var autoMacroEnabled = true
+    var macroAvailable = false
+    var macroControlVisible = false
+    var macroLocked = false
     var flashOn = false
     var exposureLocked = false
     var focusLocked = false
@@ -70,6 +84,9 @@ final class CameraSession: NSObject, @unchecked Sendable {
             if self.cameraAvailable, !self.session.isRunning {
                 self.session.startRunning()
                 self.prepareCapture()
+                self.applyLensSwitching()
+                self.watchMacroSignals()
+                self.refreshMacroControl()
             }
         }
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -124,15 +141,54 @@ final class CameraSession: NSObject, @unchecked Sendable {
     func setProRAW(_ on: Bool) {
         queue.async { [weak self] in
             guard let self else { return }
-            self.proRAWEnabled = on
+            self.proRAWEnabled = on && self.photoOutput.isAppleProRAWSupported
             if self.photoOutput.isAppleProRAWSupported {
-                self.photoOutput.isAppleProRAWEnabled = on
+                self.photoOutput.isAppleProRAWEnabled = self.proRAWEnabled
             }
-            self.photoOutput.maxPhotoQualityPrioritization = on ? .balanced : .speed
+            self.photoOutput.maxPhotoQualityPrioritization = self.proRAWEnabled ? .balanced : .speed
             if self.cameraAvailable {
                 self.prepareCapture()
             }
         }
+    }
+
+    func setAutoMacro(_ on: Bool) {
+        queue.async { [weak self] in
+            self?.applyMacroSuppressed(!on, pinSession: false)
+        }
+    }
+
+    func toggleMacroControl() {
+        queue.async { [weak self] in
+            guard let self else { return }
+            self.applyMacroSuppressed(!self.macroSuppressed, pinSession: true)
+        }
+    }
+
+    private func applyMacroSuppressed(_ suppressed: Bool, pinSession: Bool) {
+        let changed = macroSuppressed != suppressed
+        macroSuppressed = suppressed
+        autoMacroOn = !suppressed
+        if pinSession {
+            macroSessionActive = true
+            macroFarSince = 0
+            macroHoldUntil = CACurrentMediaTime() + 1.0
+        }
+        if changed {
+            DispatchQueue.main.async {
+                self.autoMacroEnabled = !suppressed
+            }
+            if !needsPhysicalDevice, usingPhysical {
+                switchTo(virtualDevice, physical: false)
+            }
+            applyLensSwitching()
+            publishMinFocus()
+        }
+        refreshMacroControl()
+    }
+
+    private var needsPhysicalDevice: Bool {
+        exposureLocked || focusLocked
     }
 
     func capture(onCommitted: (() -> Void)? = nil) async -> Data? {
@@ -202,6 +258,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
         lastFocusPoint = nil
         queue.async { [weak self] in
             guard let self else { return }
+            self.lensLockInFlight = false
             self.switchTo(self.virtualDevice, physical: false)
             self.showFocus(nil)
             guard let device = self.device else { return }
@@ -227,7 +284,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
         pendingEVFactor = evFactor
         queue.async { [weak self] in
             guard let self else { return }
-            let needsPhysical = self.exposureLocked || self.focusLocked
+            let needsPhysical = self.needsPhysicalDevice
             let target = needsPhysical ? self.physicalForZoom() : self.virtualDevice
             let switched = self.switchTo(target, physical: needsPhysical)
             self.applyLockedSettings(afterSwitch: switched)
@@ -239,12 +296,13 @@ final class CameraSession: NSObject, @unchecked Sendable {
         pendingLens = nil
         queue.async { [weak self] in
             guard let self, let device = self.device else { return }
+            self.lensLockInFlight = false
             do {
                 try device.lockForConfiguration()
                 self.applyContinuousFocus(device)
                 device.unlockForConfiguration()
             } catch {}
-            let needsPhysical = self.exposureLocked
+            let needsPhysical = self.needsPhysicalDevice
             if !needsPhysical {
                 self.switchTo(self.virtualDevice, physical: false)
                 if let device = self.device {
@@ -258,7 +316,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
     }
 
     func setManualFocus(_ position: Float) {
-        let pos = min(max(position, 0), 1)
+        let pos = Self.clampLens(position)
         focusLocked = true
         pendingLens = pos
         queue.async { [weak self] in
@@ -308,8 +366,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
         queue.async { [weak self] in
             guard let self else { return }
             self.zoomFactor = factor
-            DispatchQueue.main.async { self.currentZoom = factor }
-            let needsPhysical = self.exposureLocked || self.focusLocked
+            let needsPhysical = self.needsPhysicalDevice
             if needsPhysical {
                 let target = self.physicalForZoom(factor)
                 if let device = self.device, device === target, self.usingPhysical {
@@ -327,6 +384,8 @@ final class CameraSession: NSObject, @unchecked Sendable {
                     device.unlockForConfiguration()
                 } catch {}
             }
+            self.publishMinFocus()
+            self.refreshMacroControl()
         }
     }
 
@@ -346,8 +405,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
             let wide = stops.first(where: { $0.zoomLabel == "1×" || $0.zoomLabel == "1" })?.factor ?? max(1, cam.minAvailableVideoZoomFactor)
             wideFactor = wide
             zoomFactor = wide
-            let meters = Self.minFocusMeters(cam)
-            DispatchQueue.main.async { self.currentMinFocusMeters = meters }
+            self.publishMinFocus()
             let switchOvers = cam.virtualDeviceSwitchOverVideoZoomFactors.map { CGFloat(truncating: $0) }
             if let last = switchOvers.filter({ $0 > wide + 0.05 }).max() {
                 teleNative = max(2, last / max(wide, 0.01))
@@ -358,7 +416,9 @@ final class CameraSession: NSObject, @unchecked Sendable {
                 self.hasCamera = true
                 self.lensStops = stops
                 self.currentZoom = wide
+                self.macroAvailable = cam.isVirtualDevice && self.ultraDevice != nil
             }
+            watchMacroSignals()
             try? cam.lockForConfiguration()
             applyContinuousFocus(cam)
             applyContinuousExposure(cam)
@@ -392,7 +452,12 @@ final class CameraSession: NSObject, @unchecked Sendable {
         if photoOutput.isAppleProRAWSupported {
             photoOutput.isAppleProRAWEnabled = proRAWEnabled
         }
+        let proRAWOK = photoOutput.isAppleProRAWSupported
+        DispatchQueue.main.async {
+            self.proRAWSupported = proRAWOK
+        }
         session.commitConfiguration()
+        applyLensSwitching()
     }
 
     private func prepareCapture() {
@@ -450,24 +515,129 @@ final class CameraSession: NSObject, @unchecked Sendable {
             return false
         }
         if physical, let old, let lens = pendingLens, old !== target {
-            let remapped = Self.remapLens(lens, from: old, to: target)
+            let fromDevice = usingPhysical ? old : (physicalForZoom() ?? old)
+            let remapped = Self.remapLens(lens, from: fromDevice, to: target)
             pendingLens = remapped
             DispatchQueue.main.async { self.syncedFocusLens = remapped }
         }
         session.addInput(input)
         device = target
         usingPhysical = physical
-        let meters = Self.minFocusMeters(target)
-        DispatchQueue.main.async { self.currentMinFocusMeters = meters }
+        lensLockInFlight = false
+        publishMinFocus()
         if let conn = photoOutput.connection(with: .video), conn.isVideoRotationAngleSupported(90) {
             conn.videoRotationAngle = 90
             conn.isVideoMirrored = false
         }
         session.commitConfiguration()
+        applyLensSwitching()
+        watchMacroSignals()
         if !focusLocked {
             prepareCapture()
         }
+        refreshMacroControl()
         return true
+    }
+
+    private func applyLensSwitching() {
+        guard let device = virtualDevice, device.isVirtualDevice, !device.constituentDevices.isEmpty else { return }
+        do {
+            try device.lockForConfiguration()
+            device.setPrimaryConstituentDeviceSwitchingBehavior(.auto, restrictedSwitchingBehaviorConditions: [])
+            let supported = device.supportedFallbackPrimaryConstituentDevices
+            if autoMacroOn, !macroSuppressed {
+                if !supported.isEmpty {
+                    device.fallbackPrimaryConstituentDevices = supported
+                }
+            } else {
+                let kept = supported.filter { $0.deviceType != .builtInUltraWideCamera }
+                if !kept.isEmpty {
+                    device.fallbackPrimaryConstituentDevices = kept
+                }
+            }
+            device.unlockForConfiguration()
+        } catch {}
+        refreshMacroControl()
+    }
+
+    private func watchMacroSignals() {
+        macroDeviceObs?.invalidate()
+        macroLensObs?.invalidate()
+        if let virtual = virtualDevice, virtual.isVirtualDevice {
+            macroDeviceObs = virtual.observe(\.activePrimaryConstituent, options: [.new]) { [weak self] _, _ in
+                guard let self else { return }
+                self.queue.async { self.refreshMacroControl() }
+            }
+        }
+        if let device {
+            macroLensObs = device.observe(\.lensPosition, options: [.new]) { [weak self] _, _ in
+                guard let self else { return }
+                self.queue.async { self.refreshMacroControl() }
+            }
+        }
+    }
+
+    private func refreshMacroControl() {
+        let display = zoomFactor / max(wideFactor, 0.01)
+        let atUltraStop = display < 0.75
+        let primary = usingPhysical ? device : (virtualDevice?.activePrimaryConstituent ?? device)
+        let onUltra = primary?.deviceType == .builtInUltraWideCamera
+        let lens = device?.lensPosition ?? 1
+        let hunting = device?.isAdjustingFocus == true
+        let now = CACurrentMediaTime()
+        if atUltraStop || usingPhysical {
+            macroSessionActive = false
+            macroFarSince = 0
+        } else if onUltra {
+            macroSessionActive = true
+            macroFarSince = 0
+            macroHoldUntil = 0
+        } else if !macroSuppressed {
+            if now < macroHoldUntil {
+                macroFarSince = 0
+            } else {
+                macroSessionActive = false
+                macroFarSince = 0
+            }
+        } else if now < macroHoldUntil {
+            macroFarSince = 0
+        } else if macroSessionActive {
+            if hunting || lens < 0.16 {
+                macroFarSince = 0
+            } else if lens > 0.45 {
+                if macroFarSince == 0 {
+                    macroFarSince = now
+                }
+                if now - macroFarSince >= 0.55 {
+                    macroSessionActive = false
+                }
+            } else {
+                macroFarSince = 0
+            }
+        } else if lens < 0.16 {
+            macroSessionActive = true
+            macroFarSince = 0
+        }
+        let visible = macroSessionActive && !atUltraStop && !usingPhysical
+        publishMacroControl(visible: visible, locked: visible && macroSuppressed)
+    }
+
+    private func publishMacroControl(visible: Bool, locked: Bool) {
+        macroUIGeneration += 1
+        let gen = macroUIGeneration
+        let zoom = zoomFactor
+        DispatchQueue.main.async {
+            guard gen == self.macroUIGeneration else { return }
+            if self.currentZoom != zoom {
+                self.currentZoom = zoom
+            }
+            if self.macroControlVisible != visible {
+                self.macroControlVisible = visible
+            }
+            if self.macroLocked != locked {
+                self.macroLocked = locked
+            }
+        }
     }
 
     private func applyLockedSettings(afterSwitch: Bool = false) {
@@ -547,7 +717,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
             } catch {}
             queue.asyncAfter(deadline: .now() + 0.28) { [weak self] in
                 guard let self, let device = self.device, self.focusLocked else { return }
-                let pos = device.lensPosition
+                let pos = Self.clampLens(device.lensPosition)
                 self.pendingLens = pos
                 DispatchQueue.main.async { self.syncedFocusLens = pos }
                 self.lockPendingFocus()
@@ -572,25 +742,58 @@ final class CameraSession: NSObject, @unchecked Sendable {
         }
     }
 
+    static func clampLens(_ pos: Float) -> Float {
+        guard pos.isFinite else { return 1 }
+        return min(max(pos, 0), 1)
+    }
+
+    private func isCurrentSessionDevice(_ device: AVCaptureDevice) -> Bool {
+        device === self.device && session.inputs.contains {
+            ($0 as? AVCaptureDeviceInput)?.device === device
+        }
+    }
+
     private func lockLens(_ device: AVCaptureDevice, _ pos: Float) {
-        let clamped = min(max(pos, 0), 1)
+        guard focusLocked, isCurrentSessionDevice(device) else { return }
+        let clamped = Self.clampLens(pos)
+        pendingLens = clamped
+        if lensLockInFlight { return }
+        guard device.isFocusModeSupported(.locked) else { return }
         do {
             try device.lockForConfiguration()
             if device.isSmoothAutoFocusSupported {
                 device.isSmoothAutoFocusEnabled = false
             }
-            device.setFocusModeLocked(lensPosition: clamped) { [weak self] _ in
-                self?.queue.async {
-                    guard let self, let device = self.device else { return }
-                    if abs(device.lensPosition - clamped) > 0.08, self.focusRetry < 6 {
-                        self.focusRetry += 1
-                        self.lockLens(device, clamped)
+            if device.isLockingFocusWithCustomLensPositionSupported {
+                lensLockInFlight = true
+                let requested = device
+                let ok = device.hc_setFocusModeLocked(
+                    withLensPosition: clamped
+                ) { [weak self] _ in
+                    self?.queue.async {
+                        guard let self else { return }
+                        guard requested === self.device else { return }
+                        self.lensLockInFlight = false
+                        guard self.focusLocked, let current = self.device else { return }
+                        if let pending = self.pendingLens, abs(pending - clamped) > 0.004 {
+                            self.lockLens(current, pending)
+                        }
                     }
                 }
+                if !ok {
+                    lensLockInFlight = false
+                    if device.isFocusModeSupported(.locked) {
+                        device.focusMode = .locked
+                    }
+                }
+            } else {
+                device.focusMode = .locked
             }
             device.unlockForConfiguration()
             showFocus(lastFocusPoint ?? CGPoint(x: 0.5, y: 0.5))
-        } catch {}
+        } catch {
+            lensLockInFlight = false
+        }
     }
 
     private func disableSmoothAF(_ device: AVCaptureDevice) {
@@ -707,13 +910,40 @@ final class CameraSession: NSObject, @unchecked Sendable {
         return Float(min(max(1 - minFocus / meters, 0), 1))
     }
 
-    private static func remapLens(_ p: Float, from _: AVCaptureDevice, to new: AVCaptureDevice) -> Float {
-        let t = Double(min(max(p, 0), 1))
-        if t >= 0.97 { return 1 }
-        let d = 0.4 * pow(25, t)
-        let minNew = minFocusMeters(new)
-        if d <= minNew { return 0 }
-        return Float(min(max(1 - minNew / d, 0), 1))
+    static func formatFocus(_ meters: Double) -> String {
+        if !meters.isFinite { return "∞" }
+        if meters >= 9.5 { return String(format: "%.0f", meters) }
+        if abs(meters - meters.rounded()) < 0.05 {
+            return "\(Int(meters.rounded()))"
+        }
+        return String(format: "%.1f", meters)
+    }
+
+    static func focusTicks(minFocus: Double) -> [(CGFloat, String)] {
+        let near = max(minFocus, 0.05)
+        var ticks: [(CGFloat, String)] = [(0, formatFocus(near))]
+        var lastT: CGFloat = 0
+        for meters in [0.5, 1.0, 2.0, 5.0, 10.0] {
+            guard meters > near * 1.15 else { continue }
+            let t = CGFloat(slider(distance: meters, minFocus: near))
+            guard t > lastT + 0.12, t < 0.90 else { continue }
+            ticks.append((t, formatFocus(meters)))
+            lastT = t
+            if ticks.count >= 3 { break }
+        }
+        ticks.append((1, "∞"))
+        return ticks
+    }
+
+    private static func remapLens(_ p: Float, from old: AVCaptureDevice, to new: AVCaptureDevice) -> Float {
+        let distance = focusDistance(slider: p, minFocus: minFocusMeters(old))
+        return slider(distance: distance, minFocus: minFocusMeters(new))
+    }
+
+    private func publishMinFocus() {
+        let source = usingPhysical ? device : physicalForZoom()
+        let meters = Self.minFocusMeters(source)
+        DispatchQueue.main.async { self.currentMinFocusMeters = meters }
     }
 
     private static func minFocusMeters(_ device: AVCaptureDevice?) -> Double {

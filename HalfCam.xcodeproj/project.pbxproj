@@ -21,7 +21,6 @@
 		B11200000000000000000001 /* DarkroomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11200000000000000000001 /* DarkroomView.swift */; };
 		B11300000000000000000001 /* AlbumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11300000000000000000001 /* AlbumView.swift */; };
 		B11400000000000000000001 /* DarkboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11400000000000000000001 /* DarkboxView.swift */; };
-		B14500000000000000000001 /* PhotoExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14500000000000000000001 /* PhotoExport.swift */; };
 		B11500000000000000000001 /* HapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11500000000000000000001 /* HapticEngine.swift */; };
 		B11600000000000000000001 /* Soundboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11600000000000000000001 /* Soundboard.swift */; };
 		B11700000000000000000001 /* FilmPackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11700000000000000000001 /* FilmPackView.swift */; };
@@ -43,6 +42,14 @@
 		B14200000000000000000001 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = F14200000000000000000001 /* LICENSE.txt */; };
 		B14300000000000000000001 /* LICENSE-SPEKTRAFILM.txt in Resources */ = {isa = PBXBuildFile; fileRef = F14300000000000000000001 /* LICENSE-SPEKTRAFILM.txt */; };
 		B14400000000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F14400000000000000000001 /* PrivacyInfo.xcprivacy */; };
+		B14500000000000000000001 /* PhotoExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14500000000000000000001 /* PhotoExport.swift */; };
+		B14600000000000000000001 /* Entitlements.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14600000000000000000001 /* Entitlements.swift */; };
+		B14700000000000000000001 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14700000000000000000001 /* PaywallView.swift */; };
+		B15100000000000000000001 /* AVCaptureDevice+SafeFocus.m in Sources */ = {isa = PBXBuildFile; fileRef = F15100000000000000000001 /* AVCaptureDevice+SafeFocus.m */; };
+		B15300000000000000000001 /* FilmSamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15300000000000000000001 /* FilmSamples.swift */; };
+		B15400000000000000000001 /* samples in Resources */ = {isa = PBXBuildFile; fileRef = F15400000000000000000001 /* samples */; };
+		B15500000000000000000001 /* HalfTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15500000000000000000001 /* HalfTheme.swift */; };
+		B15600000000000000000001 /* MetalCraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15600000000000000000001 /* MetalCraft.swift */; };
 		B20100000000000000000001 /* shutter.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20100000000000000000001 /* shutter.wav */; };
 		B20200000000000000000001 /* empty.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20200000000000000000001 /* empty.wav */; };
 		B20300000000000000000001 /* wind.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20300000000000000000001 /* wind.wav */; };
@@ -95,7 +102,6 @@
 		F11200000000000000000001 /* DarkroomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DarkroomView.swift; sourceTree = "<group>"; };
 		F11300000000000000000001 /* AlbumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumView.swift; sourceTree = "<group>"; };
 		F11400000000000000000001 /* DarkboxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DarkboxView.swift; sourceTree = "<group>"; };
-		F14500000000000000000001 /* PhotoExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoExport.swift; sourceTree = "<group>"; };
 		F11500000000000000000001 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
 		F11600000000000000000001 /* Soundboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Soundboard.swift; sourceTree = "<group>"; };
 		F11700000000000000000001 /* FilmPackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmPackView.swift; sourceTree = "<group>"; };
@@ -119,6 +125,17 @@
 		F14200000000000000000001 /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		F14300000000000000000001 /* LICENSE-SPEKTRAFILM.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-SPEKTRAFILM.txt"; sourceTree = "<group>"; };
 		F14400000000000000000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		F14500000000000000000001 /* PhotoExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoExport.swift; sourceTree = "<group>"; };
+		F14600000000000000000001 /* Entitlements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entitlements.swift; sourceTree = "<group>"; };
+		F14700000000000000000001 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		F14900000000000000000001 /* HalfCam.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = HalfCam.storekit; sourceTree = "<group>"; };
+		F15000000000000000000001 /* HalfCam.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HalfCam.entitlements; sourceTree = "<group>"; };
+		F15100000000000000000001 /* AVCaptureDevice+SafeFocus.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AVCaptureDevice+SafeFocus.m"; sourceTree = "<group>"; };
+		F15200000000000000000001 /* AVCaptureDevice+SafeFocus.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AVCaptureDevice+SafeFocus.h"; sourceTree = "<group>"; };
+		F15300000000000000000001 /* FilmSamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmSamples.swift; sourceTree = "<group>"; };
+		F15400000000000000000001 /* samples */ = {isa = PBXFileReference; lastKnownFileType = folder; path = samples; sourceTree = "<group>"; };
+		F15500000000000000000001 /* HalfTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HalfTheme.swift; sourceTree = "<group>"; };
+		F15600000000000000000001 /* MetalCraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalCraft.swift; sourceTree = "<group>"; };
 		F20100000000000000000001 /* shutter.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = shutter.wav; sourceTree = "<group>"; };
 		F20200000000000000000001 /* empty.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = empty.wav; sourceTree = "<group>"; };
 		F20300000000000000000001 /* wind.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = wind.wav; sourceTree = "<group>"; };
@@ -157,6 +174,7 @@
 			children = (
 				G01000000000000000000000 /* HalfCam */,
 				G10000000000000000000000 /* DevelopLive */,
+				F14900000000000000000001 /* HalfCam.storekit */,
 				G00100000000000000000000 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -183,12 +201,15 @@
 				F30200000000000000000001 /* InfoPlist.xcstrings */,
 				F12600000000000000000001 /* HalfCam-Bridging-Header.h */,
 				F13900000000000000000001 /* AppInfo.plist */,
+				F15000000000000000000001 /* HalfCam.entitlements */,
 				F14400000000000000000001 /* PrivacyInfo.xcprivacy */,
 				G02000000000000000000000 /* Camera */,
 				G03000000000000000000000 /* Film */,
 				G04000000000000000000000 /* Develop */,
 				G05000000000000000000000 /* Album */,
+				G09000000000000000000000 /* Store */,
 				G06000000000000000000000 /* Feel */,
+				G09500000000000000000000 /* Theme */,
 				G07000000000000000000000 /* Resources */,
 				F30000000000000000000001 /* Assets.xcassets */,
 			);
@@ -199,6 +220,8 @@
 			isa = PBXGroup;
 			children = (
 				F10700000000000000000001 /* CameraSession.swift */,
+				F15100000000000000000001 /* AVCaptureDevice+SafeFocus.m */,
+				F15200000000000000000001 /* AVCaptureDevice+SafeFocus.h */,
 				F10800000000000000000001 /* CameraView.swift */,
 				F10900000000000000000001 /* WinderView.swift */,
 				F11000000000000000000001 /* ViewfinderView.swift */,
@@ -212,6 +235,7 @@
 			isa = PBXGroup;
 			children = (
 				F10500000000000000000001 /* FilmCatalog.swift */,
+				F15300000000000000000001 /* FilmSamples.swift */,
 				F10600000000000000000001 /* FilmRenderer.swift */,
 				F12100000000000000000001 /* FrameCrypto.swift */,
 				F12300000000000000000001 /* Ingest.swift */,
@@ -239,7 +263,6 @@
 				F11300000000000000000001 /* AlbumView.swift */,
 				F11400000000000000000001 /* DarkboxView.swift */,
 				F14500000000000000000001 /* PhotoExport.swift */,
-
 			);
 			path = Album;
 			sourceTree = "<group>";
@@ -258,6 +281,7 @@
 			children = (
 				G08000000000000000000000 /* Sounds */,
 				F13100000000000000000001 /* engine */,
+				F15400000000000000000001 /* samples */,
 				F14200000000000000000001 /* LICENSE.txt */,
 				F14300000000000000000001 /* LICENSE-SPEKTRAFILM.txt */,
 			);
@@ -277,6 +301,24 @@
 				F20800000000000000000001 /* reveal.wav */,
 			);
 			path = Sounds;
+			sourceTree = "<group>";
+		};
+		G09000000000000000000000 /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				F14600000000000000000001 /* Entitlements.swift */,
+				F14700000000000000000001 /* PaywallView.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+		G09500000000000000000000 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				F15500000000000000000001 /* HalfTheme.swift */,
+				F15600000000000000000001 /* MetalCraft.swift */,
+			);
+			path = Theme;
 			sourceTree = "<group>";
 		};
 		G10000000000000000000000 /* DevelopLive */ = {
@@ -361,6 +403,7 @@
 				"zh-Hans",
 				"zh-Hant",
 				ja,
+				ko,
 			);
 			mainGroup = G00000000000000000000000;
 			productRefGroup = G00100000000000000000000 /* Products */;
@@ -390,6 +433,7 @@
 				B20700000000000000000001 /* water.wav in Resources */,
 				B20800000000000000000001 /* reveal.wav in Resources */,
 				B13100000000000000000001 /* engine in Resources */,
+				B15400000000000000000001 /* samples in Resources */,
 				B14200000000000000000001 /* LICENSE.txt in Resources */,
 				B14300000000000000000001 /* LICENSE-SPEKTRAFILM.txt in Resources */,
 				B14400000000000000000001 /* PrivacyInfo.xcprivacy in Resources */,
@@ -412,17 +456,21 @@
 			buildActionMask = 2147483647;
 			files = (
 				B10100000000000000000001 /* HalfCamApp.swift in Sources */,
+				B15500000000000000000001 /* HalfTheme.swift in Sources */,
+				B15600000000000000000001 /* MetalCraft.swift in Sources */,
 				B10200000000000000000001 /* RootView.swift in Sources */,
 				B10300000000000000000001 /* AppModel.swift in Sources */,
 				B12500000000000000000001 /* Language.swift in Sources */,
 				B10400000000000000000001 /* Models.swift in Sources */,
 				B10500000000000000000001 /* FilmCatalog.swift in Sources */,
+				B15300000000000000000001 /* FilmSamples.swift in Sources */,
 				B10600000000000000000001 /* FilmRenderer.swift in Sources */,
 				B12100000000000000000001 /* FrameCrypto.swift in Sources */,
 				B12300000000000000000001 /* Ingest.swift in Sources */,
 				B12400000000000000000001 /* SpektraEngine.swift in Sources */,
 				B13200000000000000000001 /* SpektraBridge.m in Sources */,
 				B10700000000000000000001 /* CameraSession.swift in Sources */,
+				B15100000000000000000001 /* AVCaptureDevice+SafeFocus.m in Sources */,
 				B10800000000000000000001 /* CameraView.swift in Sources */,
 				B10900000000000000000001 /* WinderView.swift in Sources */,
 				B11000000000000000000001 /* ViewfinderView.swift in Sources */,
@@ -436,6 +484,8 @@
 				B11400000000000000000001 /* DarkboxView.swift in Sources */,
 				B14500000000000000000001 /* PhotoExport.swift in Sources */,
 				B14100000000000000000001 /* Legal.swift in Sources */,
+				B14600000000000000000001 /* Entitlements.swift in Sources */,
+				B14700000000000000000001 /* PaywallView.swift in Sources */,
 				B11500000000000000000001 /* HapticEngine.swift in Sources */,
 				B11600000000000000000001 /* Soundboard.swift in Sources */,
 			);
@@ -516,9 +566,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HalfCam/HalfCam.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
 				ENABLE_PREVIEWS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -530,16 +581,19 @@
 					"$(inherited)",
 					"$(SRCROOT)/vendor/spektralab/include",
 					"$(SRCROOT)/HalfCam/Film",
+					"$(SRCROOT)/HalfCam/Camera",
 				);
 				INFOPLIST_FILE = HalfCam/AppInfo.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "HALF CAM";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSCameraUsageDescription = "HALF CAM需要相机来拍摄胶片";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "HALF CAM需要把洗好的对页存进相册";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "HALF CAM需要把洗好的对页存进相册，并确认还在不在";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_UIColorName = LaunchBackground;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
@@ -589,9 +643,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HalfCam/HalfCam.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
 				ENABLE_PREVIEWS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -603,16 +658,19 @@
 					"$(inherited)",
 					"$(SRCROOT)/vendor/spektralab/include",
 					"$(SRCROOT)/HalfCam/Film",
+					"$(SRCROOT)/HalfCam/Camera",
 				);
 				INFOPLIST_FILE = HalfCam/AppInfo.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "HALF CAM";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSCameraUsageDescription = "HALF CAM需要相机来拍摄胶片";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "HALF CAM需要把洗好的对页存进相册";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "HALF CAM需要把洗好的对页存进相册，并确认还在不在";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_UIColorName = LaunchBackground;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
@@ -662,7 +720,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DevelopLive/Info.plist;
@@ -690,7 +748,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DevelopLive/Info.plist;

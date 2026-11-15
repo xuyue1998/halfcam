@@ -1,0 +1,53 @@
+{
+  "edge": 960,
+  "rolls": {
+    "fujifilm_velvia_100": {
+      "name": "VELVIA 100",
+      "count": 2,
+      "files": [
+        "01.jpg",
+        "02.jpg"
+      ]
+    },
+    "kodak_gold_200": {
+      "name": "GOLD 200",
+      "count": 2,
+      "files": [
+        "01.jpg",
+        "02.jpg"
+      ]
+    },
+    "kodak_ultramax_400": {
+      "name": "ULTRAMAX 400",
+      "count": 1,
+      "files": [
+        "01.jpg"
+      ]
+    },
+    "fujifilm_c200": {
+      "name": "C200",
+      "count": 1,
+      "files": [
+        "01.jpg"
+      ]
+    },
+    "cinestill_800t": {
+      "name": "CINESTILL 800T",
+      "count": 3,
+      "files": [
+        "01.jpg",
+        "02.jpg",
+        "03.jpg"
+      ]
+    },
+    "fujifilm_neopan_acros_100_ii": {
+      "name": "ACROS 100 II",
+      "count": 3,
+      "files": [
+        "01.jpg",
+        "02.jpg",
+        "03.jpg"
+      ]
+    }
+  }
+}

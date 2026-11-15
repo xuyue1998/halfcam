@@ -9,7 +9,9 @@ struct DarkboxView: View {
         ZStack(alignment: .top) {
             Color(red: 0.07, green: 0.06, blue: 0.055).ignoresSafeArea()
             VStack(spacing: 0) {
-                HatchBar(title: L("暗盒"), close: dismissIfAllowed, closable: !lockDarkbox)
+                HatchBar(title: L("暗盒"), close: dismissIfAllowed, closable: !lockDarkbox) {
+                    QuotaPlate(compact: true)
+                }
                 .contentShape(Rectangle())
                 .gesture(hatchDrag)
 
@@ -214,7 +216,7 @@ struct DarkboxView: View {
                 }
                 Haptics.shared.tick()
             } label: {
-                ChromePlate(title: L("回到相机，按住倒片"), prominent: false)
+                ChromePlate(title: L("回到相机，转动倒片"), prominent: false)
             }
             .buttonStyle(.plain)
         } else if roll.state == .developing {
@@ -249,7 +251,27 @@ struct DarkboxView: View {
                 }
                 .buttonStyle(.plain)
             } else {
-                ChromePlate(title: waitClock(left), prominent: false)
+                VStack(spacing: 8) {
+                    ChromePlate(title: waitClock(left), prominent: false)
+                    if canUseSkip(roll) {
+                        Button {
+                            Haptics.shared.latch()
+                            model.applySkipTicket(roll.id)
+                        } label: {
+                            ChromePlate(title: L("用加急券 · 余 \(model.skipTickets)"), prominent: true)
+                        }
+                        .buttonStyle(.plain)
+                    } else if canBuySkip(roll) {
+                        Button {
+                            Haptics.shared.chrome()
+                            Task { await model.membership.buySkipPack() }
+                        } label: {
+                            ChromePlate(title: skipBuyTitle, prominent: false)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(model.membership.purchasing)
+                    }
+                }
             }
         }
         .modifier(PulseScaleModifier(
@@ -279,6 +301,21 @@ struct DarkboxView: View {
         } else {
             Text(statusText(roll))
         }
+    }
+
+    private func canUseSkip(_ roll: Roll) -> Bool {
+        !roll.isTutorial && model.skipTickets > 0
+    }
+
+    private func canBuySkip(_ roll: Roll) -> Bool {
+        !roll.isTutorial && model.skipTickets == 0
+    }
+
+    private var skipBuyTitle: String {
+        if let product = model.membership.skipPack3 {
+            return L("买加急券 · \(product.displayPrice)")
+        }
+        return L("买加急券")
     }
 
     private func isHandingOff(_ roll: Roll) -> Bool {

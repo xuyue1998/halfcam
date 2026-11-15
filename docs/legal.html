@@ -3,63 +3,81 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HALF CAM 法律信息</title>
-  <style>
-    :root { color-scheme: dark; }
-    body {
-      margin: 0;
-      background: #12100f;
-      color: #c8c4be;
-      font: 16px/1.65 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
-    }
-    main {
-      max-width: 40rem;
-      margin: 0 auto;
-      padding: 2.5rem 1.25rem 4rem;
-    }
-    h1 {
-      font-family: "Songti SC", "Noto Serif SC", serif;
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: #e8e4de;
-      letter-spacing: 0.04em;
-    }
-    h2 {
-      font-family: "Songti SC", "Noto Serif SC", serif;
-      font-size: 1.05rem;
-      color: #9a958e;
-      margin-top: 2rem;
-    }
-    p, li { color: #b4aea6; }
-    a { color: #d8d2c8; }
-    .meta { font-size: 0.85rem; color: #7a756e; }
-  </style>
+  <meta name="theme-color" content="#0E0D0C">
+  <title>HALF CAM · Legal</title>
+  <link rel="stylesheet" href="site.css">
+  <link rel="icon" href="store/icon/AppIcon-180.png">
+  <script>
+    (function () {
+      try {
+        var lang = localStorage.getItem("halfcam.lang");
+        if (lang !== "zh" && lang !== "en") {
+          lang = String(navigator.language || "en").toLowerCase().indexOf("zh") === 0 ? "zh" : "en";
+        }
+        document.documentElement.lang = lang === "zh" ? "zh-Hans" : "en";
+        document.documentElement.setAttribute("data-site-lang", lang);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
-<main>
-  <h1>HALF CAM 法律信息</h1>
-  <p class="meta">HALF CAM（包名 com.xuyue.HalfCam）<br>按 GNU GPL-3.0-or-later 提供，不含担保。</p>
+<main class="wrap">
+  <header class="site-header">
+    <a class="mark" href="index.html">HALF CAM</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-set-lang="zh">中文</button>
+      <span aria-hidden="true">/</span>
+      <button type="button" data-set-lang="en">EN</button>
+    </div>
+  </header>
 
-  <h2>本应用</h2>
-  <p>HALF CAM 是独立的半格胶片风格相机应用，以 <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPL-3.0-or-later</a> 发布。你可以按该许可证复制、修改和再分发。本程序不提供任何担保。</p>
-  <p>本应用不是 SpektraLab，不使用 SpektraLab 的名称与图标。</p>
+  <nav class="site-nav">
+    <a href="index.html"><span data-lang="zh">首页</span><span data-lang="en">Home</span></a>
+    <a href="legal.html" aria-current="page"><span data-lang="zh">法律信息</span><span data-lang="en">Legal</span></a>
+    <a href="privacy.html"><span data-lang="zh">隐私政策</span><span data-lang="en">Privacy</span></a>
+    <a href="https://github.com/xuyue1998/halfcam"><span data-lang="zh">源码</span><span data-lang="en">Source</span></a>
+  </nav>
+
+  <h1 data-lang="zh">法律信息</h1>
+  <h1 data-lang="en">Legal notices</h1>
+  <p class="meta" data-lang="zh">HALF CAM（包名 com.xuyue.HalfCam）<br>按 GNU GPL-3.0-or-later 提供，不含担保。</p>
+  <p class="meta" data-lang="en">HALF CAM (bundle identifier com.xuyue.HalfCam)<br>Released under GNU GPL-3.0-or-later, without warranty.</p>
+
+  <h2 data-lang="zh">本应用</h2>
+  <h2 data-lang="en">This app</h2>
+  <p data-lang="zh">HALF CAM 是独立的半格胶片风格相机应用，以 <a rel="license" href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPL-3.0-or-later</a> 发布。你可以按该许可证复制、修改和再分发。本程序不提供任何担保。</p>
+  <p data-lang="en">HALF CAM is an independent half-frame film-style camera app, released under <a rel="license" href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPL-3.0-or-later</a>. You may copy, modify, and redistribute it under that licence. There is no warranty.</p>
+  <p data-lang="zh">本应用不是 SpektraLab，不使用 SpektraLab 的名称与图标。HALF CAM 与任何胶片或相机品牌无关，也不表示获得其授权或认可。</p>
+  <p data-lang="en">This app is not SpektraLab and does not use that name or icon. HALF CAM is not affiliated with, endorsed by, or sponsored by any film or camera brand.</p>
 
   <h2>SpektraLab</h2>
-  <p>光谱显影引擎来自 SpektraLab，Hanze Qiu / JamesQiu2005，GNU GPL-3.0-or-later。</p>
-  <p>源码：<a href="https://github.com/JamesQiu2005/SpektraLab">github.com/JamesQiu2005/SpektraLab</a></p>
+  <p data-lang="zh">光谱显影引擎来自 SpektraLab，Hanze Qiu / JamesQiu2005，GNU GPL-3.0-or-later。</p>
+  <p data-lang="en">The spectral development engine is SpektraLab by Hanze Qiu / JamesQiu2005, licensed under GNU GPL-3.0-or-later.</p>
+  <p>Source: <a href="https://github.com/JamesQiu2005/SpektraLab">github.com/JamesQiu2005/SpektraLab</a></p>
 
   <h2>spektrafilm</h2>
-  <p>胶片与相纸光谱数据、测量模型与印片 LUT 来自 spektrafilm，Andrea Volpato，<a href="https://creativecommons.org/licenses/by-sa/4.0/legalcode">CC BY-SA 4.0</a>。改编须署名、注明修改，并以相同许可证分发。</p>
-  <p>来源：<a href="https://github.com/andreavolpato/spektrafilm">github.com/andreavolpato/spektrafilm</a></p>
+  <p data-lang="zh">胶片与相纸光谱数据、测量模型与印片 LUT 来自 spektrafilm，Andrea Volpato，<a href="https://creativecommons.org/licenses/by-sa/4.0/legalcode">CC BY-SA 4.0</a>。改编须署名、注明修改，并以相同许可证分发。</p>
+  <p data-lang="en">Film and paper spectral data, measured models, and print LUTs come from spektrafilm by Andrea Volpato, licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/legalcode">CC BY-SA 4.0</a>. Adaptations must credit the source, indicate changes, and be shared under the same licence.</p>
+  <p>Source: <a href="https://github.com/andreavolpato/spektrafilm">github.com/andreavolpato/spektrafilm</a></p>
 
-  <h2>对应源码</h2>
-  <p>与商店版本对应的 HALF CAM 源码将随公开发布提供。启用本站后，可从同一站点或项目仓库取得。</p>
+  <h2 data-lang="zh">购买</h2>
+  <h2 data-lang="en">Purchases</h2>
+  <p data-lang="zh">HALF CAM 通过 Apple 内购提供年卡、买断与加急券。价格以购买时 App Store 显示为准。</p>
+  <p data-lang="en">HALF CAM offers a yearly plan, a lifetime unlock, and rush tickets through Apple In-App Purchase. Prices are those shown in the App Store at the time of purchase.</p>
+  <p data-lang="zh"><strong>年卡。</strong>自动续订，期限一年。确认购买后，费用从您的 Apple ID 账户扣除，并在当前周期结束前 24 小时内自动续订，除非您提前关闭自动续订。管理或取消：iPhone 设置 → Apple ID → 订阅。未使用期间不提供退款，除非适用法律另有要求。</p>
+  <p data-lang="en"><strong>Yearly plan.</strong> Auto-renewing, one year. Payment is charged to your Apple ID on confirmation, and renews within 24 hours before the current period ends unless you turn off auto-renew in advance. Manage or cancel in iPhone Settings → Apple ID → Subscriptions. Unused time is not refunded except where required by law.</p>
+  <p data-lang="zh"><strong>买断。</strong>一次性非消耗型购买，无限装卷。等待不变。可在同一 Apple ID 下恢复。</p>
+  <p data-lang="en"><strong>Lifetime.</strong> A one-time non-consumable purchase. Unlimited rolls. Waiting times do not change. Restorable on the same Apple ID.</p>
+  <p data-lang="zh"><strong>加急券。</strong>一张结束一卷的显影等待。每月赠送：免费 1 张、年卡 3 张、买断 6 张，过月重置。另可购买消耗型加急包（3 张），价格以购买时 App Store 显示为准。买的未用余数随 iCloud 钥匙值存储同步到同一 Apple ID；重装应用后可找回未用张数。未开启 iCloud 时，卸载应用后余数清除。退款或交易撤销时，只扣买的余数（扣到 0 为止）。已用的不补发。</p>
+  <p data-lang="en"><strong>Rush tickets.</strong> One ticket ends one roll’s wait. Monthly grants: 1 on Free, 3 on Yearly, 6 on Lifetime, resetting each month. A consumable pack of 3 tickets may also be purchased at the App Store price. Unused purchased tickets sync via iCloud Key-Value Store to the same Apple ID and can be restored after reinstalling. If iCloud is off, the balance is lost when the app is deleted. A refund or revoked transaction claws back unused purchased tickets down to zero. Used tickets are not reissued.</p>
 
-  <p class="meta"><a href="privacy.html">隐私政策</a></p>
+  <h2 data-lang="zh">对应源码</h2>
+  <h2 data-lang="en">Corresponding source</h2>
+  <p data-lang="zh">与商店版本对应的 HALF CAM 源码在本项目仓库提供：<a href="https://github.com/xuyue1998/halfcam">github.com/xuyue1998/halfcam</a>。SpektraLab 引擎源码见其上游仓库。</p>
+  <p data-lang="en">Corresponding source for HALF CAM store builds is published in this repository: <a href="https://github.com/xuyue1998/halfcam">github.com/xuyue1998/halfcam</a>. SpektraLab engine source is published by its upstream project.</p>
 
-  <hr>
-  <h2>Legal notices (English)</h2>
-  <p>HALF CAM is an independent half-frame camera app released under GNU GPL-3.0-or-later, without warranty. It is not SpektraLab and does not use that name or icon. The spectral engine is SpektraLab by Hanze Qiu / JamesQiu2005 (GPL-3.0-or-later): <a href="https://github.com/JamesQiu2005/SpektraLab">github.com/JamesQiu2005/SpektraLab</a>. Film and paper spectral data are from spektrafilm by Andrea Volpato (CC BY-SA 4.0): <a href="https://github.com/andreavolpato/spektrafilm">github.com/andreavolpato/spektrafilm</a>. Corresponding source for store builds will be published with the project.</p>
+  <p class="meta"><a href="privacy.html"><span data-lang="zh">隐私政策</span><span data-lang="en">Privacy Policy</span></a></p>
 </main>
+<script src="site.js"></script>
 </body>
 </html>
