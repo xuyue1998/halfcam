@@ -249,7 +249,7 @@ struct DarkroomView: View {
         if flippedPairs >= pairs.count, !pairs.isEmpty {
             if showKeepCard {
                 keepCard
-            } else if allDeveloped || model.developProgress >= 1 {
+            } else if allDeveloped {
                 HStack(spacing: 10) {
                     if !live.isTutorial {
                         Button {
@@ -267,6 +267,19 @@ struct DarkroomView: View {
                         HatchPlate(title: L("放入相册"), prominent: true)
                     }
                     .buttonStyle(.plain)
+                }
+            } else if model.developFailedRollIDs.contains(rollId) {
+                VStack(spacing: 8) {
+                    Text(L("显影未完成，底片已保留"))
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color(white: 0.7))
+                    HStack {
+                        Button(L("合上")) { model.pauseRitual() }
+                        Spacer()
+                        Button(L("重试显影")) { model.retryDevelop(rollId) }
+                    }
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color.white)
                 }
             } else {
                 HStack(spacing: 8) {
@@ -413,6 +426,7 @@ struct DarkroomView: View {
                 await MainActor.run { model.finishHandoff() }
             } else {
                 await dropIn(handoff: true)
+                guard !Task.isCancelled else { return }
                 await MainActor.run { model.finishHandoff() }
             }
             return
@@ -427,7 +441,9 @@ struct DarkroomView: View {
             cassetteFade = 0
         }
         await soak(minimum: 6)
+        guard !Task.isCancelled else { return }
         await pullNegative()
+        guard !Task.isCancelled else { return }
         await pullStrip()
     }
 
@@ -487,7 +503,7 @@ struct DarkroomView: View {
             }
             let progressed = model.developProgress >= 1 && !model.pipelineRunning
             let elapsed = Date().timeIntervalSince(start)
-            if progressed && elapsed >= minimum { break }
+            if (progressed || model.developFailedRollIDs.contains(rollId)) && elapsed >= minimum { break }
             let t = min(1, elapsed / minimum)
             await MainActor.run { chemPhase = CGFloat(t) }
             if Date().timeIntervalSince(lastBubble) >= 1.2 {

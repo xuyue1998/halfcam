@@ -50,6 +50,10 @@
 		B15400000000000000000001 /* samples in Resources */ = {isa = PBXBuildFile; fileRef = F15400000000000000000001 /* samples */; };
 		B15500000000000000000001 /* HalfTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15500000000000000000001 /* HalfTheme.swift */; };
 		B15600000000000000000001 /* MetalCraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15600000000000000000001 /* MetalCraft.swift */; };
+		B15700000000000000000001 /* HCSafeInvocation.m in Sources */ = {isa = PBXBuildFile; fileRef = F15700000000000000000001 /* HCSafeInvocation.m */; };
+		B15900000000000000000001 /* BoundedWorkQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15900000000000000000001 /* BoundedWorkQueue.swift */; };
+		B16000000000000000000001 /* StoreReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16000000000000000000001 /* StoreReader.swift */; };
+		B16100000000000000000001 /* PerformanceTrace.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16100000000000000000001 /* PerformanceTrace.swift */; };
 		B20100000000000000000001 /* shutter.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20100000000000000000001 /* shutter.wav */; };
 		B20200000000000000000001 /* empty.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20200000000000000000001 /* empty.wav */; };
 		B20300000000000000000001 /* wind.wav in Resources */ = {isa = PBXBuildFile; fileRef = F20300000000000000000001 /* wind.wav */; };
@@ -137,6 +141,11 @@
 		F15400000000000000000001 /* samples */ = {isa = PBXFileReference; lastKnownFileType = folder; path = samples; sourceTree = "<group>"; };
 		F15500000000000000000001 /* HalfTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HalfTheme.swift; sourceTree = "<group>"; };
 		F15600000000000000000001 /* MetalCraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalCraft.swift; sourceTree = "<group>"; };
+		F15700000000000000000001 /* HCSafeInvocation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HCSafeInvocation.m; sourceTree = "<group>"; };
+		F15800000000000000000001 /* HCSafeInvocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HCSafeInvocation.h; sourceTree = "<group>"; };
+		F15900000000000000000001 /* BoundedWorkQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundedWorkQueue.swift; sourceTree = "<group>"; };
+		F16000000000000000000001 /* StoreReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreReader.swift; sourceTree = "<group>"; };
+		F16100000000000000000001 /* PerformanceTrace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceTrace.swift; sourceTree = "<group>"; };
 		F20100000000000000000001 /* shutter.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = shutter.wav; sourceTree = "<group>"; };
 		F20200000000000000000001 /* empty.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = empty.wav; sourceTree = "<group>"; };
 		F20300000000000000000001 /* wind.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = wind.wav; sourceTree = "<group>"; };
@@ -212,6 +221,7 @@
 				G09000000000000000000000 /* Store */,
 				G06000000000000000000000 /* Feel */,
 				G09500000000000000000000 /* Theme */,
+				G11000000000000000000000 /* Performance */,
 				G07000000000000000000000 /* Resources */,
 				F30000000000000000000001 /* Assets.xcassets */,
 			);
@@ -224,6 +234,8 @@
 				F10700000000000000000001 /* CameraSession.swift */,
 				F15100000000000000000001 /* AVCaptureDevice+SafeFocus.m */,
 				F15200000000000000000001 /* AVCaptureDevice+SafeFocus.h */,
+				F15700000000000000000001 /* HCSafeInvocation.m */,
+				F15800000000000000000001 /* HCSafeInvocation.h */,
 				F10800000000000000000001 /* CameraView.swift */,
 				F10900000000000000000001 /* WinderView.swift */,
 				F11000000000000000000001 /* ViewfinderView.swift */,
@@ -231,6 +243,16 @@
 				F11700000000000000000001 /* FilmPackView.swift */,
 			);
 			path = Camera;
+			sourceTree = "<group>";
+		};
+		G11000000000000000000000 /* Performance */ = {
+			isa = PBXGroup;
+			children = (
+				F15900000000000000000001 /* BoundedWorkQueue.swift */,
+				F16000000000000000000001 /* StoreReader.swift */,
+				F16100000000000000000001 /* PerformanceTrace.swift */,
+			);
+			path = Performance;
 			sourceTree = "<group>";
 		};
 		G03000000000000000000000 /* Film */ = {
@@ -475,6 +497,10 @@
 				B13200000000000000000001 /* SpektraBridge.m in Sources */,
 				B10700000000000000000001 /* CameraSession.swift in Sources */,
 				B15100000000000000000001 /* AVCaptureDevice+SafeFocus.m in Sources */,
+				B15700000000000000000001 /* HCSafeInvocation.m in Sources */,
+				B15900000000000000000001 /* BoundedWorkQueue.swift in Sources */,
+				B16000000000000000000001 /* StoreReader.swift in Sources */,
+				B16100000000000000000001 /* PerformanceTrace.swift in Sources */,
 				B10800000000000000000001 /* CameraView.swift in Sources */,
 				B10900000000000000000001 /* WinderView.swift in Sources */,
 				B11000000000000000000001 /* ViewfinderView.swift in Sources */,
@@ -573,7 +599,7 @@
 				CODE_SIGN_ENTITLEMENTS = HalfCam/HalfCam.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
 				ENABLE_PREVIEWS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -591,8 +617,8 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "HALF CAM";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSCameraUsageDescription = "允许 HALF CAM 使用相机，拍摄你的半格照片。";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "允许 HALF CAM 在你导出照片或开启自动导出时，将已显影的照片保存到系统相册。";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "允许 HALF CAM 将已显影的照片保存到系统相册，并检查已导出的照片是否仍在，以准确显示保存状态。";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "HALF CAM 在你导出照片或已开启自动导出时，将已显影的照片保存到系统相册。";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "HALF CAM 将已显影的照片保存到系统相册；在获得完整访问权限时，检查已导出的副本是否仍在，以更新导出状态。";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -650,7 +676,7 @@
 				CODE_SIGN_ENTITLEMENTS = HalfCam/HalfCam.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
 				ENABLE_PREVIEWS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -668,8 +694,8 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "HALF CAM";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSCameraUsageDescription = "允许 HALF CAM 使用相机，拍摄你的半格照片。";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "允许 HALF CAM 在你导出照片或开启自动导出时，将已显影的照片保存到系统相册。";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "允许 HALF CAM 将已显影的照片保存到系统相册，并检查已导出的照片是否仍在，以准确显示保存状态。";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "HALF CAM 在你导出照片或已开启自动导出时，将已显影的照片保存到系统相册。";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "HALF CAM 将已显影的照片保存到系统相册；在获得完整访问权限时，检查已导出的副本是否仍在，以更新导出状态。";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -724,7 +750,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DevelopLive/Info.plist;
@@ -752,7 +778,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = ZBDQ5C8CAV;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DevelopLive/Info.plist;

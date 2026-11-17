@@ -328,8 +328,8 @@
 | 简中 | `HALF CAM 半格胶片` | 13 | 锁定 |
 | 繁中 | `HALF CAM 半格膠片` | 13 | 锁定 |
 | English | `HALF CAM` | 8 | 英文不硬塞 half-frame，放副标题 |
-| 日本語 | `HALF CAM 半格カメラ` | 15 | 「半格」日文胶片圈也认 |
-| 한국어 | `HALF CAM 하프프레임` | — | |
+| 日本語 | `HALF CAM 半格カメラ` | 14 | 「半格」日文胶片圈也认 |
+| 한국어 | `HALF CAM 하프프레임` | 14 | |
 
 不要写成竞品名、「半格胶片相机专业版」「HALF CAM - Film」。
 
@@ -342,10 +342,10 @@
 | 简中 | `拍满再显影的半格胶片机` | 11 |
 | 繁中 | `拍滿再顯影的半格膠片機` | 11 |
 | English | `A half-frame film camera` | 24 |
-| 日本語 | `ハーフフレームのフィルムカメラ` | 16 |
-| 한국어 | `하프프레임 필름 카메라` | — |
+| 日本語 | `ハーフフレームのフィルムカメラ` | 15 |
+| 한국어 | `하프프레임 필름 카메라` | 12 |
 
-**品牌定型后（铭牌向，可随时改，不走审核）**
+**品牌定型后（铭牌向，随可编辑版本提交审核）**
 
 | 语言 | 文案 | 字数 |
 |---|---|---|
@@ -353,7 +353,7 @@
 | 繁中 | `裝捲。快門。等待。揭曉。` | 12 |
 | English | `Shoot. Wind. Wait. Develop.` | 27 |
 | 日本語 | `巻いて、撮って、待つ。` | 11 |
-| 한국어 | `감고, 찍고, 기다린다.` | — |
+| 한국어 | `감고, 찍고, 기다린다.` | 13 |
 
 ### 5.3 Promotional Text（不审可改，打季节用）
 
@@ -625,7 +625,7 @@ HALF CAM은 iPhone 속 하프프레임 필름 카메라입니다.
 개인정보 및 법적 정보:
 https://xuyue1998.github.io/halfcam/legal.html
 
-HALF CAM은 독립 앱이며 특정 필름/카메라 브랜드와 무관하다.
+HALF CAM은 독립 앱이며 특정 필름 또는 카메라 브랜드와 무관합니다.
 ```
 
 ### 5.5 Keywords（100 字符，逗号分隔，Name 里已有的词不要重复）
@@ -729,16 +729,16 @@ Load a roll. Take your time.
 |---|---|
 | 主类别 | Photo & Video |
 | 次类别 | Lifestyle |
-| 年龄 | 4+ |
+| 年龄 | 按当前年龄分级问卷结果确认，不预填 |
 | 价格 | 免费 + IAP |
 | IAP | `halfcam.yearly` 年卡 · `halfcam.unlock` 买断 · `halfcam.skip.3` 加急包 |
 | 版权 | `© YYYY xuyue`（按实际上架年） |
-| 隐私政策 | `https://xuyue1998.github.io/halfcam/legal.html` |
+| 隐私政策 | `https://xuyue1998.github.io/halfcam/privacy.html` |
 | 支持 URL | 同上或 GitHub Pages 首页 |
 | 营销 URL | 可空 |
-| 设备 | iPhone 必出 6.7"；iPad 仅在体验可展示时补 13" |
+| 设备 | 当前仅支持 iPhone；截图尺寸以提交时 Connect 要求为准 |
 | 最低系统 | iOS 17 |
-| 隐私营养标签 | 相机、照片（仅添加）。不采集账号、不追踪 |
+| 隐私营养标签 | 按当前实现核对“不收集数据”；权限访问不等于数据收集。仅本机处理照片，加急券通过 Apple iCloud 同步，不供开发者访问；不追踪。提交前核对后台实际选项 |
 | 内容版权 | 截图样片为自摄或已授权；不使用品牌官方胶卷包装图 |
 
 ### 6.1 审核备注（Review Notes）
@@ -747,14 +747,13 @@ Load a roll. Take your time.
 HALF CAM is a simulated half-frame film camera. Several behaviors are intentional, not bugs:
 
 1. The shutter does not expose until the user winds the film advance wheel.
-2. Captured frames stay black until the roll is finished, rewound, and developed.
-3. Development can take real time; “rush” skips the wait (IAP / membership).
+2. Captured frames have no preview until the roll is rewound and developed. Strict mode requires finishing the roll; turning it off permits early unloading and discards unused frames.
+3. Development includes a wait; a rush ticket skips the wait, not actual image processing.
 4. Camera permission is required to complete the demo.
 
-Sandbox: use the attached Apple ID / StoreKit sandbox.
+No app account or developer-provided login is required. In-app purchases use Apple's review environment. The bundled StoreKit configuration is for local Xcode testing only.
 
-Demo path (about 3 minutes with a short roll):
-Open app → grant camera → load a roll (shortest capacity) → wind → shoot until full → rewind → develop → reveal → export optional.
+First-launch demo: Open app → allow camera → load the two-frame trial roll → advance → shoot → advance → shoot → rewind → send for developing → wait for the countdown → collect from the darkbox → reveal → keep in the app album → export optional. Real processing time depends on the device.
 
 Please do not expect an instant preview after each shot. That is the product.
 ```
@@ -833,7 +832,7 @@ Connect 支持额外产品页，给搜索广告分意图：
 - [ ] 订阅自动续费声明
 - [ ] 独立 App 免责声明
 - [ ] 隐私政策 URL
-- [ ] 审核备注 + 沙盒账号 + 最短卷演示路径
+- [ ] 审核备注 + 无需 App 账号说明 + 两格体验卷演示路径
 
 ### 10.3 审核防雷
 
@@ -841,7 +840,7 @@ Connect 支持额外产品页，给搜索广告分意图：
 - [ ] 不承诺「真实胶片扫描」「官方配方」
 - [ ] 演示能走完：装卷 → 拍满短卷 → 显影 → 导出
 - [ ] 说明：空快门、黑格、等待是设计不是崩溃
-- [ ] 营养标签只有相机和照片（添加）
+- [ ] 隐私营养标签、清单和政策与实际数据流一致；不把相机／照片权限误填为数据收集
 
 ---
 

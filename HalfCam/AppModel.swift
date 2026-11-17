@@ -14,7 +14,9 @@ final class ImageStore: @unchecked Sendable {
     private let negatives = NSCache<NSString, UIImage>()
     private let lock = NSLock()
     private var inflight: [String: Inflight] = [:]
+    private var nextGeneration = 0
     private let ci = CIContext(options: [.cacheIntermediates: false])
+    private let imageWork = BoundedWorkQueue(name: "halfcam.images", maximumConcurrentOperations: 2)
 
     private init() {
         previews.countLimit = 80
@@ -34,55 +36,85 @@ final class ImageStore: @unchecked Sendable {
     private var negativeKeys = Set<String>()
 
     func purge() {
-        lock.lock()
-        inflight.removeAll()
-        previewKeys.removeAll()
-        displayKeys.removeAll()
-        negativeKeys.removeAll()
-        lock.unlock()
-        previews.removeAllObjects()
-        displays.removeAllObjects()
-        negatives.removeAllObjects()
+        let tasks = lock.withLock {
+            let tasks = inflight.values.map(\.task)
+            inflight.removeAll()
+            previewKeys.removeAll()
+            displayKeys.removeAll()
+            negativeKeys.removeAll()
+            previews.removeAllObjects()
+            displays.removeAllObjects()
+            negatives.removeAllObjects()
+            return tasks
+        }
+        // Cancellation handlers can synchronously call end(), which takes lock.
+        for task in tasks { task.cancel() }
     }
 
     func purge(prefix: String) {
-        lock.lock()
-        let p = previewKeys.filter { $0.hasPrefix(prefix) }
-        let d = displayKeys.filter { $0.hasPrefix(prefix) }
-        let n = negativeKeys.filter { $0.hasPrefix(prefix) }
-        previewKeys.subtract(p)
-        displayKeys.subtract(d)
-        negativeKeys.subtract(n)
-        let flying = inflight.keys.filter { $0.hasSuffix(prefix) || $0.contains(prefix) }
-        for key in flying { inflight.removeValue(forKey: key) }
-        lock.unlock()
-        for key in p { previews.removeObject(forKey: key as NSString) }
-        for key in d { displays.removeObject(forKey: key as NSString) }
-        for key in n { negatives.removeObject(forKey: key as NSString) }
+        let tasks = lock.withLock {
+            let p = previewKeys.filter { $0.hasPrefix(prefix) }
+            let d = displayKeys.filter { $0.hasPrefix(prefix) }
+            let n = negativeKeys.filter { $0.hasPrefix(prefix) }
+            previewKeys.subtract(p)
+            displayKeys.subtract(d)
+            negativeKeys.subtract(n)
+            let flying = inflight.keys.filter { $0.hasSuffix(prefix) || $0.contains(prefix) }
+            let tasks = flying.compactMap { inflight.removeValue(forKey: $0)?.task }
+            for key in p { previews.removeObject(forKey: key as NSString) }
+            for key in d { displays.removeObject(forKey: key as NSString) }
+            for key in n { negatives.removeObject(forKey: key as NSString) }
+            return tasks
+        }
+        for task in tasks { task.cancel() }
     }
 
-    func loadPreview(key: String, url: URL, priority: TaskPriority = .userInitiated) async -> UIImage? {
+    /// Do not cancel visible requests when responding to memory pressure.
+    func trimMemory() {
+        lock.withLock {
+            previews.removeAllObjects()
+            displays.removeAllObjects()
+            negatives.removeAllObjects()
+            previewKeys.removeAll()
+            displayKeys.removeAll()
+            negativeKeys.removeAll()
+        }
+        ci.clearCaches()
+    }
+
+    func loadPreview(
+        key: String, url: URL, priority: TaskPriority = .userInitiated,
+        writeDiskCache: Bool = true
+    ) async -> UIImage? {
         if let hit = preview(key) { return hit }
-        return await coalesce("p:" + key, priority: priority) {
+        return await coalesce("p:" + key, priority: priority, trace: "PreviewLoad") {
             if let hit = self.preview(key) { return hit }
-            let disk = Self.previewDiskURL(for: url)
-            if FileManager.default.fileExists(atPath: disk.path),
-               let img = Self.decode(disk, maxSide: 360) {
+            let result = await self.imageWork.run(priority: Task.currentPriority) {
+                PerformanceTrace.measure("ImageDecode") { () -> UIImage? in
+                    let disk = Self.previewDiskURL(for: url)
+                    if writeDiskCache, FileManager.default.fileExists(atPath: disk.path),
+                       let img = Self.decode(disk, maxSide: 360) { return img }
+                    guard let img = Self.decode(url, maxSide: 360) else { return nil as UIImage? }
+                    if writeDiskCache { Self.writePreviewDisk(img, to: disk) }
+                    return img
+                }
+            }
+            if let img = result ?? nil {
                 self.remember(.preview, key: key, image: img)
                 return img
             }
-            guard let img = Self.decode(url, maxSide: 360) else { return nil }
-            self.remember(.preview, key: key, image: img)
-            Self.writePreviewDisk(img, to: disk)
-            return img
+            return nil
         }
     }
 
-    func loadDisplay(key: String, url: URL) async -> UIImage? {
+    func loadDisplay(key: String, url: URL, maxSide: CGFloat = 1200) async -> UIImage? {
         if let hit = display(key) { return hit }
-        return await coalesce("d:" + key) {
+        return await coalesce("d:" + key, trace: "DisplayLoad") {
             if let hit = self.display(key) { return hit }
-            guard let img = Self.decode(url, maxSide: 1200) else { return nil }
+            let result = await self.imageWork.run(priority: Task.currentPriority) {
+                PerformanceTrace.measure("ImageDecode") { Self.decode(url, maxSide: maxSide) }
+            }
+            guard let img = result ?? nil else { return nil }
             self.remember(.display, key: key, image: img)
             return img
         }
@@ -90,20 +122,25 @@ final class ImageStore: @unchecked Sendable {
 
     func loadNegative(key: String, url: URL) async -> UIImage? {
         if let hit = negative(key) { return hit }
-        return await coalesce("n:" + key) {
+        return await coalesce("n:" + key, trace: "NegativeLoad") {
             if let hit = self.negative(key) { return hit }
-            guard let pos = Self.decode(url, maxSide: 360), let ciImg = CIImage(image: pos) else { return nil }
-            let inverted = ciImg.applyingFilter("CIColorInvert")
-            let hue = inverted.applyingFilter("CIHueAdjust", parameters: [kCIInputAngleKey: -0.49])
-            let mapped = hue.applyingFilter(
-                "CIColorControls",
-                parameters: [
-                    kCIInputSaturationKey: 0.72,
-                    kCIInputContrastKey: 1.05
-                ]
-            )
-            guard let cg = self.ci.createCGImage(mapped, from: mapped.extent) else { return nil }
-            let img = UIImage(cgImage: cg)
+            // Await the shared preview BEFORE occupying a worker. This also avoids
+            // a nested bounded-queue deadlock when all workers need a preview.
+            guard let pos = await self.loadPreview(key: key, url: url), !Task.isCancelled else { return nil }
+            let result = await self.imageWork.run(priority: Task.currentPriority) {
+                PerformanceTrace.measure("NegativeTransform") { () -> UIImage? in
+                    guard let ciImg = CIImage(image: pos) else { return nil as UIImage? }
+                    let inverted = ciImg.applyingFilter("CIColorInvert")
+                    let hue = inverted.applyingFilter("CIHueAdjust", parameters: [kCIInputAngleKey: -0.49])
+                    let mapped = hue.applyingFilter(
+                        "CIColorControls",
+                        parameters: [kCIInputSaturationKey: 0.72, kCIInputContrastKey: 1.05]
+                    )
+                    guard let cg = self.ci.createCGImage(mapped, from: mapped.extent) else { return nil }
+                    return UIImage(cgImage: cg)
+                }
+            }
+            guard let img = result ?? nil else { return nil }
             self.remember(.negative, key: key, image: img)
             return img
         }
@@ -112,20 +149,21 @@ final class ImageStore: @unchecked Sendable {
     private struct Inflight {
         let gen: Int
         let task: Task<UIImage?, Never>
-        let priority: TaskPriority
         var waiters: Int
     }
 
     private enum CacheKind { case preview, display, negative }
 
     private func remember(_ kind: CacheKind, key: String, image: UIImage) {
+        guard !Task.isCancelled else { return }
         lock.lock()
+        defer { lock.unlock() }
+        guard !Task.isCancelled else { return }
         switch kind {
         case .preview: previewKeys.insert(key)
         case .display: displayKeys.insert(key)
         case .negative: negativeKeys.insert(key)
         }
-        lock.unlock()
         switch kind {
         case .preview: previews.setObject(image, forKey: key as NSString, cost: Self.cost(image))
         case .display: displays.setObject(image, forKey: key as NSString, cost: Self.cost(image))
@@ -136,12 +174,20 @@ final class ImageStore: @unchecked Sendable {
     private func coalesce(
         _ key: String,
         priority: TaskPriority = .userInitiated,
+        trace: StaticString,
         work: @escaping @Sendable () async -> UIImage?
     ) async -> UIImage? {
         let started = start(key, priority: priority, work: work)
-        let img = await started.task.value
-        end(key, gen: started.gen)
-        return img
+        let waiter = ImageWaiter()
+        let state = PerformanceTrace.begin(trace)
+        defer { PerformanceTrace.end(trace, state) }
+        return await withTaskCancellationHandler {
+            defer { waiter.finish { self.end(key, gen: started.gen) } }
+            let img = await started.task.value
+            return Task.isCancelled ? nil : img
+        } onCancel: {
+            waiter.finish { self.end(key, gen: started.gen) }
+        }
     }
 
     private func start(
@@ -151,13 +197,17 @@ final class ImageStore: @unchecked Sendable {
     ) -> Inflight {
         lock.lock()
         defer { lock.unlock() }
-        if let existing = inflight[key], existing.priority >= priority {
-            inflight[key]?.waiters += 1
-            return inflight[key]!
+        if var existing = inflight[key] {
+            // Awaiting task.value escalates the shared Swift task's priority.
+            // Restarting it here duplicates ImageIO work and transient allocations.
+            existing.waiters += 1
+            inflight[key] = existing
+            return existing
         }
         let task = Task.detached(priority: priority, operation: work)
-        let gen = (inflight[key]?.gen ?? 0) + 1
-        let entry = Inflight(gen: gen, task: task, priority: priority, waiters: 1)
+        nextGeneration &+= 1
+        let gen = nextGeneration
+        let entry = Inflight(gen: gen, task: task, waiters: 1)
         inflight[key] = entry
         return entry
     }
@@ -172,13 +222,15 @@ final class ImageStore: @unchecked Sendable {
     }
 
     private func end(_ key: String, gen: Int) {
-        lock.lock()
-        defer { lock.unlock() }
-        guard inflight[key]?.gen == gen else { return }
-        inflight[key]?.waiters -= 1
-        if inflight[key]?.waiters == 0 {
-            inflight.removeValue(forKey: key)
+        let unused: Task<UIImage?, Never>? = lock.withLock {
+            guard inflight[key]?.gen == gen else { return nil }
+            inflight[key]?.waiters -= 1
+            if inflight[key]?.waiters == 0 {
+                return inflight.removeValue(forKey: key)?.task
+            }
+            return nil
         }
+        unused?.cancel()
     }
 
     static func decodeExport(_ url: URL, maxSide: CGFloat) -> UIImage? {
@@ -186,6 +238,7 @@ final class ImageStore: @unchecked Sendable {
     }
 
     private static func decode(_ url: URL, maxSide: CGFloat) -> UIImage? {
+        guard maxSide.isFinite, maxSide > 0, maxSide <= 8192 else { return nil }
         let srcOpts: [CFString: Any] = [kCGImageSourceShouldCache: false]
         guard let src = CGImageSourceCreateWithURL(url as CFURL, srcOpts as CFDictionary) else { return nil }
         let options: [CFString: Any] = [
@@ -199,9 +252,24 @@ final class ImageStore: @unchecked Sendable {
     }
 
     private static func cost(_ image: UIImage) -> Int {
+        if let cg = image.cgImage { return max(1, cg.bytesPerRow * cg.height) }
         let w = Int(image.size.width * image.scale)
         let h = Int(image.size.height * image.scale)
         return max(1, w * h * 4)
+    }
+}
+
+private final class ImageWaiter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var finished = false
+
+    func finish(_ work: () -> Void) {
+        let shouldFinish = lock.withLock {
+            if finished { return false }
+            finished = true
+            return true
+        }
+        if shouldFinish { work() }
     }
 }
 
@@ -245,7 +313,9 @@ final class AppModel {
     var skipTickets: Int { skipGranted + skipPurchased }
     let membership = Entitlements.shared
     var pipelineRunning = false
+    var developFailedRollIDs: Set<UUID> = []
     private var developQueue: [UUID] = []
+    private var activeDevelopID: UUID?
     var manualMode = false
     var shutterAuto = true
     var isoAuto = true
@@ -272,8 +342,10 @@ final class AppModel {
     var developProgress: Double = 0
     var camera = CameraSession()
     var proRAW = false
-    private var pendingWrites = 0
     private var persistTask: Task<Void, Never>?
+    private var lastPersistedData: Data?
+    private var persistenceReadFailed = false
+    @ObservationIgnored private var cachedSupportDirectory: URL?
     private var coverWarmup: Task<Void, Never>?
     private var coverWarmupPriority: TaskPriority?
 
@@ -307,6 +379,7 @@ final class AppModel {
     var monthlyLimit: Int? { AppConst.monthlyLimit(tier) }
 
     var canLoadRoll: Bool {
+        guard !persistenceReadFailed else { return false }
         guard let cap = monthlyLimit else { return true }
         return loadsThisMonth < cap
     }
@@ -359,9 +432,8 @@ final class AppModel {
             Soundboard.shared.preload()
             Haptics.shared.prepare()
         }
-        DispatchQueue.global(qos: .utility).async {
-            _ = SpektraEngine.shared.isAvailable
-        }
+        // Loading a roll prewarms its film/paper pair. Merely opening the camera
+        // should not create a Metal spectral engine while the first preview starts.
         if let developing = rolls.first(where: { $0.state == .developing }) {
             ritualRollId = developing.id
             showDarkroom = true
@@ -424,6 +496,7 @@ final class AppModel {
         capacity: Int = AppConst.capacity,
         isTutorial: Bool = false
     ) {
+        guard !isCapturing, !persistenceReadFailed, currentRoll == nil else { return }
         if !isTutorial {
             rolloverMonth()
             guard canLoadRoll, canUseCapacity(capacity) else { return }
@@ -555,7 +628,7 @@ final class AppModel {
     }
 
     func applyExposureMode() {
-        camera.savedEV = ev
+        camera.setSavedEV(ev)
         let factor = powf(2, ev)
         let lockedISO = Float(isoValue)
         if !manualMode {
@@ -594,6 +667,7 @@ final class AppModel {
     }
 
     func wind() {
+        guard !isCapturing else { return }
         guard var roll = currentRoll, roll.canWind else { return }
         if !roll.leaderConsumed {
             roll.leaderConsumed = true
@@ -606,17 +680,33 @@ final class AppModel {
         persistNow()
     }
 
-    func commitShot(_ data: Data) {
-        guard var roll = currentRoll, roll.canShoot else { return }
+    func commitShot(_ data: Data, rollId: UUID) async -> Bool {
+        guard !persistenceReadFailed, let roll = currentRoll,
+              roll.id == rollId, roll.canShoot, !data.isEmpty else { return false }
         let index = roll.shotCount + 1
         let fileName = String(format: "%03d.neg", index)
         let dir = rollDir(roll.id)
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        writeFrameFile(url: dir.appendingPathComponent(fileName), data: data)
+        let meter = camera.lastMeter
+        let shotAt = Date()
+        let saved = await Task.detached(priority: .userInitiated) {
+            let trace = PerformanceTrace.begin("PhotoWrite")
+            defer { PerformanceTrace.end("PhotoWrite", trace) }
+            do {
+                try Self.writeCaptureData(data, to: dir.appendingPathComponent(fileName))
+                return true
+            } catch {
+                return false
+            }
+        }.value
+        guard saved else {
+            return false
+        }
+        guard var live = currentRoll, live.id == rollId, live.canShoot,
+              live.shotCount == roll.shotCount else { return false }
         let frame = Frame(
             id: UUID(),
             index: index,
-            shotAt: Date(),
+            shotAt: shotAt,
             fileName: fileName,
             posFileName: nil,
             thumbFileName: nil,
@@ -624,36 +714,32 @@ final class AppModel {
             leakAngle: 0,
             leakHue: 0,
             developed: false,
-            iso: camera.lastMeter.iso,
-            shutter: camera.lastMeter.shutter,
-            lens: camera.lastMeter.lens
+            iso: meter.iso,
+            shutter: meter.shutter,
+            lens: meter.lens
         )
-        roll.frames.append(frame)
-        roll.shotCount = index
-        roll.armed = false
-        if roll.isFull {
-            roll.state = .needsRewind
+        live.frames.append(frame)
+        live.shotCount = index
+        live.armed = false
+        if live.isFull {
+            live.state = .needsRewind
         }
-        currentRoll = roll
+        currentRoll = live
         persistNow()
+        return true
     }
 
-    private func writeFrameFile(url: URL, data: Data) {
-        pendingWrites += 1
-        Task.detached(priority: .userInitiated) {
-            try? data.write(to: url, options: [.atomic, .completeFileProtection])
-            await MainActor.run { self.pendingWrites = max(0, self.pendingWrites - 1) }
-        }
+    private nonisolated static func writeCaptureData(_ data: Data, to url: URL) throws {
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try data.write(to: url, options: [.atomic, .completeFileProtection])
     }
 
-    private func waitForWrites() async {
-        let deadline = Date().addingTimeInterval(12)
-        while pendingWrites > 0, Date() < deadline {
-            try? await Task.sleep(for: .milliseconds(50))
-        }
+    func reportCaptureFailure() {
+        flashExportNotice(L("拍摄未保存，请重试"))
     }
 
     func rewind() {
+        guard !isCapturing else { return }
         guard var roll = currentRoll else { return }
         guard roll.state == .needsRewind || (roll.state == .shooting && roll.shotCount > 0) else { return }
         roll.state = .canDevelop
@@ -669,6 +755,7 @@ final class AppModel {
     }
 
     func forceUnload(ignoreStrict: Bool = false) {
+        guard !isCapturing else { return }
         guard let roll = currentRoll else { return }
         if !ignoreStrict, strictMode, roll.shotCount > 0, !roll.isFull { return }
         if roll.shotCount == 0 {
@@ -807,6 +894,10 @@ final class AppModel {
     }
 
     func finishRitual(loadNew: Bool = false, autoDump: Bool? = nil) {
+        guard let id = ritualRollId, let finished = rolls.first(where: { $0.id == id }),
+              !finished.frames.isEmpty,
+              finished.frames.allSatisfy({ $0.developed && $0.posFileName != nil }),
+              !developFailedRollIDs.contains(id) else { return }
         let dumpId = ritualRollId
         let tutorial: Bool = {
             guard let id = dumpId, let roll = rolls.first(where: { $0.id == id }) else { return false }
@@ -880,7 +971,10 @@ final class AppModel {
         let ready = frames.filter { $0.developed && $0.posFileName != nil }
         guard !ready.isEmpty else { return false }
         if ready.count == 1 { return ready[0].exported }
-        return ready.allSatisfy { !$0.exportedPairAssetIds.isEmpty }
+        let common = ready.dropFirst().reduce(Set(ready[0].exportedPairAssetIds)) {
+            $0.intersection($1.exportedPairAssetIds)
+        }
+        return !common.isEmpty
     }
 
     func unexportedDumpGroups(in roll: Roll) -> [[Frame]] {
@@ -902,17 +996,20 @@ final class AppModel {
             roll.frames.flatMap { $0.exportedAssetIds + $0.exportedPairAssetIds }
         }
         guard !ids.isEmpty else { return }
-        let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
-        guard status == .authorized || status == .limited else { return }
+        // A limited library cannot distinguish a deleted asset from a hidden one.
+        // Reconciliation is not a reason to display a permission prompt.
+        guard PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized else { return }
+        let checked = Set(ids)
         let live = await Task.detached(priority: .utility) {
             PhotoExport.liveAssetIds(ids)
         }.value
+        guard PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized else { return }
         var changed = false
         for ri in rolls.indices {
             for fi in rolls[ri].frames.indices {
                 let singles = rolls[ri].frames[fi].exportedAssetIds
                 if !singles.isEmpty {
-                    let kept = singles.filter { live.contains($0) }
+                    let kept = singles.filter { !checked.contains($0) || live.contains($0) }
                     if kept.isEmpty {
                         rolls[ri].frames[fi].exported = false
                         rolls[ri].frames[fi].exportedAssetIds = []
@@ -924,7 +1021,7 @@ final class AppModel {
                 }
                 let pairs = rolls[ri].frames[fi].exportedPairAssetIds
                 if !pairs.isEmpty {
-                    let kept = pairs.filter { live.contains($0) }
+                    let kept = pairs.filter { !checked.contains($0) || live.contains($0) }
                     if kept.count != pairs.count {
                         rolls[ri].frames[fi].exportedPairAssetIds = kept
                         changed = true
@@ -1028,18 +1125,18 @@ final class AppModel {
     }
 
     func exportPrints(rollId: UUID) async -> PhotoExport.Outcome {
-        await beginExport()
+        guard await beginExport() else { return .failed }
         defer { exportBusy = false }
         guard let roll = rolls.first(where: { $0.id == rollId }) else { return .noPrints }
         return await flushDumpGroups(rollId: roll.id, groups: unexportedDumpGroups(in: roll))
     }
 
     func exportAllUnexportedPrints() async -> PhotoExport.Outcome {
-        await beginExport()
+        guard await beginExport() else { return .failed }
         defer { exportBusy = false }
         var saved = 0
-        var lastFail: PhotoExport.Outcome?
         for roll in albumRolls {
+            guard !Task.isCancelled else { return .failed }
             let groups = unexportedDumpGroups(in: roll)
             guard !groups.isEmpty else { continue }
             let outcome = await flushDumpGroups(rollId: roll.id, groups: groups)
@@ -1049,19 +1146,18 @@ final class AppModel {
             case .noPrints:
                 continue
             case .noPermission, .failed:
-                if saved == 0 { return outcome }
-                lastFail = outcome
-                return lastFail ?? .saved(saved, [])
+                return outcome
             }
         }
         if saved > 0 { return .saved(saved, []) }
-        return lastFail ?? .noPrints
+        return .noPrints
     }
 
     func exportJPEGPayload(_ data: Data, rollId: UUID, frameIds: [UUID], asPair: Bool = false) async -> PhotoExport.Outcome {
-        await beginExport()
+        guard await beginExport() else { return .failed }
         defer { exportBusy = false }
         let live = frameIds.compactMap { liveFrame(rollId: rollId, frameId: $0) }
+        guard live.count == frameIds.count else { return .failed }
         let fresh: [UUID]
         if asPair {
             guard !isPairDumped(live) else { return .noPrints }
@@ -1121,6 +1217,7 @@ final class AppModel {
     }
 
     func resetOnboardingForTest() {
+        guard AppLab.enabled, !isCapturing, !pipelineRunning else { return }
         hasCompletedOnboarding = false
         tutorialMaskDismissed = false
         hasSeenHint = false
@@ -1240,8 +1337,10 @@ final class AppModel {
         let pair = filmPairs(roll.frames).first ?? []
         for frame in pair {
             while isCapturing {
-                try? await Task.sleep(for: .milliseconds(400))
+                do { try await Task.sleep(for: .milliseconds(400)) }
+                catch { return }
             }
+            guard !Task.isCancelled else { return }
             _ = await loadPreview(roll: roll, frame: frame, priority: priority)
         }
     }
@@ -1269,14 +1368,14 @@ final class AppModel {
         return url
     }
 
-    private func positiveExists(rollId: UUID, frame: Frame) -> Bool {
-        let names = [frame.posFileName, frame.thumbFileName].compactMap { $0 }
-        return names.contains { name in
-            FileManager.default.fileExists(atPath: positiveURL(rollId: rollId, fileName: name).path)
-        }
+    private nonisolated static func isValidImageFile(_ url: URL) -> Bool {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL,
+                [kCGImageSourceShouldCache: false] as CFDictionary) else { return false }
+        return CGImageSourceGetCount(source) > 0 && CGImageSourceGetStatus(source) == .statusComplete
     }
 
     private func enqueueDevelop(_ id: UUID) {
+        guard activeDevelopID != id else { return }
         if !developQueue.contains(id) {
             developQueue.append(id)
         }
@@ -1285,71 +1384,106 @@ final class AppModel {
 
     private func pumpDevelop() async {
         guard !pipelineRunning else { return }
-        guard let next = developQueue.first else { return }
-        developQueue.removeFirst()
         pipelineRunning = true
-        await runDevelop(next)
-        pipelineRunning = false
-        if !developQueue.isEmpty {
-            await pumpDevelop()
+        defer {
+            activeDevelopID = nil
+            pipelineRunning = false
+        }
+        while !developQueue.isEmpty, !Task.isCancelled {
+            let next = developQueue.removeFirst()
+            activeDevelopID = next
+            await runDevelop(next)
+            activeDevelopID = nil
         }
     }
 
     private func runDevelop(_ id: UUID) async {
-        await waitForWrites()
         guard let idx = rolls.firstIndex(where: { $0.id == id }) else { return }
         let roll = rolls[idx]
+        guard roll.state == .waiting || roll.state == .developing else { return }
+        developFailedRollIDs.remove(id)
         let recipe = FilmCatalog.recipe(id: roll.filmId)
         let total = max(1, roll.frames.count)
-        let track = ritualRollId == id
-        var done = 0
-        for frame in roll.frames {
-            if frame.developed, frame.posFileName != nil, positiveExists(rollId: roll.id, frame: frame) {
-                done += 1
+        let directory = rollDir(id)
+        let completed = await Task.detached(priority: .userInitiated) {
+            PerformanceTrace.measure("ValidateDeveloped") {
+                Set(roll.frames.compactMap { frame -> UUID? in
+                    guard frame.developed, let name = frame.posFileName,
+                          Self.isValidImageFile(directory.appendingPathComponent(name)) else { return nil }
+                    return frame.id
+                })
             }
-        }
-        if track { developProgress = Double(done) / Double(total) }
-        for (i, frame) in roll.frames.enumerated() {
-            if frame.developed, frame.posFileName != nil, positiveExists(rollId: roll.id, frame: frame) { continue }
+        }.value
+        var done = completed.count
+        if ritualRollId == id { developProgress = Double(done) / Double(total) }
+        for frame in roll.frames {
+            guard !Task.isCancelled, rolls.contains(where: { $0.id == id }) else { return }
+            if completed.contains(frame.id) { continue }
             let posName = String(format: "%03d_pos.jpg", frame.index)
             let thumbName = String(format: "%03d_thm.jpg", frame.index)
-            if FileManager.default.fileExists(atPath: originalURL(rollId: roll.id, fileName: posName).path) {
-                if let live = rolls.firstIndex(where: { $0.id == id }) {
-                    rolls[live].frames[i].posFileName = posName
-                    if FileManager.default.fileExists(atPath: originalURL(rollId: roll.id, fileName: thumbName).path) {
-                        rolls[live].frames[i].thumbFileName = thumbName
-                    }
-                    rolls[live].frames[i].developed = true
-                }
+            let positiveURL = originalURL(rollId: id, fileName: posName)
+            let thumbnailURL = originalURL(rollId: id, fileName: thumbName)
+            let reusable = await Task.detached(priority: .userInitiated) {
+                (Self.isValidImageFile(positiveURL), Self.isValidImageFile(thumbnailURL))
+            }.value
+            if reusable.0 {
+                markDeveloped(rollId: id, frameId: frame.id, positive: posName,
+                              thumbnail: reusable.1 ? thumbName : nil)
                 done += 1
-                if track { developProgress = Double(done) / Double(total) }
+                if ritualRollId == id { developProgress = Double(done) / Double(total) }
                 continue
             }
-            guard let data = frameData(rollId: roll.id, fileName: frame.fileName) else { continue }
+            let inputURL = originalURL(rollId: id, fileName: frame.fileName)
             let out = await Task.detached(priority: .userInitiated) {
-                SpektraEngine.shared.develop(data: data, recipe: recipe, roll: roll, frame: frame)
+                guard let sealed = try? Data(contentsOf: inputURL),
+                      let data = FrameCrypto.open(sealed) else { return nil as FilmRenderer.Output? }
+                return SpektraEngine.shared.develop(data: data, recipe: recipe, roll: roll, frame: frame)
             }.value
             guard let out else { continue }
-            do {
-                try out.positive.write(to: originalURL(rollId: roll.id, fileName: posName), options: .atomic)
-                try out.thumb.write(to: originalURL(rollId: roll.id, fileName: thumbName), options: .atomic)
-            } catch {
-                continue
-            }
-            if let live = rolls.firstIndex(where: { $0.id == id }) {
-                rolls[live].frames[i].posFileName = posName
-                rolls[live].frames[i].thumbFileName = thumbName
-                rolls[live].frames[i].developed = true
-            }
+            guard rolls.contains(where: { $0.id == id }) else { return }
+            let saved = await Task.detached(priority: .userInitiated) {
+                do {
+                    try out.positive.write(to: positiveURL, options: .atomic)
+                    try out.thumb.write(to: thumbnailURL, options: .atomic)
+                    return true
+                } catch {
+                    return false
+                }
+            }.value
+            guard saved else { continue }
+            markDeveloped(rollId: id, frameId: frame.id, positive: posName, thumbnail: thumbName)
             done += 1
-            if track { developProgress = Double(done) / Double(total) }
+            if ritualRollId == id { developProgress = Double(done) / Double(total) }
+            persistSoon()
         }
-        if track { developProgress = 1 }
+        if done < roll.frames.count { developFailedRollIDs.insert(id) }
+        if ritualRollId == id { developProgress = Double(done) / Double(total) }
         persistNow()
         if let live = rolls.first(where: { $0.id == id }) {
             await warmupCover(of: live)
         }
         Task { await warmupAlbumCovers() }
+    }
+
+    private func markDeveloped(rollId: UUID, frameId: UUID, positive: String, thumbnail: String?) {
+        guard let ri = rolls.firstIndex(where: { $0.id == rollId }),
+              let fi = rolls[ri].frames.firstIndex(where: { $0.id == frameId }) else { return }
+        rolls[ri].frames[fi].posFileName = positive
+        rolls[ri].frames[fi].thumbFileName = thumbnail
+        rolls[ri].frames[fi].developed = true
+    }
+
+    func retryDevelop(_ id: UUID) {
+        guard rolls.contains(where: { $0.id == id && ($0.state == .developing || $0.state == .waiting) }) else { return }
+        developFailedRollIDs.remove(id)
+        enqueueDevelop(id)
+    }
+
+    func pauseRitual() {
+        showDarkroom = false
+        ritualRollId = nil
+        showDarkbox = true
+        persistNow()
     }
 
     private func upsert(_ roll: Roll) {
@@ -1365,9 +1499,15 @@ final class AppModel {
     }
 
     private func supportDir() -> URL {
+        if let cachedSupportDirectory { return cachedSupportDirectory }
         let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("HalfCam", isDirectory: true)
-        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        do {
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+            cachedSupportDirectory = url
+        } catch {
+            // Do not cache a failed creation; the next access should retry.
+        }
         return url
     }
 
@@ -1380,28 +1520,56 @@ final class AppModel {
     private func flushDumpGroups(rollId: UUID, groups: [[Frame]]) async -> PhotoExport.Outcome {
         guard let roll = rolls.first(where: { $0.id == rollId }) else { return .noPrints }
         var jobs: [DumpJob] = []
+        jobs.reserveCapacity(PhotoExport.batchSize)
+        var saved = 0
+        var failed = false
+        let bordered = exportFilmBorder
         for pair in groups {
+            guard !Task.isCancelled else { return .failed }
             let ready = pair.filter { $0.developed && $0.posFileName != nil }
             guard !ready.isEmpty else { continue }
             let urls = ready.compactMap { exportJPEGURL(roll: roll, frame: $0) }
-            guard !urls.isEmpty else { continue }
+            guard urls.count == ready.count else {
+                failed = true
+                continue
+            }
             let asPair = ready.count >= 2
-            let bordered = exportFilmBorder
             let rebates = bordered ? ready.map { filmRebate($0.index) } : []
             let data = await Task.detached(priority: .userInitiated) {
                 PhotoExport.composeJPEG(urls: urls, rebates: rebates, filmBorder: bordered)
             }.value
-            guard let data else { continue }
+            guard let data else {
+                failed = true
+                continue
+            }
             jobs.append(DumpJob(frameIds: ready.map(\.id), data: data, asPair: asPair))
+            if jobs.count == PhotoExport.batchSize {
+                let outcome = await flushDumpJobs(rollId: rollId, jobs: jobs)
+                jobs.removeAll(keepingCapacity: true)
+                switch outcome {
+                case .saved(let count, _): saved += count
+                case .noPrints: break
+                case .noPermission, .failed: return outcome
+                }
+            }
         }
-        return await flushDumpJobs(rollId: rollId, jobs: jobs)
+        if !jobs.isEmpty {
+            let outcome = await flushDumpJobs(rollId: rollId, jobs: jobs)
+            switch outcome {
+            case .saved(let count, _): saved += count
+            case .noPrints: break
+            case .noPermission, .failed: return outcome
+            }
+        }
+        if failed { return .failed }
+        return saved > 0 ? .saved(saved, []) : .noPrints
     }
 
     private func flushDumpJobs(rollId: UUID, jobs: [DumpJob]) async -> PhotoExport.Outcome {
         guard !jobs.isEmpty else { return .noPrints }
         var saved = 0
-        var lastFail: PhotoExport.Outcome?
-        chunkLoop: for chunk in stride(from: 0, to: jobs.count, by: PhotoExport.batchSize) {
+        for chunk in stride(from: 0, to: jobs.count, by: PhotoExport.batchSize) {
+            guard !Task.isCancelled else { return .failed }
             let slice = Array(jobs[chunk..<min(chunk + PhotoExport.batchSize, jobs.count)])
             let outcome = await PhotoExport.saveJPEGs(slice.map(\.data))
             switch outcome {
@@ -1414,26 +1582,28 @@ final class AppModel {
             case .noPrints:
                 continue
             case .noPermission, .failed:
-                if saved == 0 { return outcome }
-                lastFail = outcome
-                break chunkLoop
+                return outcome
             }
         }
         if saved > 0 { return .saved(saved, []) }
-        return lastFail ?? .noPrints
+        return .noPrints
     }
 
-    private func beginExport() async {
+    private func beginExport() async -> Bool {
         while exportBusy {
-            try? await Task.sleep(for: .milliseconds(40))
+            do { try await Task.sleep(for: .milliseconds(40)) }
+            catch { return false }
         }
+        guard !Task.isCancelled else { return false }
         exportBusy = true
+        return true
     }
 
     private func flashExportNotice(_ text: String) {
         exportNotice = text
         Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.8))
+            // Error messages can wrap to several lines in translated layouts.
+            try? await Task.sleep(for: .seconds(5))
             if exportNotice == text { exportNotice = "" }
         }
     }
@@ -1468,7 +1638,15 @@ final class AppModel {
         persist()
     }
 
+    func flushPersistence() {
+        persistNow()
+    }
+
     private func persist() {
+        // Never replace an unreadable library with an empty onboarding store.
+        guard !persistenceReadFailed else { return }
+        let trace = PerformanceTrace.begin("LibraryPersist")
+        defer { PerformanceTrace.end("LibraryPersist", trace) }
         let store = PersistStore(
             rolls: rolls,
             currentRollId: currentRollId,
@@ -1503,17 +1681,39 @@ final class AppModel {
         let url = supportDir().appendingPathComponent("store.json")
         let enc = JSONEncoder()
         enc.dateEncodingStrategy = .secondsSince1970
-        if let data = try? enc.encode(store) {
-            try? data.write(to: url, options: .atomic)
+        enc.outputFormatting = [.sortedKeys]
+        do {
+            let data = try enc.encode(store)
+            guard data != lastPersistedData else { return }
+            if let previous = lastPersistedData {
+                // Failure to refresh a backup must not prevent saving the primary.
+                try? previous.write(to: supportDir().appendingPathComponent("store.backup.json"), options: .atomic)
+            }
+            try data.write(to: url, options: .atomic)
+            lastPersistedData = data
+        } catch {
+            flashExportNotice(L("记录保存失败，请检查存储空间"))
         }
     }
 
     private func load() {
+        let trace = PerformanceTrace.begin("LibraryLoad")
+        defer { PerformanceTrace.end("LibraryLoad", trace) }
         let url = supportDir().appendingPathComponent("store.json")
-        guard let data = try? Data(contentsOf: url) else { return }
         let dec = JSONDecoder()
         dec.dateDecodingStrategy = .secondsSince1970
-        guard let store = try? dec.decode(PersistStore.self, from: data) else { return }
+        let backupURL = supportDir().appendingPathComponent("store.backup.json")
+        guard let restored = StoreReader.firstValid(PersistStore.self, urls: [url, backupURL], decoder: dec) else {
+            if FileManager.default.fileExists(atPath: url.path) ||
+               FileManager.default.fileExists(atPath: backupURL.path) {
+                persistenceReadFailed = true
+                exportNotice = L("记录读取失败，请保留 App 并重试")
+            }
+            return
+        }
+        let store = restored.value
+        // Force repair of the primary if the valid data came from the backup.
+        lastPersistedData = restored.url == url ? restored.data : nil
         rolls = store.rolls
         currentRollId = store.currentRollId
         flashOn = store.flashOn

@@ -24,6 +24,9 @@ struct PaywallView: View {
                         if store.tier != .lifetime {
                             note(L("年卡按年自动续订，费用从 Apple ID 扣除。到期前 24 小时可在系统设置里取消。买断一次付清，之后不再扣费。"))
                         }
+                        if store.tier == .yearly {
+                            note(L("购买买断不会自动取消现有年卡。请在系统设置中取消年卡续订，以免继续扣费。"))
+                        }
                         if !store.note.isEmpty {
                             note(store.note)
                         }
@@ -40,7 +43,7 @@ struct PaywallView: View {
                     Button {
                         Task { await store.restore() }
                     } label: {
-                        Text(store.purchasing ? L("正在恢复") : L("恢复购买"))
+                        Text(store.restoring ? L("正在恢复") : L("恢复购买"))
                             .font(.system(size: 13, design: .monospaced))
                             .foregroundStyle(Color(white: 0.62))
                     }
@@ -52,7 +55,7 @@ struct PaywallView: View {
                     } label: {
                         Text(L("法律信息 · 隐私政策"))
                             .font(.system(size: 11, design: .monospaced))
-                            .foregroundStyle(Color(white: 0.32))
+                            .foregroundStyle(Color(white: 0.62))
                     }
                     .buttonStyle(.plain)
                 }
@@ -195,7 +198,7 @@ struct PaywallView: View {
                     Haptics.shared.chrome()
                     Task { await buy(pick) }
                 } label: {
-                    ChromePlate(title: pick == .yearly ? yearlyTitle : lifetimeTitle, prominent: true)
+                    ChromePlate(title: busyTitle ?? (pick == .yearly ? yearlyTitle : lifetimeTitle), prominent: true)
                 }
                 .buttonStyle(.plain)
                 .disabled(store.purchasing)
@@ -204,7 +207,7 @@ struct PaywallView: View {
                     Haptics.shared.chrome()
                     Task { await buyLifetime() }
                 } label: {
-                    ChromePlate(title: lifetimeTitle, prominent: true)
+                    ChromePlate(title: busyTitle ?? lifetimeTitle, prominent: true)
                 }
                 .buttonStyle(.plain)
                 .disabled(store.purchasing)
@@ -220,6 +223,12 @@ struct PaywallView: View {
             return String(format: "%02d / %02d", model.loadsThisMonth, cap)
         }
         return L("不限")
+    }
+
+    private var busyTitle: String? {
+        if store.restoring { return L("正在恢复") }
+        if store.purchasing { return L("正在购买") }
+        return nil
     }
 
     private func price(_ tier: MembershipTier) -> String {
@@ -279,7 +288,7 @@ struct PaywallView: View {
     private func note(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 11, design: .monospaced))
-            .foregroundStyle(Color(white: 0.32))
+            .foregroundStyle(Color(white: 0.62))
             .fixedSize(horizontal: false, vertical: true)
     }
 }

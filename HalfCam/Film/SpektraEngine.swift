@@ -32,25 +32,26 @@ final class SpektraEngine {
 
     var isAvailable: Bool {
         lock.lock()
-        if let cachedReady {
-            lock.unlock()
-            return cachedReady
-        }
-        lock.unlock()
+        defer { lock.unlock() }
+        return readyLocked()
+    }
+
+    private func readyLocked() -> Bool {
+        if let cachedReady { return cachedReady }
         let ready = resourcesDir().withCString { dir -> Bool in
             if let device = metalDevice {
                 return hc_spk_ready(dir, Unmanaged.passUnretained(device).toOpaque()) != 0
             }
             return hc_spk_ready(dir, nil) != 0
         }
-        lock.lock()
         cachedReady = ready
-        lock.unlock()
         return ready
     }
 
     func warmUp(film: String, paper: String) {
-        guard isAvailable else { return }
+        lock.lock()
+        defer { lock.unlock() }
+        guard readyLocked() else { return }
         film.withCString { f in
             paper.withCString { p in
                 _ = hc_spk_warm_up(f, p)
@@ -59,32 +60,43 @@ final class SpektraEngine {
     }
 
     func develop(data: Data, recipe: FilmRecipe, roll: Roll, frame: Frame) -> FilmRenderer.Output? {
-        guard isAvailable else { return nil }
-        guard var linear = Ingest.linearRGB(data: data, longEdge: Self.exportEdge) else { return nil }
-        let json = paramsJSON(recipe: recipe, roll: roll, frame: frame)
+        let trace = PerformanceTrace.begin("SpectralDevelop")
+        defer { PerformanceTrace.end("SpectralDevelop", trace) }
         lock.lock()
         defer { lock.unlock() }
-        let session: UnsafeMutableRawPointer? = linear.rgb.withUnsafeBufferPointer { buf in
-            guard let base = buf.baseAddress else { return nil }
-            return json.withCString { cjson in
-                hc_spk_open(base, UInt32(linear.width), UInt32(linear.height), cjson)
+        // Serialize decoding too: multiple waiting callers must not each allocate a
+        // full floating-point frame while another render is using the GPU.
+        guard readyLocked() else { return nil }
+        return autoreleasepool {
+            guard var linear = PerformanceTrace.measure("LinearIngest", {
+                Ingest.linearRGB(data: data, longEdge: Self.exportEdge)
+            }) else { return nil }
+            let json = paramsJSON(recipe: recipe, roll: roll, frame: frame)
+            let session: UnsafeMutableRawPointer? = linear.rgb.withUnsafeBufferPointer { buf in
+                guard let base = buf.baseAddress else { return nil }
+                return json.withCString { cjson in
+                    PerformanceTrace.measure("SpectralSolve") {
+                        hc_spk_open(base, UInt32(linear.width), UInt32(linear.height), cjson)
+                    }
+                }
             }
-        }
-        linear.rgb.removeAll(keepingCapacity: false)
-        guard let session else { return nil }
-        defer { hc_spk_close(session) }
+            linear.rgb.removeAll(keepingCapacity: false)
+            guard let session else { return nil }
+            defer { hc_spk_close(session) }
 
-        guard let thumb = reprint(session, tier: "live") else { return nil }
-        guard let positive = reprint(session, tier: "full") else {
-            return FilmRenderer.Output(positive: thumb, thumb: thumb)
+            guard let thumb = reprint(session, tier: "live") else { return nil }
+            guard let positive = reprint(session, tier: "full") else { return nil }
+            return FilmRenderer.Output(
+                positive: FilmRenderer.stamp(positive, original: data, frame: frame, recipe: recipe),
+                thumb: thumb
+            )
         }
-        return FilmRenderer.Output(
-            positive: FilmRenderer.stamp(positive, original: data, frame: frame, recipe: recipe),
-            thumb: thumb
-        )
     }
 
     private func reprint(_ session: UnsafeMutableRawPointer, tier: String) -> Data? {
+        let name: StaticString = tier == "full" ? "RenderFull" : "RenderThumbnail"
+        let trace = PerformanceTrace.begin(name)
+        defer { PerformanceTrace.end(name, trace) }
         var rgba: UnsafeMutablePointer<UInt16>?
         var width: UInt32 = 0
         var height: UInt32 = 0
@@ -165,7 +177,9 @@ final class SpektraEngine {
     }
 
     private func jpeg(rgba16: UnsafePointer<UInt16>, width: Int, height: Int, stride: Int) -> Data? {
-        let pitch = max(width, stride)
+        guard width > 0, height > 0, width <= 8192, height <= 8192,
+              width * height <= 4096 * 4096, stride >= width, stride <= 16384 else { return nil }
+        let pitch = stride
         let packed: Data
         if pitch == width {
             packed = Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: rgba16), count: width * height * 8, deallocator: .none)

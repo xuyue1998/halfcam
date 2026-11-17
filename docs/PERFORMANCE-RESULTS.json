@@ -1,0 +1,89 @@
+{
+  "scope": "optimized native macOS microbenchmarks; warm OS file cache; not iPhone FPS or cold launch",
+  "timestamp": "2026-11-16T16:30:31.080477+00:00",
+  "host": {
+    "os": "27.2",
+    "architecture": "arm64"
+  },
+  "source_sha256": {
+    "HalfCam/Models.swift": "da9844b4d6f838ed86779c49c8463d071ee9a84a5c1543b87b1221b3bf9f8f15",
+    "HalfCam/Performance/StoreReader.swift": "cea3e0d286f00ef020afcb96de7b76942147aefc59325251be5f1d5b473a3b7c",
+    "HalfCam/Film/FilmRenderer.swift": "364cbb55a49104e1bafe090b5a6d838bcd8dc7176e9add76e0588bd5a8717dfa",
+    "scripts/performance_benchmark.swift": "7f1a004c888b0f481188452d5516ac12e34c2aca1819fc6a049cac701e39cdba",
+    "scripts/benchmark_performance.py": "3b99c3f805d1ffc887e5134de87114c62cb46072210f6c8538ab2cd6347fa432"
+  },
+  "results": [
+    {
+      "checksum": 720,
+      "file_reads_per_iteration": 3,
+      "fixture_bytes": 581420,
+      "iterations": 30,
+      "p50_ms": 12.554167,
+      "p95_ms": 13.742375,
+      "peak_rss_bytes": 12435456,
+      "scenario": "library",
+      "variant": "baseline",
+      "fixture_rolls": 24,
+      "fixture_frames": 1728
+    },
+    {
+      "checksum": 720,
+      "file_reads_per_iteration": 1,
+      "fixture_bytes": 581420,
+      "iterations": 30,
+      "p50_ms": 6.225833,
+      "p95_ms": 6.36225,
+      "peak_rss_bytes": 9814016,
+      "scenario": "library",
+      "variant": "optimized",
+      "fixture_rolls": 24,
+      "fixture_frames": 1728
+    },
+    {
+      "checksum": 7200,
+      "file_reads_per_iteration": 1,
+      "fixture_bytes": 5830289,
+      "iterations": 30,
+      "p50_ms": 61.888667,
+      "p95_ms": 69.444541,
+      "peak_rss_bytes": 32833536,
+      "scenario": "library",
+      "variant": "optimized",
+      "fixture_rolls": 240,
+      "fixture_frames": 17280
+    },
+    {
+      "checksum": 7200,
+      "file_reads_per_iteration": 3,
+      "fixture_bytes": 5830289,
+      "iterations": 30,
+      "p50_ms": 126.213083,
+      "p95_ms": 127.291,
+      "peak_rss_bytes": 44236800,
+      "scenario": "library",
+      "variant": "baseline",
+      "fixture_rolls": 240,
+      "fixture_frames": 17280
+    },
+    {
+      "checksum": 420,
+      "fixture_bytes": 14883641,
+      "iterations": 60,
+      "p50_ms": 0.737459,
+      "p95_ms": 0.83125,
+      "peak_rss_bytes": 26492928,
+      "scenario": "metadata",
+      "variant": "baseline"
+    },
+    {
+      "checksum": 420,
+      "fixture_bytes": 14883641,
+      "iterations": 60,
+      "p50_ms": 0.074208,
+      "p95_ms": 0.087083,
+      "peak_rss_bytes": 11583488,
+      "scenario": "metadata",
+      "variant": "optimized"
+    }
+  ]
+}

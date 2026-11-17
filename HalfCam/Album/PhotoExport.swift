@@ -5,17 +5,30 @@ enum PhotoExport {
     static let batchSize = 6
 
     static func composeJPEG(urls: [URL], rebates: [String] = [], filmBorder: Bool = false) -> Data? {
-        if !filmBorder, urls.count == 1, let data = try? Data(contentsOf: urls[0]), !data.isEmpty {
-            return data
+        let trace = PerformanceTrace.begin("ComposeExport")
+        defer { PerformanceTrace.end("ComposeExport", trace) }
+        return autoreleasepool {
+            guard !urls.isEmpty, urls.count <= 2 else { return nil }
+            if !filmBorder, urls.count == 1, let data = try? Data(contentsOf: urls[0]), !data.isEmpty {
+                return data
+            }
+            let images = urls.compactMap { ImageStore.decodeExport($0, maxSide: 1600) }
+            guard images.count == urls.count else { return nil }
+            let composed = filmBorder
+                ? strip(images, rebates: rebates)
+                : stitch(images)
+            guard let jpeg = composed.jpegData(compressionQuality: 0.92) else { return nil }
+            return FilmRenderer.stampExport(jpeg, likeURL: urls[0])
         }
-        let images = urls.compactMap { ImageStore.decodeExport($0, maxSide: 1600) }
-        guard !images.isEmpty else { return nil }
-        let composed = filmBorder
-            ? strip(images, rebates: rebates)
-            : stitch(images)
-        guard let jpeg = composed.jpegData(compressionQuality: 0.92) else { return nil }
-        guard let source = try? Data(contentsOf: urls[0]) else { return jpeg }
-        return FilmRenderer.stampExport(jpeg, like: source)
+    }
+
+    private static func exportRenderer(size: CGSize) -> UIGraphicsImageRenderer {
+        let format = UIGraphicsImageRendererFormat()
+        // Export dimensions are pixels, not points on the current (2x/3x) screen.
+        format.scale = 1
+        format.opaque = true
+        format.preferredRange = .standard
+        return UIGraphicsImageRenderer(size: size, format: format)
     }
 
     private static func stitch(_ images: [UIImage]) -> UIImage {
@@ -23,7 +36,7 @@ enum PhotoExport {
         let w: CGFloat = h * 3 / 4
         let gap: CGFloat = images.count > 1 ? 10 : 0
         let canvas = CGSize(width: w * CGFloat(images.count) + gap * CGFloat(max(0, images.count - 1)), height: h)
-        let renderer = UIGraphicsImageRenderer(size: canvas)
+        let renderer = exportRenderer(size: canvas)
         return renderer.image { ctx in
             UIColor.black.setFill()
             ctx.fill(CGRect(origin: .zero, size: canvas))
@@ -43,7 +56,7 @@ enum PhotoExport {
             width: photoW * CGFloat(images.count) + gap * CGFloat(max(0, images.count - 1)),
             height: photoH + edge * 2
         )
-        let renderer = UIGraphicsImageRenderer(size: canvas)
+        let renderer = exportRenderer(size: canvas)
         return renderer.image { ctx in
             let base = UIColor(red: 0.07, green: 0.055, blue: 0.04, alpha: 1)
             base.setFill()
@@ -128,6 +141,7 @@ enum PhotoExport {
     }
 
     static func saveJPEGs(_ payloads: [Data]) async -> Outcome {
+        guard !Task.isCancelled, payloads.count <= batchSize else { return .failed }
         guard payloads.contains(where: { !$0.isEmpty }) else { return .noPrints }
         let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
         guard status == .authorized || status == .limited else { return .noPermission }

@@ -11,9 +11,10 @@ struct LensStop: Hashable, Identifiable {
 
 @Observable
 final class CameraSession: NSObject, @unchecked Sendable {
-    let session = AVCaptureSession()
+    private let session = AVCaptureSession()
     private let photoOutput = AVCapturePhotoOutput()
     private let queue = DispatchQueue(label: "halfcam.session")
+    @ObservationIgnored private let previewLayers = NSHashTable<AVCaptureVideoPreviewLayer>.weakObjects()
     @ObservationIgnored private var device: AVCaptureDevice?
     @ObservationIgnored private var virtualDevice: AVCaptureDevice?
     @ObservationIgnored private var ultraDevice: AVCaptureDevice?
@@ -29,7 +30,12 @@ final class CameraSession: NSObject, @unchecked Sendable {
     @ObservationIgnored private var focusRetry = 0
     @ObservationIgnored private var lensLockInFlight = false
     @ObservationIgnored private var continuation: CheckedContinuation<Data?, Never>?
-    @ObservationIgnored private var committed: (() -> Void)?
+    @ObservationIgnored private var committed: (@MainActor @Sendable () -> Void)?
+    @ObservationIgnored private var wantsRunning = false
+    @ObservationIgnored private var activeCaptureID: Int64?
+    @ObservationIgnored private var capturedPhotoData: Data?
+    @ObservationIgnored private var captureTimeout: DispatchWorkItem?
+    @ObservationIgnored private var sessionObservers: [NSObjectProtocol] = []
     private let lock = NSLock()
     @ObservationIgnored private var proRAWEnabled = false
     @ObservationIgnored private var autoMacroOn = true
@@ -37,7 +43,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
     @ObservationIgnored private var macroSessionActive = false
     @ObservationIgnored private var macroHoldUntil: TimeInterval = 0
     @ObservationIgnored private var macroFarSince: TimeInterval = 0
-    @ObservationIgnored private var macroUIGeneration = 0
+    @ObservationIgnored private var publishedMacro: (zoom: CGFloat, visible: Bool, locked: Bool)?
     @ObservationIgnored private var macroDeviceObs: NSKeyValueObservation?
     @ObservationIgnored private var macroLensObs: NSKeyValueObservation?
     var hasCamera = false
@@ -47,9 +53,10 @@ final class CameraSession: NSObject, @unchecked Sendable {
     var macroAvailable = false
     var macroControlVisible = false
     var macroLocked = false
-    var flashOn = false
-    var exposureLocked = false
-    var focusLocked = false
+    // Hardware control state belongs exclusively to `queue`, not the UI.
+    @ObservationIgnored private var flashOn = false
+    @ObservationIgnored private var exposureLocked = false
+    @ObservationIgnored private var focusLocked = false
     var lensStops: [LensStop] = []
     var apertureStops: [Float] = []
     var currentAperture: Float?
@@ -60,7 +67,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
     @ObservationIgnored private var cameraAvailable = false
     @ObservationIgnored private var wideFactor: CGFloat = 1
     @ObservationIgnored private var teleNative: CGFloat = 3
-    var savedEV: Float = 0
+    @ObservationIgnored private var savedEV: Float = 0
     @ObservationIgnored private var lastISO: Float = 400
     @ObservationIgnored private var lastDuration = CMTime(value: 1, timescale: 125)
     @ObservationIgnored private var lastAppliedEVFactor: Float = 1
@@ -69,20 +76,93 @@ final class CameraSession: NSObject, @unchecked Sendable {
         var shutter: Double
         var lens: Float
     }
-    @ObservationIgnored var lastMeter = Meter(iso: 400, shutter: 1.0 / 125.0, lens: 1)
+    @ObservationIgnored private var meterSnapshot = Meter(iso: 400, shutter: 1.0 / 125.0, lens: 1)
+    var lastMeter: Meter { lock.withLock { meterSnapshot } }
+
+    override init() {
+        super.init()
+        let center = NotificationCenter.default
+        sessionObservers.append(center.addObserver(
+            forName: .AVCaptureSessionRuntimeError, object: session, queue: nil
+        ) { [weak self] note in
+            let reset = (note.userInfo?[AVCaptureSessionErrorKey] as? AVError)?.code == .mediaServicesWereReset
+            self?.queue.async { [weak self] in
+                guard let self else { return }
+                if let id = self.activeCaptureID { self.finishCapture(nil, id: id) }
+                if reset, self.wantsRunning { self.requestAndRun() }
+            }
+        })
+        sessionObservers.append(center.addObserver(
+            forName: .AVCaptureSessionWasInterrupted, object: session, queue: nil
+        ) { [weak self] _ in
+            self?.queue.async { [weak self] in
+                guard let self, let id = self.activeCaptureID else { return }
+                self.finishCapture(nil, id: id)
+            }
+        })
+        sessionObservers.append(center.addObserver(
+            forName: .AVCaptureSessionInterruptionEnded, object: session, queue: nil
+        ) { [weak self] _ in
+            self?.queue.async { [weak self] in
+                guard let self, self.wantsRunning else { return }
+                self.requestAndRun()
+            }
+        })
+    }
+
+    deinit {
+        captureTimeout?.cancel()
+        for observer in sessionObservers { NotificationCenter.default.removeObserver(observer) }
+    }
+
+    func attachPreviewLayer(_ layer: AVCaptureVideoPreviewLayer) {
+        queue.async { [weak self] in
+            guard let self else { return }
+            // Setting a preview layer's session implicitly reconfigures the session.
+            // It must not overlap startRunning or our explicit configuration blocks.
+            self.previewLayers.add(layer)
+            layer.session = self.session
+            self.orientPreviewLayers()
+        }
+    }
+
+    func detachPreviewLayer(_ layer: AVCaptureVideoPreviewLayer) {
+        queue.async { [weak self] in
+            guard let self else { return }
+            self.previewLayers.remove(layer)
+            if layer.session === self.session {
+                layer.session = nil
+            }
+        }
+    }
+
+    private func orientPreviewLayers() {
+        dispatchPrecondition(condition: .onQueue(queue))
+        for layer in previewLayers.allObjects {
+            if let connection = layer.connection,
+               connection.isVideoRotationAngleSupported(90),
+               connection.videoRotationAngle != 90 {
+                connection.videoRotationAngle = 90
+            }
+        }
+    }
 
     func start() {
         queue.async { [weak self] in
-            self?.requestAndRun()
+            guard let self else { return }
+            self.wantsRunning = true
+            self.requestAndRun()
         }
     }
 
     private func requestAndRun() {
+        dispatchPrecondition(condition: .onQueue(queue))
         let run = { [weak self] in
-            guard let self else { return }
+            guard let self, self.wantsRunning else { return }
             self.configureIfNeeded()
             if self.cameraAvailable, !self.session.isRunning {
-                self.session.startRunning()
+                PerformanceTrace.measure("CameraStart") { self.session.startRunning() }
+                self.orientPreviewLayers()
                 self.prepareCapture()
                 self.applyLensSwitching()
                 self.watchMacroSignals()
@@ -105,9 +185,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
     }
 
     func refreshPermission() {
-        queue.async { [weak self] in
-            self?.requestAndRun()
-        }
+        start()
     }
 
     func ensureAuthorized() async -> Bool {
@@ -133,22 +211,36 @@ final class CameraSession: NSObject, @unchecked Sendable {
 
     func stop() {
         queue.async { [weak self] in
-            guard let self, self.session.isRunning else { return }
-            self.session.stopRunning()
+            guard let self else { return }
+            self.wantsRunning = false
+            if let id = self.activeCaptureID {
+                self.finishCapture(self.capturedPhotoData, id: id)
+            }
+            if self.session.isRunning { self.session.stopRunning() }
         }
     }
 
     func setProRAW(_ on: Bool) {
         queue.async { [weak self] in
             guard let self else { return }
-            self.proRAWEnabled = on && self.photoOutput.isAppleProRAWSupported
-            if self.photoOutput.isAppleProRAWSupported {
-                self.photoOutput.isAppleProRAWEnabled = self.proRAWEnabled
-            }
-            self.photoOutput.maxPhotoQualityPrioritization = self.proRAWEnabled ? .balanced : .speed
-            if self.cameraAvailable {
-                self.prepareCapture()
-            }
+            self.proRAWEnabled = on
+            guard self.activeCaptureID == nil else { return }
+            self.applyPhotoConfiguration()
+        }
+    }
+
+    private func applyPhotoConfiguration() {
+        dispatchPrecondition(condition: .onQueue(queue))
+        let rawEnabled = proRAWEnabled && photoOutput.isAppleProRAWSupported
+        let rawChanged = photoOutput.isAppleProRAWEnabled != rawEnabled
+        if photoOutput.isAppleProRAWSupported, rawChanged {
+            photoOutput.isAppleProRAWEnabled = rawEnabled
+        }
+        let quality: AVCapturePhotoOutput.QualityPrioritization = rawEnabled ? .balanced : .speed
+        let qualityChanged = photoOutput.maxPhotoQualityPrioritization != quality
+        if qualityChanged { photoOutput.maxPhotoQualityPrioritization = quality }
+        if (rawChanged || qualityChanged), cameraAvailable, session.isRunning {
+            prepareCapture()
         }
     }
 
@@ -191,50 +283,74 @@ final class CameraSession: NSObject, @unchecked Sendable {
         exposureLocked || focusLocked
     }
 
-    func capture(onCommitted: (() -> Void)? = nil) async -> Data? {
+    func capture(onCommitted: (@MainActor @Sendable () -> Void)? = nil) async -> Data? {
         await withCheckedContinuation { cont in
-            let fireCommitted = {
-                if let onCommitted {
-                    DispatchQueue.main.async { onCommitted() }
+            queue.async { [self] in
+                let fireCommitted = {
+                    if let onCommitted {
+                        DispatchQueue.main.async { onCommitted() }
+                    }
                 }
+                guard self.cameraAvailable else {
+                    fireCommitted()
+                    #if targetEnvironment(simulator)
+                    cont.resume(returning: Self.mockJPEG())
+                    #else
+                    cont.resume(returning: nil)
+                    #endif
+                    return
+                }
+                if !self.wantsRunning || !self.session.isRunning {
+                    fireCommitted()
+                    cont.resume(returning: nil)
+                    return
+                }
+                if self.continuation != nil {
+                    fireCommitted()
+                    cont.resume(returning: nil)
+                    return
+                }
+                let settings = self.makeSettings()
+                let id = settings.uniqueID
+                self.activeCaptureID = id
+                self.capturedPhotoData = nil
+                self.continuation = cont
+                self.committed = onCommitted
+                if let device = self.device {
+                    let meter = Meter(
+                        iso: device.iso,
+                        shutter: CMTimeGetSeconds(device.exposureDuration),
+                        lens: device.lensPosition
+                    )
+                    self.lock.withLock { self.meterSnapshot = meter }
+                }
+                let timeout = DispatchWorkItem { [weak self] in
+                    self?.finishCapture(nil, id: id)
+                }
+                self.captureTimeout = timeout
+                self.queue.asyncAfter(deadline: .now() + 60, execute: timeout)
+                self.photoOutput.capturePhoto(with: settings, delegate: self)
             }
-            guard cameraAvailable else {
-                fireCommitted()
-                cont.resume(returning: Self.mockJPEG())
-                return
-            }
-            if !session.isRunning {
-                start()
-                fireCommitted()
-                cont.resume(returning: nil)
-                return
-            }
-            lock.lock()
-            if continuation != nil {
-                lock.unlock()
-                fireCommitted()
-                cont.resume(returning: nil)
-                return
-            }
-            continuation = cont
-            committed = onCommitted
-            lock.unlock()
-            if let device {
-                lastMeter = Meter(
-                    iso: device.iso,
-                    shutter: CMTimeGetSeconds(device.exposureDuration),
-                    lens: device.lensPosition
-                )
-            }
-            photoOutput.capturePhoto(with: makeSettings(), delegate: self)
         }
     }
 
-    func setEV(_ ev: Float) {
-        savedEV = ev
-        pendingEVFactor = powf(2, ev)
+    func setFlash(_ on: Bool) {
+        queue.async { [weak self] in self?.flashOn = on }
+    }
+
+    func setSavedEV(_ ev: Float) {
+        guard ev.isFinite else { return }
+        queue.async { [weak self] in self?.savedEV = min(2, max(-2, ev)) }
+    }
+
+    func setEV(_ value: Float) {
+        guard value.isFinite else { return }
+        let ev = min(2, max(-2, value))
         queue.async { [weak self] in
-            guard let self, let device = self.device else { return }
+            guard let self else { return }
+            self.savedEV = ev
+            self.pendingEVFactor = powf(2, ev)
+            guard let device = self.device else { return }
             if self.exposureLocked {
                 self.applyLockedSettings(afterSwitch: false)
                 return
@@ -249,15 +365,15 @@ final class CameraSession: NSObject, @unchecked Sendable {
     }
 
     func applyAuto() {
-        exposureLocked = false
-        focusLocked = false
-        pendingShutter = nil
-        pendingISO = nil
-        pendingLens = nil
-        pendingEVFactor = powf(2, savedEV)
-        lastFocusPoint = nil
         queue.async { [weak self] in
             guard let self else { return }
+            self.exposureLocked = false
+            self.focusLocked = false
+            self.pendingShutter = nil
+            self.pendingISO = nil
+            self.pendingLens = nil
+            self.pendingEVFactor = powf(2, self.savedEV)
+            self.lastFocusPoint = nil
             self.lensLockInFlight = false
             self.switchTo(self.virtualDevice, physical: false)
             self.showFocus(nil)
@@ -278,12 +394,15 @@ final class CameraSession: NSObject, @unchecked Sendable {
     }
 
     func applyMixed(shutter: CMTime?, iso: Float?, evFactor: Float = 1) {
-        exposureLocked = shutter != nil || iso != nil
-        pendingShutter = shutter
-        pendingISO = iso
-        pendingEVFactor = evFactor
+        guard evFactor.isFinite, evFactor > 0 else { return }
+        if let iso, !iso.isFinite || iso <= 0 { return }
+        if let shutter, !shutter.isNumeric || CMTimeGetSeconds(shutter) <= 0 { return }
         queue.async { [weak self] in
             guard let self else { return }
+            self.exposureLocked = shutter != nil || iso != nil
+            self.pendingShutter = shutter
+            self.pendingISO = iso
+            self.pendingEVFactor = evFactor
             let needsPhysical = self.needsPhysicalDevice
             let target = needsPhysical ? self.physicalForZoom() : self.virtualDevice
             let switched = self.switchTo(target, physical: needsPhysical)
@@ -292,10 +411,11 @@ final class CameraSession: NSObject, @unchecked Sendable {
     }
 
     func unlockFocus() {
-        focusLocked = false
-        pendingLens = nil
         queue.async { [weak self] in
-            guard let self, let device = self.device else { return }
+            guard let self else { return }
+            self.focusLocked = false
+            self.pendingLens = nil
+            guard let device = self.device else { return }
             self.lensLockInFlight = false
             do {
                 try device.lockForConfiguration()
@@ -306,10 +426,14 @@ final class CameraSession: NSObject, @unchecked Sendable {
             if !needsPhysical {
                 self.switchTo(self.virtualDevice, physical: false)
                 if let device = self.device {
-                    try? device.lockForConfiguration()
-                    self.applyZoomOnCurrentDevice(device)
-                    self.applyContinuousFocus(device)
-                    device.unlockForConfiguration()
+                    do {
+                        try device.lockForConfiguration()
+                        defer { device.unlockForConfiguration() }
+                        self.applyZoomOnCurrentDevice(device)
+                        self.applyContinuousFocus(device)
+                    } catch {
+                        // The device can become unavailable during a lens switch.
+                    }
                 }
             }
         }
@@ -317,10 +441,10 @@ final class CameraSession: NSObject, @unchecked Sendable {
 
     func setManualFocus(_ position: Float) {
         let pos = Self.clampLens(position)
-        focusLocked = true
-        pendingLens = pos
         queue.async { [weak self] in
             guard let self else { return }
+            self.focusLocked = true
+            self.pendingLens = pos
             if let device = self.device, self.usingPhysical {
                 self.lockLens(device, pos)
                 return
@@ -363,6 +487,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
     }
 
     func setZoom(_ factor: CGFloat) {
+        guard factor.isFinite, factor > 0 else { return }
         queue.async { [weak self] in
             guard let self else { return }
             self.zoomFactor = factor
@@ -390,6 +515,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
     }
 
     private func configureIfNeeded() {
+        dispatchPrecondition(condition: .onQueue(queue))
         guard session.inputs.isEmpty else { return }
         session.beginConfiguration()
         session.sessionPreset = .photo
@@ -412,20 +538,25 @@ final class CameraSession: NSObject, @unchecked Sendable {
             } else if teleDevice != nil {
                 teleNative = 3
             }
+            let macroOK = cam.isVirtualDevice && ultraDevice != nil
             DispatchQueue.main.async {
                 self.hasCamera = true
                 self.lensStops = stops
                 self.currentZoom = wide
-                self.macroAvailable = cam.isVirtualDevice && self.ultraDevice != nil
+                self.macroAvailable = macroOK
             }
             watchMacroSignals()
-            try? cam.lockForConfiguration()
-            applyContinuousFocus(cam)
-            applyContinuousExposure(cam)
-            let z = min(max(wide, cam.minAvailableVideoZoomFactor), cam.maxAvailableVideoZoomFactor)
-            cam.videoZoomFactor = z
-            applyDistortion(cam, zoom: z)
-            cam.unlockForConfiguration()
+            do {
+                try cam.lockForConfiguration()
+                defer { cam.unlockForConfiguration() }
+                applyContinuousFocus(cam)
+                applyContinuousExposure(cam)
+                let z = min(max(wide, cam.minAvailableVideoZoomFactor), cam.maxAvailableVideoZoomFactor)
+                cam.videoZoomFactor = z
+                applyDistortion(cam, zoom: z)
+            } catch {
+                // Keep the device's defaults if exclusive configuration is unavailable.
+            }
         }
         if session.canAddOutput(photoOutput) {
             session.addOutput(photoOutput)
@@ -457,6 +588,8 @@ final class CameraSession: NSObject, @unchecked Sendable {
             self.proRAWSupported = proRAWOK
         }
         session.commitConfiguration()
+        orientPreviewLayers()
+        applyPhotoConfiguration()
         applyLensSwitching()
     }
 
@@ -499,6 +632,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
 
     @discardableResult
     private func switchTo(_ target: AVCaptureDevice?, physical: Bool) -> Bool {
+        dispatchPrecondition(condition: .onQueue(queue))
         guard let target else { return false }
         if device === target, usingPhysical == physical { return false }
         let old = device
@@ -512,6 +646,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
                 session.addInput(input)
             }
             session.commitConfiguration()
+            orientPreviewLayers()
             return false
         }
         if physical, let old, let lens = pendingLens, old !== target {
@@ -530,6 +665,7 @@ final class CameraSession: NSObject, @unchecked Sendable {
             conn.isVideoMirrored = false
         }
         session.commitConfiguration()
+        orientPreviewLayers()
         applyLensSwitching()
         watchMacroSignals()
         if !focusLocked {
@@ -623,11 +759,12 @@ final class CameraSession: NSObject, @unchecked Sendable {
     }
 
     private func publishMacroControl(visible: Bool, locked: Bool) {
-        macroUIGeneration += 1
-        let gen = macroUIGeneration
         let zoom = zoomFactor
+        if let previous = publishedMacro, previous.zoom == zoom,
+           previous.visible == visible, previous.locked == locked { return }
+        publishedMacro = (zoom, visible, locked)
+        // Called only from the serial session queue; main-queue publications stay FIFO.
         DispatchQueue.main.async {
-            guard gen == self.macroUIGeneration else { return }
             if self.currentZoom != zoom {
                 self.currentZoom = zoom
             }
@@ -1017,17 +1154,27 @@ final class CameraSession: NSObject, @unchecked Sendable {
         return settings
     }
 
-    private func finishCapture(_ data: Data?) {
-        lock.lock()
+    private func finishCapture(_ data: Data?, id: Int64) {
+        dispatchPrecondition(condition: .onQueue(queue))
+        guard activeCaptureID == id else { return }
         let cont = continuation
+        let callback = committed
         continuation = nil
-        lock.unlock()
+        committed = nil
+        activeCaptureID = nil
+        capturedPhotoData = nil
+        captureTimeout?.cancel()
+        captureTimeout = nil
+        if let callback { DispatchQueue.main.async { callback() } }
         cont?.resume(returning: data)
     }
 
     static func mockJPEG() -> Data? {
         let size = CGSize(width: 1512, height: 2016)
-        let renderer = UIGraphicsImageRenderer(size: size)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = true
+        let renderer = UIGraphicsImageRenderer(size: size, format: format)
         let hue = CGFloat((Date().timeIntervalSince1970.truncatingRemainder(dividingBy: 12)) / 12)
         let image = renderer.image { ctx in
             let colors = [
@@ -1044,16 +1191,20 @@ final class CameraSession: NSObject, @unchecked Sendable {
     }
 
     func setAperture(_ value: Float) {
+        #if DEBUG
+        guard value.isFinite, value > 0.4, value < 32 else { return }
         queue.async { [weak self] in
             guard let self, let device = self.device else { return }
-            Self.applyAperture(device, value)
+            guard Self.applyAperture(device, value) else { return }
             DispatchQueue.main.async { self.currentAperture = value }
         }
+        #endif
     }
 
     private func probeAperture(_ device: AVCaptureDevice) {
-        let keys = ["supportedApertures", "availableApertureValues", "supportedApertureValues"]
+        #if DEBUG
         var found: [Float] = []
+        let keys = ["supportedApertures", "availableApertureValues", "supportedApertureValues"]
         for key in keys {
             guard let any = Self.safeValue(device, key) else { continue }
             if let nums = any as? [NSNumber] {
@@ -1066,6 +1217,9 @@ final class CameraSession: NSObject, @unchecked Sendable {
             }
         }
         found = found.filter { $0 > 0.4 && $0 < 32 }.sorted()
+        #else
+        let found: [Float] = []
+        #endif
         let current = device.lensAperture
         DispatchQueue.main.async {
             self.apertureStops = found
@@ -1073,40 +1227,51 @@ final class CameraSession: NSObject, @unchecked Sendable {
         }
     }
 
-    private static func applyAperture(_ device: AVCaptureDevice, _ value: Float) {
-        let sel = NSSelectorFromString("setAperture:")
-        guard device.responds(to: sel) else { return }
+    #if DEBUG
+    private static func applyAperture(_ device: AVCaptureDevice, _ value: Float) -> Bool {
         do {
             try device.lockForConfiguration()
-            device.perform(sel, with: NSNumber(value: value))
-            device.unlockForConfiguration()
-        } catch {}
+            defer { device.unlockForConfiguration() }
+            return HCSetApertureSafely(device, value)
+        } catch {
+            return false
+        }
     }
 
     private static func safeValue(_ object: NSObject, _ key: String) -> Any? {
-        guard object.responds(to: Selector(key)) else { return nil }
-        return object.value(forKey: key)
+        HCValueForKeySafely(object, key)
     }
+    #endif
 }
 
 extension CameraSession: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, willBeginCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings) {
-        lock.lock()
-        let cb = committed
-        committed = nil
-        lock.unlock()
-        if let cb {
-            DispatchQueue.main.async { cb() }
+        let id = resolvedSettings.uniqueID
+        queue.async {
+            guard self.activeCaptureID == id else { return }
+            let cb = self.committed
+            self.committed = nil
+            if let cb { DispatchQueue.main.async { cb() } }
         }
     }
 
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
-        if error != nil {
-            finishCapture(nil)
+        let id = resolvedSettings.uniqueID
+        let failed = error != nil
+        queue.async {
+            self.finishCapture(failed ? nil : self.capturedPhotoData, id: id)
+            if self.activeCaptureID == nil {
+                self.applyPhotoConfiguration()
+            }
         }
     }
 
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        finishCapture(photo.fileDataRepresentation())
+        let id = photo.resolvedSettings.uniqueID
+        let data = error == nil ? photo.fileDataRepresentation() : nil
+        queue.async {
+            guard self.activeCaptureID == id else { return }
+            self.capturedPhotoData = data
+        }
     }
 }

@@ -126,7 +126,7 @@ struct CameraView: View {
         }
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
-            model.camera.flashOn = model.flashOn
+            model.camera.setFlash(model.flashOn)
             model.camera.setProRAW(model.proRAW)
             syncCamera()
             model.applyExposureMode()
@@ -325,6 +325,7 @@ struct CameraView: View {
             title: force ? L("卸下这卷？") : L("拍满才能卸"),
             message: force
                 ? L("已拍 \(shot) 格，剩下 \(remaining) 格将作废。")
+                    + (model.monthlyLimit == nil ? "" : "\n" + L("卸卷不会返还本月已使用的装卷额度。"))
                 : L("还剩 \(remaining) 格，拍满才能卸。"),
             confirmTitle: force ? L("卸卷并送去显影") : L("好"),
             cancelTitle: force ? L("取消") : nil,
@@ -580,7 +581,7 @@ struct CameraView: View {
     private var flashLamp: some View {
         Button {
             model.flashOn.toggle()
-            model.camera.flashOn = model.flashOn
+            model.camera.setFlash(model.flashOn)
             model.applyFeel()
             model.markFlashHint()
             Haptics.shared.chrome()
@@ -966,13 +967,14 @@ struct CameraView: View {
             curtain = 1
             shutterDown = true
         }
+        var shotSaved = false
         if let data = await model.camera.capture(onCommitted: {
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(80))
                 withAnimation(.easeOut(duration: 0.1)) { curtain = 0 }
             }
-        }) {
-            model.commitShot(data)
+        }), await model.commitShot(data, rollId: roll.id) {
+            shotSaved = true
             var kick = Transaction()
             kick.disablesAnimations = true
             withTransaction(kick) { counterKick = 1 }
@@ -982,16 +984,18 @@ struct CameraView: View {
                 model.markManualHint()
                 model.markEVHint()
             }
+        } else {
+            model.reportCaptureFailure()
         }
         if curtain > 0.001 {
             withAnimation(.easeOut(duration: 0.1)) { curtain = 0 }
         }
-        if willFill {
+        if willFill && shotSaved {
             Haptics.shared.detent()
         }
         model.isCapturing = false
         shutterDown = false
-        if showBlack {
+        if showBlack && shotSaved {
             blackHintFlash = true
             model.markBlackHint()
             Task { @MainActor in

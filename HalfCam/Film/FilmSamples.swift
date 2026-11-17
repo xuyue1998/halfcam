@@ -60,14 +60,30 @@ struct FilmSampleStrip: View {
 struct FilmSampleStill: View {
     var url: URL
     var fill: Bool = true
+    @State private var image: UIImage?
 
     var body: some View {
-        if let image = UIImage(contentsOfFile: url.path) {
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: fill ? .fill : .fit)
-        } else {
-            Color(white: 0.12)
+        Group {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: fill ? .fill : .fit)
+            } else {
+                Color(white: 0.12)
+            }
+        }
+        .task(id: url) {
+            image = nil
+            let source = url
+            let key = "sample:" + source.absoluteString
+            let decoded: UIImage?
+            if fill {
+                decoded = await ImageStore.shared.loadPreview(key: key, url: source, writeDiskCache: false)
+            } else {
+                decoded = await ImageStore.shared.loadDisplay(key: key + ":1600", url: source, maxSide: 1600)
+            }
+            guard !Task.isCancelled else { return }
+            image = decoded
         }
     }
 }

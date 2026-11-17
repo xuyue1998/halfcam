@@ -11,28 +11,47 @@ enum FilmRenderer {
         stamp(jpeg, original: source, frame: nil, recipe: nil)
     }
 
+    static func stampExport(_ jpeg: Data, likeURL sourceURL: URL) -> Data {
+        let captured = metadata(at: sourceURL)
+        return writeMetadata(jpeg, captured: captured, frame: nil, recipe: nil)
+    }
+
+    static func metadata(at url: URL) -> [CFString: Any] {
+        guard let source = CGImageSourceCreateWithURL(
+            url as CFURL, [kCGImageSourceShouldCache: false] as CFDictionary
+        ) else { return [:] }
+        return (CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]) ?? [:]
+    }
+
     static func stamp(_ jpeg: Data, original: Data, frame: Frame?, recipe: FilmRecipe?) -> Data {
-        guard let src = CGImageSourceCreateWithData(jpeg as CFData, nil),
-              let uti = CGImageSourceGetType(src) else { return jpeg }
-        var all = (CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any]) ?? [:]
         let captured = CGImageSourceCreateWithData(original as CFData, nil).flatMap {
             CGImageSourceCopyPropertiesAtIndex($0, 0, nil) as? [CFString: Any]
         } ?? [:]
+        return writeMetadata(jpeg, captured: captured, frame: frame, recipe: recipe)
+    }
+
+    private static func writeMetadata(
+        _ jpeg: Data, captured: [CFString: Any], frame: Frame?, recipe: FilmRecipe?
+    ) -> Data {
+        guard let src = CGImageSourceCreateWithData(jpeg as CFData, nil),
+              let uti = CGImageSourceGetType(src) else { return jpeg }
+        var all = (CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any]) ?? [:]
         merge(&all, captured, kCGImagePropertyGPSDictionary)
         merge(&all, captured, kCGImagePropertyMakerAppleDictionary)
         merge(&all, captured, kCGImagePropertyIPTCDictionary)
         merge(&all, captured, kCGImagePropertyExifAuxDictionary)
         var exif = dict(all, kCGImagePropertyExifDictionary)
         merge(&exif, dict(captured, kCGImagePropertyExifDictionary))
-        if exif[kCGImagePropertyExifISOSpeedRatings] == nil, let iso = frame?.iso {
+        if exif[kCGImagePropertyExifISOSpeedRatings] == nil, let iso = frame?.iso,
+           iso.isFinite, iso > 0, iso < Float(Int32.max) {
             exif[kCGImagePropertyExifISOSpeedRatings] = [Int(iso.rounded())]
         }
-        if exif[kCGImagePropertyExifExposureTime] == nil, let shutter = frame?.shutter, shutter > 0 {
+        if exif[kCGImagePropertyExifExposureTime] == nil, let shutter = frame?.shutter,
+           shutter.isFinite, shutter > 0 {
             exif[kCGImagePropertyExifExposureTime] = shutter
         }
-        if exif[kCGImagePropertyExifFNumber] == nil, let lens = frame?.lens, lens > 0 {
-            exif[kCGImagePropertyExifFNumber] = lens
-        }
+        // Frame.lens is normalized focus position, not an f-number. Preserve the
+        // captured aperture metadata; do not invent an aperture when it is absent.
         if let shotAt = frame?.shotAt {
             let shot = stampDate.string(from: shotAt)
             if exif[kCGImagePropertyExifDateTimeOriginal] == nil {

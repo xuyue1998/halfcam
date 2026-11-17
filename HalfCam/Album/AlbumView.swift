@@ -884,6 +884,7 @@ struct FrameStill: View {
             }
             .clipped()
             .task(id: token) {
+                image = nil
                 if cached != nil {
                     try? await Task.sleep(for: .milliseconds(320))
                     guard !Task.isCancelled, image == nil, let hit = cached else { return }
@@ -899,7 +900,7 @@ struct FrameStill: View {
                 case .negative:
                     loaded = await model.loadNegative(roll: roll, frame: frame)
                 }
-                guard let loaded else { return }
+                guard !Task.isCancelled, let loaded else { return }
                 pin(loaded)
             }
     }
@@ -1140,7 +1141,7 @@ struct SettingsView: View {
                     Task { await model.membership.restore() }
                 } label: {
                     HStack {
-                        Text(model.membership.purchasing ? L("正在恢复") : L("恢复购买"))
+                        Text(model.membership.restoring ? L("正在恢复") : L("恢复购买"))
                             .font(.system(size: 14, design: .monospaced))
                             .foregroundStyle(Color(white: 0.78))
                         Spacer()
@@ -1320,7 +1321,7 @@ struct SettingsView: View {
         } label: {
             Text(L("法律信息 · 隐私政策"))
                 .font(.system(size: 11, design: .monospaced))
-                .foregroundStyle(Color(white: 0.32))
+                .foregroundStyle(Color(white: 0.62))
                 .frame(maxWidth: .infinity)
                 .padding(.top, 8)
         }
@@ -1365,7 +1366,7 @@ struct SettingsView: View {
     private func note(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 11, design: .monospaced))
-            .foregroundStyle(Color(white: 0.32))
+            .foregroundStyle(Color(white: 0.62))
             .fixedSize(horizontal: false, vertical: true)
     }
 

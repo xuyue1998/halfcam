@@ -89,31 +89,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAM saves developed photos to Photos and checks whether exported copies are still there, so their saved status stays accurate."
+            "value" : "HALF CAM saves developed photos to Photos and, with full access, checks whether exported copies are still there to update their export status."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAMは現像済みの写真を「写真」に保存し、書き出した写真が残っているかを確認して保存状態を更新します。"
+            "value" : "HALF CAMは現像済みの写真を「写真」に保存します。フルアクセスが許可されている場合は、書き出した写真が残っているかを確認し、書き出し状態を更新します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAM은 현상된 사진을 사진 앱에 저장하고 내보낸 사본이 남아 있는지 확인하여 저장 상태를 정확히 표시합니다."
+            "value" : "HALF CAM은 현상된 사진을 사진 앱에 저장합니다. 전체 접근이 허용된 경우 내보낸 사본이 남아 있는지 확인하여 내보내기 상태를 갱신합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "允许 HALF CAM 将已显影的照片保存到系统相册，并检查已导出的照片是否仍在，以准确显示保存状态。"
+            "value" : "HALF CAM 将已显影的照片保存到系统相册；在获得完整访问权限时，检查已导出的副本是否仍在，以更新导出状态。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "允許 HALF CAM 將已顯影的照片儲存至系統相簿，並檢查已匯出的照片是否仍在，以準確顯示儲存狀態。"
+            "value" : "HALF CAM 將已顯影的照片儲存至系統相簿；取得完整取用權限時，會檢查已匯出的副本是否仍在，以更新匯出狀態。"
           }
         }
       }
@@ -124,7 +124,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAM saves your developed photos to Photos when you export or enable auto-export."
+            "value" : "HALF CAM saves developed photos to Photos when you export them or when auto-export is enabled."
           }
         },
         "ja" : {
@@ -136,19 +136,19 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "HALF CAM은 내보내기를 하거나 자동 내보내기를 켠 경우 현상된 사진을 사진 앱에 저장합니다."
+            "value" : "HALF CAM은 사진을 내보내거나 자동 내보내기가 켜져 있을 때 현상된 사진을 사진 앱에 저장합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "允许 HALF CAM 在你导出照片或开启自动导出时，将已显影的照片保存到系统相册。"
+            "value" : "HALF CAM 在你导出照片或已开启自动导出时，将已显影的照片保存到系统相册。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "允許 HALF CAM 在你匯出照片或開啟自動匯出時，將已顯影的照片儲存至系統相簿。"
+            "value" : "HALF CAM 會在你匯出照片或已開啟自動匯出時，將已顯影的照片儲存至系統相簿。"
           }
         }
       }

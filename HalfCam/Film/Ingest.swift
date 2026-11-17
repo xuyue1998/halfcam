@@ -48,15 +48,17 @@ enum Ingest {
     }()
 
     static func linearRGB(data: Data, longEdge: CGFloat) -> LinearFrame? {
+        guard longEdge.isFinite, longEdge > 0, longEdge <= 8192 else { return nil }
         if isRAW(data), let raw = rawLinear(data: data, longEdge: longEdge) { return raw }
         return displayLinear(data: data, longEdge: longEdge)
     }
 
     private static func isRAW(_ data: Data) -> Bool {
         guard data.count >= 12 else { return false }
-        if data[0] == 0xFF, data[1] == 0xD8 { return false }
+        let header = [UInt8](data.prefix(12))
+        if header[0] == 0xFF, header[1] == 0xD8 { return false }
         if data.dropFirst(4).prefix(4).elementsEqual("ftyp".utf8) { return false }
-        if data[0] == 0x89, data[1] == 0x50, data[2] == 0x4E, data[3] == 0x47 { return false }
+        if header[0] == 0x89, header[1] == 0x50, header[2] == 0x4E, header[3] == 0x47 { return false }
         return true
     }
 
@@ -70,9 +72,9 @@ enum Ingest {
         if let native = nativeLongEdge(data), native > longEdge, native > 0 {
             filter.scaleFactor = Float(longEdge / native)
         }
-        guard var image = filter.outputImage else { return nil }
-        image = scaled(image, longEdge: longEdge)
-        return raster(image)
+        guard let image = filter.outputImage else { return nil }
+        guard let scaled = scaled(image, longEdge: longEdge) else { return nil }
+        return raster(scaled)
     }
 
     private static func nativeLongEdge(_ data: Data) -> CGFloat? {
@@ -85,24 +87,37 @@ enum Ingest {
     }
 
     private static func displayLinear(data: Data, longEdge: CGFloat) -> LinearFrame? {
-        guard var image = CIImage(data: data, options: [.applyOrientationProperty: true]) else { return nil }
-        image = scaled(image, longEdge: longEdge)
-        return raster(image)
+        guard let image = CIImage(data: data, options: [.applyOrientationProperty: true]) else { return nil }
+        guard let scaled = scaled(image, longEdge: longEdge) else { return nil }
+        return raster(scaled)
     }
 
-    private static func scaled(_ image: CIImage, longEdge: CGFloat) -> CIImage {
+    private static func scaled(_ image: CIImage, longEdge: CGFloat) -> CIImage? {
+        guard !image.extent.isInfinite, !image.extent.isNull,
+              image.extent.width.isFinite, image.extent.height.isFinite,
+              image.extent.width > 0, image.extent.height > 0 else { return nil }
         let long = max(image.extent.width, image.extent.height)
         guard long > longEdge, long > 0 else { return image }
         let s = longEdge / long
         return image.transformed(by: CGAffineTransform(scaleX: s, y: s))
     }
 
-    private static func raster(_ image: CIImage) -> LinearFrame? {
-        let rect = image.extent.integral
+    private static func rasterSize(_ rect: CGRect) -> (Int, Int)? {
+        guard rect.origin.x.isFinite, rect.origin.y.isFinite,
+              rect.width.isFinite, rect.height.isFinite,
+              rect.width > 0, rect.height > 0,
+              rect.width <= 8192, rect.height <= 8192 else { return nil }
         let w = Int(rect.width)
         let h = Int(rect.height)
         let pixels = w * h
-        guard w > 0, h > 0, pixels > 0, let space = linearProPhoto else { return nil }
+        guard w > 0, h > 0, pixels <= 4096 * 4096 else { return nil }
+        return (w, h)
+    }
+
+    private static func raster(_ image: CIImage) -> LinearFrame? {
+        let rect = image.extent.integral
+        guard let (w, h) = rasterSize(rect), let space = linearProPhoto else { return nil }
+        let pixels = w * h
         var rgb = [Float](repeating: 0, count: pixels * 4)
         let ok = rgb.withUnsafeMutableBytes { raw in
             guard let base = raw.baseAddress else { return false }

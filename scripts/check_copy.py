@@ -171,6 +171,38 @@ def check_storekit():
         for value in item["localizations"]:
             if not value["displayName"] or not value["description"]:
                 errors.append(f"StoreKit {label} / {value['locale']}: empty copy")
+        if item in products:
+            errors.extend(check_product_copy(item))
+    return errors
+
+
+def check_product_copy(product):
+    """Check current App Store Connect localizable IAP field limits.
+
+    Source checked November 17, 2026:
+    developer.apple.com/help/app-store-connect/reference/
+    in-app-purchases-and-subscriptions/in-app-purchase-information/
+    """
+    errors = []
+    for value in product["localizations"]:
+        label = f"StoreKit {product['productID']} / {value['locale']}"
+        if not 2 <= len(value["displayName"]) <= 30:
+            errors.append(f"{label}: display name must be 2–30 characters")
+        if len(value["description"]) > 45:
+            errors.append(f"{label}: description must be at most 45 characters")
+    return errors
+
+
+def check_permission_fallbacks(catalog):
+    """Keep Debug/Release Info.plist fallbacks aligned with reviewed Chinese."""
+    project = (ROOT / "HalfCam.xcodeproj/project.pbxproj").read_text()
+    errors = []
+    for key in ("NSCameraUsageDescription", "NSPhotoLibraryUsageDescription",
+                "NSPhotoLibraryAddUsageDescription"):
+        expected = catalog["strings"][key]["localizations"]["zh-Hans"]["stringUnit"]["value"]
+        values = re.findall(r"INFOPLIST_KEY_" + key + r' = "([^"]*)";', project)
+        if len(values) != 2 or any(value != expected for value in values):
+            errors.append(f"{key}: Debug/Release fallback differs from reviewed Chinese")
     return errors
 
 
@@ -197,6 +229,7 @@ def main():
                 path.read_text(), catalogs[CATALOGS[0]], str(path.relative_to(ROOT))
             ))
         errors.extend(check_storekit())
+        errors.extend(check_permission_fallbacks(catalogs[CATALOGS[1]]))
     except (ValueError, KeyError, OSError) as error:
         print(error, file=sys.stderr)
         return 1

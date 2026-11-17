@@ -4,7 +4,19 @@ import UserNotifications
 
 @MainActor
 final class NotifyAdaptor: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    weak var model: AppModel?
+    weak var model: AppModel? {
+        didSet {
+            if pendingDarkboxOpen, let model {
+                pendingDarkboxOpen = false
+                model.openDarkboxFromNotify()
+            }
+        }
+    }
+    private var pendingDarkboxOpen = false
+
+    func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
+        ImageStore.shared.trimMemory()
+    }
 
     func application(
         _ application: UIApplication,
@@ -14,19 +26,23 @@ final class NotifyAdaptor: NSObject, UIApplicationDelegate, UNUserNotificationCe
         return true
     }
 
-    func userNotificationCenter(
+    nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
         [.banner, .sound]
     }
 
-    func userNotificationCenter(
+    nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
         await MainActor.run {
-            model?.openDarkboxFromNotify()
+            if let model {
+                model.openDarkboxFromNotify()
+            } else {
+                pendingDarkboxOpen = true
+            }
         }
     }
 }
@@ -58,6 +74,7 @@ struct HalfCamApp: App {
                         Task { await model.reconcileExportedPrints() }
                     } else if phase == .background {
                         UIApplication.shared.isIdleTimerDisabled = false
+                        model.flushPersistence()
                     }
                 }
         }

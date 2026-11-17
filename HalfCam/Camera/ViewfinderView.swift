@@ -18,7 +18,8 @@ struct ViewfinderView: View {
         GeometryReader { geo in
             ZStack {
                 if session.hasCamera {
-                    PreviewLayerView(session: session.session, smear: trail)
+                    PreviewLayerView(session: session, smear: trail)
+                        .id(ObjectIdentifier(session))
                 } else {
                     SimulatorPreview()
                 }
@@ -141,38 +142,35 @@ struct ViewfinderView: View {
 }
 
 struct PreviewLayerView: UIViewRepresentable {
-    var session: AVCaptureSession
+    var session: CameraSession
     var smear: CGFloat = 0
 
-    func makeCoordinator() -> Coordinator { Coordinator() }
+    func makeCoordinator() -> Coordinator { Coordinator(session: session) }
 
     func makeUIView(context: Context) -> PreviewUIView {
         let v = PreviewUIView()
-        v.preview.session = session
         v.preview.videoGravity = .resizeAspectFill
         v.smear = smear
+        session.attachPreviewLayer(v.preview)
         return v
     }
 
     func updateUIView(_ uiView: PreviewUIView, context: Context) {
-        if uiView.preview.session !== session {
-            uiView.preview.session = session
-            context.coordinator.didOrient = false
-        }
         if abs(uiView.smear - smear) > 0.0005 {
             uiView.smear = smear
         }
-        if session.isRunning,
-           let conn = uiView.preview.connection,
-           conn.isVideoRotationAngleSupported(90),
-           !context.coordinator.didOrient || conn.videoRotationAngle != 90 {
-            conn.videoRotationAngle = 90
-            context.coordinator.didOrient = true
-        }
+    }
+
+    static func dismantleUIView(_ uiView: PreviewUIView, coordinator: Coordinator) {
+        coordinator.session.detachPreviewLayer(uiView.preview)
     }
 
     final class Coordinator {
-        var didOrient = false
+        let session: CameraSession
+
+        init(session: CameraSession) {
+            self.session = session
+        }
     }
 }
 

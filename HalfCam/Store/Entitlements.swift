@@ -29,19 +29,23 @@ final class Entitlements {
     var skipProducts: [Product] { [skipPack3].compactMap { $0 } }
     var skipProduct: Product? { skipPack3 }
     var purchasing = false
+    private(set) var restoring = false
     var note = ""
     var onSkipPackGranted: ((Int) -> Void)? {
         didSet {
-            if let onSkipPackGranted, pendingSkipGrant > 0 {
-                onSkipPackGranted(pendingSkipGrant)
+            if let onSkipPackGranted, pendingSkipGrant != 0 {
+                let delta = pendingSkipGrant
                 pendingSkipGrant = 0
+                onSkipPackGranted(delta)
             }
         }
     }
     private var skipTxCounts: [String: Int] = [:]
     private var skipRevokedIds: [String] = []
     private var pendingSkipGrant = 0
+    private var pendingPurchase: (productID: String, message: String)?
     private var skipTxCloudReady = false
+    private var refreshing = false
 
     var debugTier: MembershipTier? {
         didSet { persistDebug() }
@@ -59,6 +63,9 @@ final class Entitlements {
     }
 
     func refresh() async {
+        guard !refreshing else { return }
+        refreshing = true
+        defer { refreshing = false }
         do {
             var ids: Set<String> = [Self.yearlyId, Self.lifetimeId]
             ids.formUnion(Self.skipProductIds)
@@ -95,9 +102,14 @@ final class Entitlements {
     }
 
     func restore() async {
+        guard !purchasing else { return }
         purchasing = true
+        restoring = true
         note = ""
-        defer { purchasing = false }
+        defer {
+            restoring = false
+            purchasing = false
+        }
         do {
             try await AppStore.sync()
             NSUbiquitousKeyValueStore.default.synchronize()
@@ -118,6 +130,7 @@ final class Entitlements {
     }
 
     private func buy(_ product: Product?, membership: Bool = true) async {
+        guard !purchasing else { return }
         guard let product else {
             note = L("商店不可用")
             return
@@ -134,7 +147,10 @@ final class Entitlements {
                 await tx.finish()
                 await refreshEntitlements()
                 if membership { followStoreAfterPurchase() }
-            case .userCancelled, .pending:
+            case .pending:
+                note = L("购买待处理，完成后将自动更新。")
+                pendingPurchase = (product.id, note)
+            case .userCancelled:
                 break
             @unknown default:
                 break
@@ -150,11 +166,23 @@ final class Entitlements {
                 applySkip(tx, emitGrant: true)
                 await tx.finish()
                 await refreshEntitlements()
+                if let pendingPurchase, pendingPurchase.productID == tx.productID {
+                    if note == pendingPurchase.message { note = "" }
+                    self.pendingPurchase = nil
+                }
             }
         }
     }
 
     private func reconcileSkipTransactions() async {
+        // A purchase completed just before a process exit can still be unfinished.
+        // Deliver it before importing historical IDs, otherwise it is marked as
+        // seen without ever granting its tickets.
+        for await result in Transaction.unfinished {
+            guard let tx = try? check(result), Self.skipProductIds.contains(tx.productID) else { continue }
+            applySkip(tx, emitGrant: true)
+            await tx.finish()
+        }
         for await result in Transaction.all {
             guard let tx = try? check(result), Self.skipProductIds.contains(tx.productID) else { continue }
             applySkip(tx, emitGrant: false)
@@ -183,7 +211,6 @@ final class Entitlements {
     private func revokeSkip(_ id: String) {
         if skipRevokedIds.contains(id) { return }
         skipRevokedIds.append(id)
-        trim(&skipRevokedIds)
         let granted = skipTxCounts[id]
         skipTxCounts.removeValue(forKey: id)
         persistSkipTx()
@@ -196,10 +223,6 @@ final class Entitlements {
         } else {
             pendingSkipGrant += delta
         }
-    }
-
-    private func trim(_ ids: inout [String]) {
-        if ids.count > 80 { ids.removeFirst(ids.count - 80) }
     }
 
     private func refreshEntitlements() async {
@@ -240,7 +263,8 @@ final class Entitlements {
            let counts = try? JSONDecoder().decode([String: Int].self, from: data) {
             skipTxCounts = counts
         } else if let legacy = UserDefaults.standard.stringArray(forKey: Self.skipTxKey) {
-            skipTxCounts = Dictionary(uniqueKeysWithValues: legacy.map { ($0, 3) })
+            // Old receipts may have been delivered more than once. Keep one grant per ID.
+            skipTxCounts = Dictionary(legacy.map { ($0, 3) }, uniquingKeysWith: { first, _ in first })
         }
         skipRevokedIds = UserDefaults.standard.stringArray(forKey: Self.skipRevokedKey) ?? []
         NSUbiquitousKeyValueStore.default.synchronize()
@@ -280,7 +304,6 @@ final class Entitlements {
         if let remote = cloud.array(forKey: Self.cloudSkipRevokedKey) as? [String] {
             saw = true
             skipRevokedIds = Array(Set(skipRevokedIds + remote))
-            trim(&skipRevokedIds)
         }
         if saw { skipTxCloudReady = true }
     }

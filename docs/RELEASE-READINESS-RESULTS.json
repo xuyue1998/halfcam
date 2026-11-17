@@ -1,0 +1,95 @@
+{
+  "checkedAt": "2026-11-17T01:01:12.493702+00:00",
+  "errors": [],
+  "version": "1.0",
+  "build": "13",
+  "archive": "HalfCam-verified.xcarchive",
+  "artifactAvailability": "Archive and full logs are retained locally; they are not included in the source release.",
+  "bundles": [
+    {
+      "name": "HalfCam.app",
+      "identifier": "com.xuyue.HalfCam",
+      "version": "1.0",
+      "build": "13",
+      "architectures": "arm64",
+      "dSYM_UUIDs": [
+        "5834A2A2-17B3-3E28-9198-756D8447E90F"
+      ],
+      "signaturePresent": false
+    },
+    {
+      "name": "DevelopLive.appex",
+      "identifier": "com.xuyue.HalfCam.live",
+      "version": "1.0",
+      "build": "13",
+      "architectures": "arm64",
+      "dSYM_UUIDs": [
+        "367333BC-DC6F-398B-93B5-576B97AF757A"
+      ],
+      "signaturePresent": false
+    }
+  ],
+  "comparedResources": 43,
+  "exportComplianceAnswer": null,
+  "sdk": "iphoneos27.2",
+  "distributionValidated": false,
+  "passed": true,
+  "automation": [
+    {
+      "check": "simulator-debug-analyze-verified",
+      "exit": 0,
+      "log": "simulator-debug-analyze-verified.log",
+      "messages": [
+        "2026-11-17 09:01:00.370 appintentsmetadataprocessor[10362:8348833] warning: Metadata extraction skipped, no AppIntents.framework dependency found",
+        "** BUILD SUCCEEDED **",
+        "** ANALYZE SUCCEEDED **"
+      ]
+    },
+    {
+      "check": "device-release-archive-verified",
+      "exit": 0,
+      "log": "device-release-archive-verified.log",
+      "messages": [
+        "2026-11-17 09:01:11.969 appintentsmetadataprocessor[10427:8349144] warning: Metadata extraction skipped, no AppIntents.framework dependency found",
+        "** ARCHIVE SUCCEEDED **"
+      ]
+    },
+    {
+      "check": "regression",
+      "exit": 0,
+      "log": "regression.log",
+      "messages": [
+        "Ran 80 tests in 7.837s",
+        "OK"
+      ]
+    },
+    {
+      "check": "copy",
+      "exit": 0,
+      "log": "copy.log",
+      "messages": [
+        "OK: 232 live text entries, five languages, matching placeholders, source lookups, film subtitles and StoreKit locales."
+      ]
+    },
+    {
+      "check": "copy-doctest",
+      "exit": 0,
+      "log": "copy-doctest.log",
+      "messages": []
+    },
+    {
+      "check": "whitespace",
+      "exit": 0,
+      "log": "whitespace.log",
+      "messages": []
+    }
+  ],
+  "notPerformed": [
+    "device UI and failure-injection acceptance",
+    "72-frame iPhone memory profiling",
+    "StoreKit sandbox and multi-device iCloud testing",
+    "distribution signing and App Store Connect validation",
+    "upload or publication",
+    "website deployment and screenshot regeneration"
+  ]
+}
