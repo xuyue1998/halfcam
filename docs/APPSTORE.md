@@ -734,7 +734,7 @@ Load a roll. Take your time.
 | IAP | `halfcam.yearly` 年卡 · `halfcam.unlock` 买断 · `halfcam.skip.3` 加急包 |
 | 版权 | `© YYYY xuyue`（按实际上架年） |
 | 隐私政策 | `https://xuyue1998.github.io/halfcam/privacy.html` |
-| 支持 URL | 同上或 GitHub Pages 首页 |
+| 支持 URL | `https://xuyue1998.github.io/halfcam/support.html`（发布后确认可访问；支持邮箱 `xuyue0824@foxmail.com`） |
 | 营销 URL | 可空 |
 | 设备 | 当前仅支持 iPhone；截图尺寸以提交时 Connect 要求为准 |
 | 最低系统 | iOS 17 |

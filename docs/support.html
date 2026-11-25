@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0E0D0C">
+  <meta name="description" content="Contact HALF CAM support for help with capture, development, export, and in-app purchases.">
+  <title>HALF CAM · Support</title>
+  <link rel="stylesheet" href="site.css">
+  <link rel="icon" href="store/icon/AppIcon-180.png">
+  <script>
+    (function () {
+      try {
+        var lang = localStorage.getItem("halfcam.lang");
+        if (lang !== "zh" && lang !== "en") {
+          lang = String(navigator.language || "en").toLowerCase().indexOf("zh") === 0 ? "zh" : "en";
+        }
+        document.documentElement.lang = lang === "zh" ? "zh-Hans" : "en";
+        document.documentElement.setAttribute("data-site-lang", lang);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+<main class="wrap">
+  <header class="site-header">
+    <a class="mark" href="index.html">HALF CAM</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-set-lang="zh">中文</button>
+      <span aria-hidden="true">/</span>
+      <button type="button" data-set-lang="en">EN</button>
+    </div>
+  </header>
+
+  <nav class="site-nav">
+    <a href="index.html"><span data-lang="zh">首页</span><span data-lang="en">Home</span></a>
+    <a href="support.html" aria-current="page"><span data-lang="zh">技术支持</span><span data-lang="en">Support</span></a>
+    <a href="legal.html"><span data-lang="zh">法律信息</span><span data-lang="en">Legal</span></a>
+    <a href="privacy.html"><span data-lang="zh">隐私政策</span><span data-lang="en">Privacy</span></a>
+    <a href="https://github.com/xuyue1998/halfcam"><span data-lang="zh">源码</span><span data-lang="en">Source</span></a>
+  </nav>
+
+  <h1 data-lang="zh">HALF CAM 技术支持</h1>
+  <h1 data-lang="en">HALF CAM Support</h1>
+  <p data-lang="zh">如需使用帮助，或遇到拍摄、显影、导出、购买等问题，请直接发送邮件联系开发者。不需要 GitHub 账号。</p>
+  <p data-lang="en">For questions or help with capture, development, export, or purchases, email the developer directly. No GitHub account is needed.</p>
+  <p><strong><span data-lang="zh">支持邮箱：</span><span data-lang="en">Support email: </span></strong><a href="mailto:xuyue0824@foxmail.com">xuyue0824@foxmail.com</a></p>
+  <p data-lang="zh">点击邮箱地址可打开邮件 App；如果没有打开，请复制地址到你使用的邮件服务中发送。</p>
+  <p data-lang="en">Select the email address to open your mail app. If it does not open, copy the address into your preferred email service.</p>
+
+  <h2 data-lang="zh">反馈时请提供</h2>
+  <h2 data-lang="en">What to include</h2>
+  <ul>
+    <li data-lang="zh">设备型号、系统版本和 HALF CAM 版本。</li>
+    <li data-lang="en">Device model, operating system version, and HALF CAM version.</li>
+    <li data-lang="zh">问题描述、操作步骤，以及出现问题的大致时间。</li>
+    <li data-lang="en">A description of the problem, steps to reproduce it, and approximately when it happened.</li>
+    <li data-lang="zh">如方便，可附上已遮挡私人信息的截图或录屏。</li>
+    <li data-lang="en">If helpful, attach a screenshot or recording with private information hidden.</li>
+  </ul>
+  <p data-lang="zh">请勿发送 Apple 账户密码、验证码、完整付款信息或私人照片。你主动发送的邮件信息仅用于处理和回复支持请求。</p>
+  <p data-lang="en">Do not send Apple Account passwords, verification codes, full payment details, or private photos. Information you choose to email is used only to handle and reply to your support request.</p>
+
+  <h2 data-lang="zh">快门没有拍摄，或拍完看不到照片？</h2>
+  <h2 data-lang="en">The shutter does not capture, or photos are not visible?</h2>
+  <p data-lang="zh">请确认已允许相机权限、已装入胶卷，并在每次按快门前完成过片。拍下的照片在显影前不提供预览，这是胶片流程的设计。</p>
+  <p data-lang="en">Check that camera access is allowed and a roll is loaded, then advance the film before each exposure. Captured photos have no preview until development; this is intentional.</p>
+
+  <h2 data-lang="zh">显影需要等待？</h2>
+  <h2 data-lang="en">Why is there a development wait?</h2>
+  <p data-lang="zh">正常胶卷倒片后，需要在暗盒中送去显影。所有会员档位都保留等待；一张加急券可跳过一卷的等待，但实际图像处理仍需要时间。倒计时结束后，请在暗盒中取出胶卷并完成显影流程。</p>
+  <p data-lang="en">After rewinding a normal roll, submit it for development from the Darkbox. All plans include a wait. One rush ticket skips one roll's wait, but image processing still takes time. When the countdown ends, collect the roll from the Darkbox and complete development.</p>
+
+  <h2 data-lang="zh">照片如何保存？</h2>
+  <h2 data-lang="en">How do I save my photos?</h2>
+  <p data-lang="zh">显影后可在 App 相册中查看并导出照片。请允许系统相册访问。只有主动导出或开启自动导出后，照片才会保存到系统相册。删除 App 会删除本机胶片，请先导出想保留的照片；不要把重装 App 作为首选排查方式。</p>
+  <p data-lang="en">After development, view and export photos from the in-app album, allowing Photos access when requested. Photos are saved to the system library only when you export or enable auto-export. Deleting the app removes locally stored film. Export photos you want to keep first, and do not reinstall as a first troubleshooting step.</p>
+
+  <h2 data-lang="zh">购买后权益未显示？</h2>
+  <h2 data-lang="en">A purchase is not showing?</h2>
+  <p data-lang="zh">请确认网络可用，且使用购买时的 Apple 账户。在会员页面底部点击“恢复购买”，可恢复有效年卡或买断权益。如果仍有问题，请邮件联系并说明商品名称和购买时间，不要发送完整付款信息。</p>
+  <p data-lang="en">Check your connection and use the Apple Account used for the purchase. Tap Restore Purchases at the bottom of the membership page to restore an active yearly plan or lifetime unlock. If the issue remains, email the product name and purchase time, without full payment details.</p>
+  <p data-lang="zh">加急券属于消耗型商品，不等同于买断权益的恢复。购买券的未用余量可通过同一 Apple 账户的 iCloud 同步；未开启 iCloud 时，删除 App 会丢失本机余量。</p>
+  <p data-lang="en">Rush tickets are consumables, not restorable lifetime entitlements. Unused purchased tickets can sync through iCloud on the same Apple Account. If iCloud is off, deleting the app loses the locally stored balance.</p>
+
+  <h2 data-lang="zh">取消订阅或申请退款</h2>
+  <h2 data-lang="en">Cancel a subscription or request a refund</h2>
+  <p data-lang="zh">年卡可在系统设置 → Apple 账户 → 订阅中管理或取消。删除 App 不会取消订阅。退款请通过 <a href="https://reportaproblem.apple.com/">Apple 的退款申请页面</a>提交，是否批准由 Apple 决定。</p>
+  <p data-lang="en">Manage or cancel the yearly plan in system Settings → Apple Account → Subscriptions. Deleting the app does not cancel a subscription. Request a refund through <a href="https://reportaproblem.apple.com/">Apple's refund request page</a>; Apple determines eligibility.</p>
+
+  <h2 data-lang="zh">找不到小组件或实时活动？</h2>
+  <h2 data-lang="en">Looking for widgets or Live Activities?</h2>
+  <p data-lang="zh">HALF CAM 提供显影实时活动，不是需要手动添加的桌面小组件。在支持的 iPhone 上允许 HALF CAM 使用实时活动，将正常胶卷送去显影并保持等待，即可在锁屏和支持的灵动岛中查看倒计时。两格新手体验卷不会启动实时活动。点击实时活动可返回暗盒。</p>
+  <p data-lang="en">HALF CAM provides a development Live Activity, not a Home Screen widget to add manually. On a supported iPhone, allow Live Activities for HALF CAM, submit a normal roll for development, and leave its wait running to see the countdown on the Lock Screen and, where supported, Dynamic Island. The two-frame tutorial roll does not start a Live Activity. Tap the activity to return to the Darkbox.</p>
+
+  <p class="foot"><a href="privacy.html"><span data-lang="zh">隐私政策</span><span data-lang="en">Privacy Policy</span></a> · <a href="legal.html"><span data-lang="zh">法律信息</span><span data-lang="en">Legal notices</span></a></p>
+</main>
+<script src="site.js"></script>
+</body>
+</html>
